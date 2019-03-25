@@ -140,8 +140,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
     utils.print_log('Type, Epoch, Batch, GCsrc, GCtar, GRloss, DCsrc, DCtar, DRloss, ACCsrc, CSloss, ACCtar, CTloss')
     state_info.set_train_mode()
-    valid = to_var(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
-    fake = to_var(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
+    valid = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
+    fake = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
     correct_src = 0
     correct_target = 0
     total = 0
