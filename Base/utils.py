@@ -54,7 +54,7 @@ class model_optim_state_info(object):
             torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
             torch.nn.init.constant_(m.bias.data, 0.0)
 
-    def state_info.optimizer_init(lr, b1, b2, weight_decay):
+    def optimizer_init(lr, b1, b2, weight_decay):
         self.optimizer_SG = optim.Adam(self.gen_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_SD = optim.Adam(self.disc_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_TG = optim.Adam(self.gen_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
