@@ -48,10 +48,6 @@ parser.add_argument('--dist-backend', default='gloo', type=str,
                     help='distributed backend')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
-parser.add_argument('--gpu', default=None, type=int,
-                    help='GPU id to use.')
-parser.add_argument('--gpu', default=None, type=int,
-                    help='GPU id to use.')
 
 rgb2grayWeights = [0.2989, 0.5870, 0.1140]
 source_prediction_max_result = []
