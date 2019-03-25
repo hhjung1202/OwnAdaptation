@@ -159,33 +159,28 @@ def save_checkpoint(state, filename, model_dir):
 
     # model_dir = 'drive/app/torch/save_Routing_Gate_2'
     model_filename = os.path.join(model_dir, filename)
-    latest_filename = os.path.join(model_dir, 'latest.txt')
 
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-
-    with open(latest_filename, 'w') as fout:
-        fout.write(model_filename)
 
     torch.save(state, model_filename)
     print("=> saving checkpoint '{}'".format(model_filename))
 
     return
 
-def load_checkpoint(model_dir):
+def load_checkpoint(directory, is_last=True):
 
-    # model_dir = 'drive/app/torch/save_Routing_Gate_2'
-    latest_filename = os.path.join(model_dir, 'latest.txt')
-    if os.path.exists(latest_filename):
-        with open(latest_filename, 'r') as fin:
-            model_filename = fin.readlines()[0]
+    if is_last:
+        load_state_name = os.path.join(directory, 'latest.pth.tar')
+    else:
+        load_state_name = os.path.join(directory, 'checkpoint_best.pth.tar')
+    
+    if os.path.exists(load_state_name):
+        print("=> loading checkpoint '{}'".format(load_state_name))
+        state = torch.load(load_state_name)
+        return state
     else:
         return None
-    print("=> loading checkpoint '{}'".format(model_filename))
-    state = torch.load(model_filename)
-
-    return state
-
 
 def print_log(text, filename="log.csv"):
     if not os.path.exists(default_model_dir):

@@ -96,7 +96,10 @@ def main():
     criterion = nn.CrossEntropyLoss().cuda()
 
     start_epoch = 0
-    checkpoint = utils.load_checkpoint(model_dir)    
+    
+    utils.default_model_dir
+    filename = 'latest.pth.tar'
+    checkpoint = utils.load_checkpoint(utils.default_model_dir)    
     if not checkpoint:
         pass
     else:
