@@ -39,13 +39,13 @@ class model_optim_state_info(object):
             self.cls_target = self.cls_target.cuda()
 
     def weight_cuda_init(self):
-        gen_src.apply(self.weights_init_normal)
-        disc_src.apply(self.weights_init_normal)
-        gen_target.apply(self.weights_init_normal)
-        disc_target.apply(self.weights_init_normal)
-        disc_class.apply(self.weights_init_normal)
-        cls_src.apply(self.weights_init_normal)
-        cls_target.apply(self.weights_init_normal)
+        self.gen_src.apply(self.weights_init_normal)
+        self.disc_src.apply(self.weights_init_normal)
+        self.gen_target.apply(self.weights_init_normal)
+        self.disc_target.apply(self.weights_init_normal)
+        self.disc_class.apply(self.weights_init_normal)
+        self.cls_src.apply(self.weights_init_normal)
+        self.cls_target.apply(self.weights_init_normal)
 
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
