@@ -10,7 +10,7 @@ def conv_y_concat(x, y):
 
 class Discriminator(nn.Module):
     def __init__(self, x_dim, ch_dim = 128): # if MNIST, x_dim = 1; elif SVHN, x_dim = 3;
-        super(Discriminator_src, self).__init__()
+        super(Discriminator, self).__init__()
 
         self.conv1 = nn.Conv2d(x_dim, ch_dim, kernel_size=4, stride=2, padding=1, bias=False)
         self.conv2 = nn.Conv2d(ch_dim, ch_dim*2, kernel_size=4, stride=2, padding=1, bias=False)
@@ -31,7 +31,7 @@ class Discriminator(nn.Module):
 
 class Generator(nn.Module):
     def __init__(self, out_dim, z_dim = 100, y_dim = 10, ch_dim = 128): # if MNIST, out_dim = 1; elif SVHN, out_dim = 3;
-        super(Generator_src, self).__init__()
+        super(Generator, self).__init__()
 
         self.deconv1 = nn.ConvTranspose2d(z_dim + y_dim, ch_dim*4 - y_dim, kernel_size=4, stride=1, padding=0, bias=False)
         self.deconv1_bn = nn.BatchNorm2d(ch_dim*4 - y_dim)
@@ -101,7 +101,7 @@ class Block(nn.Module):
 
 class Classifier(nn.Module):
     def __init__(self, x_dim, num_classes=10):
-        super(ResNet, self).__init__()
+        super(Classifier, self).__init__()
 
         self.conv1 = nn.Conv2d(x_dim, 16, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(16)
