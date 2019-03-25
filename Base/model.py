@@ -8,7 +8,7 @@ def conv_y_concat(x, y):
     x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3))], 1)
     return x
 
-class Discriminator(nn.Module);
+class Discriminator(nn.Module):
     def __init__(self, x_dim, ch_dim = 128): # if MNIST, x_dim = 1; elif SVHN, x_dim = 3;
         super(Discriminator_src, self).__init__()
 
@@ -29,7 +29,7 @@ class Discriminator(nn.Module);
         return x
 
 
-class Generator(nn.Module);
+class Generator(nn.Module):
     def __init__(self, out_dim, z_dim = 100, y_dim = 10, ch_dim = 128): # if MNIST, out_dim = 1; elif SVHN, out_dim = 3;
         super(Generator_src, self).__init__()
 
@@ -56,7 +56,7 @@ class Generator(nn.Module);
         return x
 
 
-class Discriminator_rep(nn.Module); # SVHN RGB Image to Black Image. I think, It will be changed!!!!
+class Discriminator_rep(nn.Module): # SVHN RGB Image to Black Image. I think, It will be changed!!!!
     def __init__(self, x_dim = 1, ch_dim = 128, y_dim = 10):
         super(Discriminator_rep, self).__init__()
 
