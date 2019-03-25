@@ -96,7 +96,7 @@ def main():
     criterion = nn.CrossEntropyLoss().cuda()
 
     start_epoch = 0
-    
+
     utils.default_model_dir
     filename = 'latest.pth.tar'
     checkpoint = utils.load_checkpoint(utils.default_model_dir)    
@@ -140,8 +140,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
     utils.print_log('Type, Epoch, Batch, GCsrc, GCtar, GRloss, DCsrc, DCtar, DRloss, ACCsrc, CSloss, ACCtar, CTloss')
     state_info.set_train_mode()
-    valid = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
-    fake = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
     correct_src = 0
     correct_target = 0
     total = 0
@@ -152,6 +150,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
             continue
         
         batch_size = Source_data.size(0)
+        valid = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
+        fake = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
         Source_data, y = to_var(Source_data), to_var(y).long().squeeze()
         Target_data = to_var(Target_data)
 
