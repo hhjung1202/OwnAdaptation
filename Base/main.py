@@ -55,9 +55,9 @@ best_prec_result = 0
 
 def dataset_selector(dataset):
     if dataset == 'mnist':
-        train_loader, test_loader = utils.MNIST_loader()
+        return utils.MNIST_loader()
     elif dataset == 'svhn':
-        train_loader, test_loader = utils.SVHN_loader()
+        return utils.SVHN_loader()
 
 def to_var(self, x):
         """Converts numpy to variable."""

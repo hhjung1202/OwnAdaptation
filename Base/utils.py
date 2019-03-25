@@ -198,12 +198,12 @@ def SVHN_loader(img_size=32, batchSize=128):
     print("SVHN Data Loading ...")
 
     rgb2grayWeights = [0.2989, 0.5870, 0.1140]
-    train_dataset = datasets.SVHN(root='./data/', split='train', 
+    train_dataset = datasets.SVHN(root='/home/hhjung/hhjung/SVHN/', split='train', 
                                         transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                         download=True)
 
-    test_dataset = datasets.SVHN(root='./data/', split='test', 
+    test_dataset = datasets.SVHN(root='/home/hhjung/hhjung/SVHN/', split='test', 
                                         transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                         download=True)
@@ -216,12 +216,12 @@ def SVHN_loader(img_size=32, batchSize=128):
 def MNIST_loader(img_size=32, batchSize=128):
     print("MNIST Data Loading ...")
 
-    train_dataset = datasets.MNIST(root='./data/', train=True,
+    train_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=True,
                                         transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                         download=True)
 
-    test_dataset = datasets.MNIST(root='./data/', train=False,
+    test_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=False,
                                        transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                        download=True)
