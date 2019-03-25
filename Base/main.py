@@ -12,8 +12,6 @@ import utils
 import itertools
 import math
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '7'
-
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
 parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
 parser.add_argument('--td', default='svhn', type=str, help='target dataset')
@@ -30,6 +28,8 @@ parser.add_argument('--latent-dim', type=int, default=100, help='dimensionality 
 parser.add_argument('--train-iters', type=int, default=40000, help='number of iteration')
 
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
+parser.add_argument('--gpus', default='', type=str, help='Multi GPU ids to use.')
+parser.add_argument('--gpu', default=None, type=int, help='GPU id to use.')
 
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
@@ -48,6 +48,8 @@ parser.add_argument('--dist-backend', default='gloo', type=str,
                     help='distributed backend')
 parser.add_argument('--seed', default=None, type=int,
                     help='seed for initializing training. ')
+parser.add_argument('--gpu', default=None, type=int,
+                    help='GPU id to use.')
 parser.add_argument('--gpu', default=None, type=int,
                     help='GPU id to use.')
 
@@ -72,6 +74,11 @@ def to_var(self, x):
 def main():
     global args, best_prec_result
     args = parser.parse_args()
+    
+    if args.gpus != '':
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpus
+    elif args.gpu is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     
     utils.default_model_dir = args.dir
     start_time = time.time()
