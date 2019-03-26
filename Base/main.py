@@ -252,9 +252,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         _, predicted_target = torch.max(output_cls_gen_target.data, 1)
         correct_target += predicted_target.eq(y.data).cpu().sum()
 
-        print(loss_gen_target.item())
-
-
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
                   .format(epoch, it, loss_gen_src.item(), loss_gen_target.item(), loss_rep_gen.item(), loss_dis_src.item(), loss_dis_target.item(), loss_rep_dis.item()
