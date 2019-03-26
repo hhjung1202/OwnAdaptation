@@ -60,6 +60,7 @@ def dataset_selector(dataset):
         return utils.SVHN_loader()
 
 def to_var(x):
+    global cuda
     if cuda:
         x = x.cuda()
     return Variable(x)
@@ -80,6 +81,7 @@ def main():
     state_info = utils.model_optim_state_info()
     state_info.model_init()
     state_info.model_cuda_init()
+    print(cuda)
 
     if cuda:
         # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
