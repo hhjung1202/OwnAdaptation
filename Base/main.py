@@ -330,13 +330,10 @@ def make_sample_image(state_info, epoch, n_row=10):
     # Get labels ranging from 0 to n_classes for n rows
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
     labels = Variable(LongTensor(labels))
-    y_one = FloatTensor(n_row**2, 10).zero_().scatter_(1, labels.view(-1, 1), 1)
+    labels_one = FloatTensor(n_row**2, 10).zero_().scatter_(1, labels.view(-1, 1), 1)
 
-    print(y_one.size())
-    print(y_one)
-    print(z.size())
-    img_gen_src = state_info.gen_src(z, labels)
-    img_gen_target = state_info.gen_target(z, labels)
+    img_gen_src = state_info.gen_src(z, labels_one)
+    img_gen_target = state_info.gen_target(z, labels_one)
     save_image(img_gen_src.data, os.path.join(img_path1, '%d.png' % epoch), nrow=n_row, normalize=True)
     save_image(img_gen_target.data, os.path.join(img_path2, '%d.png' % epoch), nrow=n_row, normalize=True)
 
