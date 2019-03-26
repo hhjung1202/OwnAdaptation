@@ -5,15 +5,7 @@ import torch.nn.functional as F
 # input 32 * 32
 
 def conv_y_concat(x, y):
-    print('x', x.device)
-    print(x.is_cuda)
-    print('y', y.device)
-    print(y.is_cuda)
-    t = y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()
-    print('t', t.dtype)
-    print(t.device)
-    print(t.is_cuda)
-    x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3))], 1)
+    x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
     return x
 
 class Discriminator(nn.Module):
@@ -53,7 +45,6 @@ class Generator(nn.Module):
     def forward(self, z, y):
         # x = F.relu(self.deconv1(input))
         yb = y.view(y.size(0), -1, 1, 1)
-        yb.cuda()
         z = torch.cat([z.view(-1, 100, 1, 1), yb.float()], 1) # batch, 110, 1, 1, DTYPE ISSUE
 
         x = F.relu(self.deconv1_bn(self.deconv1(z)))
