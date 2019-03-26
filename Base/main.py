@@ -26,7 +26,7 @@ parser.add_argument('--latent-dim', type=int, default=100, help='dimensionality 
 parser.add_argument('--train-iters', type=int, default=40000, help='number of iteration')
 
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
-parser.add_argument('--gpu', default='', type=str, help='Multi GPU ids to use.')
+parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
@@ -61,6 +61,7 @@ def dataset_selector(dataset):
 
 def to_var(x):
     global cuda
+    print('cuda : ',cuda)
     if cuda:
         x = x.cuda()
     return Variable(x)
@@ -81,7 +82,6 @@ def main():
     state_info = utils.model_optim_state_info()
     state_info.model_init()
     state_info.model_cuda_init()
-    print(cuda)
 
     if cuda:
         # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
