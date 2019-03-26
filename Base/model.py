@@ -9,7 +9,7 @@ def conv_y_concat(x, y):
     print(x.is_cuda)
     print('y', y.device)
     print(y.is_cuda)
-    t = y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3))
+    t = y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()
     print('t', t.dtype)
     print(t.device)
     print(t.is_cuda)
