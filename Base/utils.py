@@ -199,7 +199,7 @@ def SVHN_loader(img_size=32, batchSize=128):
                                         download=True)
 
     test_dataset = datasets.SVHN(root='/home/hhjung/hhjung/SVHN/', split='test', 
-                                        transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
+                                        transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                         download=True)
 
@@ -217,7 +217,7 @@ def MNIST_loader(img_size=32, batchSize=128):
                                         download=True)
 
     test_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=False,
-                                       transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
+                                       transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                        download=True)
 
