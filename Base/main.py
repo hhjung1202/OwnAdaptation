@@ -118,7 +118,7 @@ def main():
         # for param_group in optimizer.param_groups:
         #     param_group['lr'] = learning_rate
 
-        # train(state_info, Source_train_loader, Target_train_loader, criterion, adversarial_loss, epoch)
+        train(state_info, Source_train_loader, Target_train_loader, criterion, adversarial_loss, epoch)
         prec_result = test(state_info, Source_test_loader, Target_test_loader, criterion, epoch)
 
         if prec_result > best_prec_result:
@@ -253,6 +253,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         correct_target += predicted_target.eq(y.data).cpu().sum()
 
         if it % 10 == 0:
+            print(total)
+            print(correct_target)
+            print(correct_src)
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
                   .format(epoch, it, loss_gen_src.item(), loss_gen_target.item(), loss_rep_gen.item(), loss_dis_src.item(), loss_dis_target.item(), loss_rep_dis.item()
                     , 100.*(correct_src / total), loss_criterion_src.item(), 100.*(correct_target / total), loss_criterion_target.item()))
