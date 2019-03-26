@@ -330,7 +330,7 @@ def make_sample_image(state_info, epoch, n_row=10):
     # Get labels ranging from 0 to n_classes for n rows
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
     labels = Variable(LongTensor(labels))
-    y_one = torch.FloatTensor(n_row**2, 10).zero_().scatter_(1, labels.view(-1, 1), 1)
+    y_one = FloatTensor(n_row**2, 10).zero_().scatter_(1, labels.view(-1, 1), 1)
 
     print(y_one.size())
     print(y_one)
