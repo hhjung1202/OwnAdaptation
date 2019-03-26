@@ -144,7 +144,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
     for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
         
-        print(y)
         if Target_data.size(0) != Source_data.size(0):
             continue
         
@@ -152,7 +151,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
-        Source_data, y = to_var(Source_data), to_var(y).long().squeeze()
+        y_one = Variable(FloatTensor(batch_size, 10).zero_().scatter_(1, y.view(-1, 1), 1))
+
+        Source_data, y = to_var(Source_data), to_var(y)
         Target_data = to_var(Target_data)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
@@ -162,10 +163,10 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         state_info.optimizer_SG.zero_grad()
         state_info.optimizer_TG.zero_grad()
 
-        img_gen_src = state_info.gen_src(z, y)
+        img_gen_src = state_info.gen_src(z, y_one)
         loss_gen_src = adversarial_loss(state_info.disc_src(img_gen_src), valid)
 
-        img_gen_target = state_info.gen_target(z, y)
+        img_gen_target = state_info.gen_target(z, y_one)
         loss_gen_target = adversarial_loss(state_info.disc_target(img_gen_target), valid)
 
         loss_gen_src.backward()
@@ -181,8 +182,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
             black_img_gen_target = rgb2grayWeights[0] * black_img_gen_target[:,0,:,:] + rgb2grayWeights[1] * black_img_gen_target[:,1,:,:] + rgb2grayWeights[2] * black_img_gen_target[:,2,:,:]
             black_img_gen_target.unsqueeze_(1)
 
-        loss_rep_gen_src = adversarial_loss(state_info.disc_class(black_img_gen_src, y), valid)
-        loss_rep_gen_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y), valid)
+        loss_rep_gen_src = adversarial_loss(state_info.disc_class(black_img_gen_src, y_one), valid)
+        loss_rep_gen_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y_one), valid)
         loss_rep_gen = (loss_rep_gen_src + loss_rep_gen_target) / 2
 
         loss_rep_gen.backward()
@@ -218,9 +219,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
             black_Source_data = rgb2grayWeights[0] * black_Source_data[:,0,:,:] + rgb2grayWeights[1] * black_Source_data[:,1,:,:] + rgb2grayWeights[2] * black_Source_data[:,2,:,:]
             black_Source_data.unsqueeze_(1)
 
-        loss_rep_dis_src = adversarial_loss(state_info.disc_class(black_img_gen_src, y), fake)
-        loss_rep_dis_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y), fake)
-        loss_rep_dis_real = adversarial_loss(state_info.disc_class(black_Source_data, y), valid)
+        loss_rep_dis_src = adversarial_loss(state_info.disc_class(black_img_gen_src, y_one), fake)
+        loss_rep_dis_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y_one), fake)
+        loss_rep_dis_real = adversarial_loss(state_info.disc_class(black_Source_data, y_one), valid)
         loss_rep_dis = (loss_rep_dis_src + loss_rep_dis_target + loss_rep_dis_real) / 3
 
         loss_rep_dis.backward()
@@ -279,13 +280,17 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
             continue
         
         batch_size = Source_data.size(0)
-        Source_data, Source_y = to_var(Source_data), to_var(Source_y).long().squeeze()
-        Target_data, Target_y = to_var(Target_data), to_var(Target_y).long().squeeze()
+
+        Source_y_one = Variable(FloatTensor(batch_size, 10).zero_().scatter_(1, Source_y.view(-1, 1), 1))
+        Target_y_one = Variable(FloatTensor(batch_size, 10).zero_().scatter_(1, Target_y.view(-1, 1), 1))
+
+        Source_data, Source_y = to_var(Source_data), to_var(Source_y)
+        Target_data, Target_y = to_var(Target_data), to_var(Target_y)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
         
-        img_gen_src = state_info.gen_src(z, Source_y)
-        img_gen_target = state_info.gen_target(z, Target_y)
+        img_gen_src = state_info.gen_src(z, Source_y_one)
+        img_gen_target = state_info.gen_target(z, Target_y_one)
 
         output_cls_gen_src = state_info.cls_src(Source_data)
         output_cls_gen_target = state_info.cls_target(Target_data)
