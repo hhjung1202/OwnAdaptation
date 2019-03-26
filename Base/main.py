@@ -151,9 +151,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
-        y_one = Variable(FloatTensor(batch_size, 10).zero_().scatter_(1, y.view(-1, 1), 1))
+        y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, y.view(-1, 1), 1)
 
-        Source_data, y = to_var(Source_data), to_var(y)
+        Source_data, y, y_one = to_var(Source_data), to_var(y), to_var(y_one)
         Target_data = to_var(Target_data)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
@@ -281,11 +281,11 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
         
         batch_size = Source_data.size(0)
 
-        Source_y_one = Variable(FloatTensor(batch_size, 10).zero_().scatter_(1, Source_y.view(-1, 1), 1))
-        Target_y_one = Variable(FloatTensor(batch_size, 10).zero_().scatter_(1, Target_y.view(-1, 1), 1))
+        Source_y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, Source_y.view(-1, 1), 1)
+        Target_y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, Target_y.view(-1, 1), 1)
 
-        Source_data, Source_y = to_var(Source_data), to_var(Source_y)
-        Target_data, Target_y = to_var(Target_data), to_var(Target_y)
+        Source_data, Source_y, Source_y_one = to_var(Source_data), to_var(Source_y), to_var(Source_y_one)
+        Target_data, Target_y, Target_y_one = to_var(Target_data), to_var(Target_y), to_var(Target_y_one)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
         
