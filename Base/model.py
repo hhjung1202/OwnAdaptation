@@ -45,6 +45,7 @@ class Generator(nn.Module):
     def forward(self, z, y):
         # x = F.relu(self.deconv1(input))
         yb = y.view(y.size(0), -1, 1, 1)
+        yb.cuda()
         z = torch.cat([z.view(-1, 100, 1, 1), yb.float()], 1) # batch, 110, 1, 1, DTYPE ISSUE
 
         x = F.relu(self.deconv1_bn(self.deconv1(z)))
