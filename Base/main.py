@@ -155,9 +155,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         Source_data, y, y_one = to_var(Source_data, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
         Target_data = to_var(Target_data, FloatTensor)
-        print(Source_data.dtype)
-        print(y.dtype)
-        print(y_one.dtype)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
 
@@ -255,6 +252,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         _, predicted_target = torch.max(output_cls_gen_target.data, 1)
         correct_target += predicted_target.eq(y.data).cpu().sum()
 
+        print(loss_gen_target.item())
 
 
         if it % 10 == 0:
