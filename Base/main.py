@@ -62,10 +62,10 @@ def dataset_selector(dataset):
         return utils.SVHN_loader()
 
 def to_var(self, x):
-        """Converts numpy to variable."""
-        if torch.cuda.is_available():
-            x = x.cuda()
-        return Variable(x)
+    """Converts numpy to variable."""
+    if cuda:
+        x = x.cuda()
+    return Variable(x)
 
 def main():
     global args, best_prec_result
