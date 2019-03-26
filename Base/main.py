@@ -17,7 +17,7 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='n
 parser.add_argument('--epochs', default=100, type=int, metavar='N', help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=256, type=int, metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=0.1, type=float, metavar='LR', help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
@@ -118,7 +118,7 @@ def main():
         # for param_group in optimizer.param_groups:
         #     param_group['lr'] = learning_rate
 
-        train(state_info, Source_train_loader, Target_train_loader, criterion, adversarial_loss, epoch)
+        # train(state_info, Source_train_loader, Target_train_loader, criterion, adversarial_loss, epoch)
         prec_result = test(state_info, Source_test_loader, Target_test_loader, criterion, epoch)
 
         if prec_result > best_prec_result:
@@ -330,6 +330,8 @@ def make_sample_image(state_info, epoch, n_row=10):
     # Get labels ranging from 0 to n_classes for n rows
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
     labels = Variable(LongTensor(labels))
+    print(labels.size())
+    print(z.size())
     img_gen_src = state_info.gen_src(z, labels)
     img_gen_target = state_info.gen_target(z, labels)
     save_image(img_gen_src.data, os.path.join(img_path1, '%d.png' % epoch), nrow=n_row, normalize=True)
