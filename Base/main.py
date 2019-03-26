@@ -155,6 +155,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         Source_data, y, y_one = to_var(Source_data), to_var(y), to_var(y_one)
         Target_data = to_var(Target_data)
+        print(Source_data.dtype)
+        print(y.dtype)
+        print(y_one.dtype)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
 
