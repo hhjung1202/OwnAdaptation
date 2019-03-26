@@ -61,8 +61,7 @@ def dataset_selector(dataset):
     elif dataset == 'svhn':
         return utils.SVHN_loader()
 
-def to_var(self, x):
-    """Converts numpy to variable."""
+def to_var(x):
     if cuda:
         x = x.cuda()
     return Variable(x)
