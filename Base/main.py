@@ -52,6 +52,8 @@ source_prediction_max_result = []
 target_prediction_max_result = []
 best_prec_result = 0
 
+cuda = True if torch.cuda.is_available() else False
+FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
 def dataset_selector(dataset):
     if dataset == 'mnist':
@@ -82,7 +84,7 @@ def main():
     state_info.model_init()
     state_info.model_cuda_init()
 
-    if torch.cuda.is_available():
+    if cuda:
         # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
         print("USE", torch.cuda.device_count(), "GPUs!")
         cudnn.benchmark = True
@@ -134,7 +136,6 @@ def main():
     now = time.gmtime(time.time() - start_time)
     print('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
 
-        
 
 def train(state_info, Source_train_loader, Target_train_loader, criterion, adversarial_loss, epoch): # all 
 
@@ -145,22 +146,18 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
     total = 0
 
     for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
-
-        print(Source_data.size())
-        print(y.size())
-        print(Target_data.size())
-        print(_.size())
         
         if Target_data.size(0) != Source_data.size(0):
             continue
         
         batch_size = Source_data.size(0)
-        valid = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
-        fake = to_var(torch.cuda.FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
+        valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
+        fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
+
         Source_data, y = to_var(Source_data), to_var(y).long().squeeze()
         Target_data = to_var(Target_data)
 
-        z = to_var(torch.cuda.FloatTensor(np.random.normal(0, 1, (Source_data.size(0), args.latent_dim))))
+        z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
 
         # G - Creation
 
@@ -287,8 +284,8 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
         Source_data, Source_y = to_var(Source_data), to_var(Source_y).long().squeeze()
         Target_data, Target_y = to_var(Target_data), to_var(Target_y).long().squeeze()
 
-        z = to_var(torch.cuda.FloatTensor(np.random.normal(0, 1, (Source_data.size(0), args.latent_dim))))
-
+        z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
+        
         img_gen_src = state_info.gen_src(z, Source_y)
         img_gen_target = state_info.gen_target(z, Target_y)
 
@@ -327,7 +324,7 @@ def make_sample_image(state_info, epoch, n_row=10):
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/src'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/target'))
 
-    z = to_var(torch.cuda.FloatTensor(np.random.normal(0, 1, (n_row**2, args.latent_dim))))
+    z = Variable(FloatTensor(np.random.normal(0, 1, (n_row**2, args.latent_dim))))
 
     # Get labels ranging from 0 to n_classes for n rows
     labels = np.array([num for _ in range(n_row) for num in range(n_row)])
