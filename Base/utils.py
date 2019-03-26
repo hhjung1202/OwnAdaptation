@@ -194,7 +194,7 @@ def SVHN_loader(img_size=32, batchSize=128):
 
     rgb2grayWeights = [0.2989, 0.5870, 0.1140]
     train_dataset = datasets.SVHN(root='/home/hhjung/hhjung/SVHN/', split='train', 
-                                        transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
+                                        transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                         download=True)
 
@@ -212,7 +212,7 @@ def MNIST_loader(img_size=32, batchSize=128):
     print("MNIST Data Loading ...")
 
     train_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=True,
-                                        transform=transforms.Compose([transforms.Scale(img_size), transforms.ToTensor()
+                                        transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
                                         download=True)
 

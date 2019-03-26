@@ -1,15 +1,13 @@
 import argparse
 import torch
 from torch.autograd import Variable
-import torch.optim as optim
-from torchvision import datasets, transforms
 from torchvision.utils import save_image
+import numpy as np
 from model import *
 import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
-import itertools
 import math
 
 parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
@@ -274,7 +272,7 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
     total_loss_src = 0
     total_loss_target = 0
 
-    for it, ((Source_data, Source_y), (Target_data, Target_y)) in enumerate(itertools.izip(Source_test_loader, Target_test_loader)):
+    for it, ((Source_data, Source_y), (Target_data, Target_y)) in enumerate(zip(Source_test_loader, Target_test_loader)):
 
         if Target_data.size(0) != Source_data.size(0):
             continue
