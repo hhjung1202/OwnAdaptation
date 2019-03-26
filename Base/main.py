@@ -144,7 +144,12 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
     correct_target = 0
     total = 0
 
-    for it, ((Source_data, y), (Target_data, _)) in enumerate(itertools.izip(Source_train_loader, Target_train_loader)):
+    for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
+
+        print(Source_data.size())
+        print(y.size())
+        print(Target_data.size())
+        print(_.size())
         
         if Target_data.size(0) != Source_data.size(0):
             continue
