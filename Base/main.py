@@ -50,8 +50,14 @@ source_prediction_max_result = []
 target_prediction_max_result = []
 best_prec_result = 0
 
+args = parser.parse_args()
+
+if args.gpu != '':
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
 cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
 def dataset_selector(dataset):
     if dataset == 'mnist':
@@ -59,21 +65,12 @@ def dataset_selector(dataset):
     elif dataset == 'svhn':
         return utils.SVHN_loader()
 
-def to_var(x):
-    global cuda
-    print('cuda : ',cuda)
-    if cuda:
-        x = x.cuda()
-        print(x)
-    return Variable(x)
+def to_var(x, dtype):
+    return Variable(x.type(dtype))
 
 def main():
     global args, best_prec_result
-    args = parser.parse_args()
     
-    if args.gpu != '':
-        os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-
     utils.default_model_dir = args.dir
     start_time = time.time()
 
@@ -156,8 +153,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, y.view(-1, 1), 1)
 
-        Source_data, y, y_one = to_var(Source_data), to_var(y), to_var(y_one)
-        Target_data = to_var(Target_data)
+        Source_data, y, y_one = to_var(Source_data, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
+        Target_data = to_var(Target_data, FloatTensor)
         print(Source_data.dtype)
         print(y.dtype)
         print(y_one.dtype)
@@ -290,8 +287,8 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
         Source_y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, Source_y.view(-1, 1), 1)
         Target_y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, Target_y.view(-1, 1), 1)
 
-        Source_data, Source_y, Source_y_one = to_var(Source_data), to_var(Source_y), to_var(Source_y_one)
-        Target_data, Target_y, Target_y_one = to_var(Target_data), to_var(Target_y), to_var(Target_y_one)
+        Source_data, Source_y, Source_y_one = to_var(Source_data, FloatTensor), to_var(Source_y, LongTensor), to_var(Source_y_one, FloatTensor)
+        Target_data, Target_y, Target_y_one = to_var(Target_data, FloatTensor), to_var(Target_y, LongTensor), to_var(Target_y_one, FloatTensor)
 
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
         
