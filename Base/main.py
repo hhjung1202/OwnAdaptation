@@ -172,8 +172,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         img_gen_target = state_info.gen_target(z, y_one)
         loss_gen_target = adversarial_loss(state_info.disc_target(img_gen_target), valid)
 
-        loss_gen_src.backward()
-        loss_gen_target.backward()
+        loss_gen_src.backward(retain_graph=True)
+        loss_gen_target.backward(retain_graph=True)
         
         # G - Representation
 
@@ -189,7 +189,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         loss_rep_gen_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y_one), valid)
         loss_rep_gen = (loss_rep_gen_src + loss_rep_gen_target) / 2
 
-        loss_rep_gen.backward()
+        loss_rep_gen.backward(retain_graph=True)
 
         state_info.optimizer_SG.step()
         state_info.optimizer_TG.step()
@@ -207,8 +207,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         loss_dis_target_fake = adversarial_loss(state_info.disc_target(img_gen_target.detach()), fake)
         loss_dis_target = loss_dis_target_real + loss_dis_target_fake / 2
 
-        loss_dis_src.backward()
-        loss_dis_target.backward()
+        loss_dis_src.backward(retain_graph=True)
+        loss_dis_target.backward(retain_graph=True)
 
         state_info.optimizer_SD.step()
         state_info.optimizer_TD.step()
@@ -227,7 +227,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         loss_rep_dis_real = adversarial_loss(state_info.disc_class(black_Source_data, y_one), valid)
         loss_rep_dis = (loss_rep_dis_src + loss_rep_dis_target + loss_rep_dis_real) / 3
 
-        loss_rep_dis.backward()
+        loss_rep_dis.backward(retain_graph=True)
         state_info.optimizer_REP.step()
 
         # Class Prediction
@@ -242,8 +242,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         loss_criterion_src = criterion(output_cls_gen_src, y)
         loss_criterion_target = criterion(output_cls_gen_target, y)
 
-        loss_criterion_src.backward()
-        loss_criterion_target.backward()
+        loss_criterion_src.backward(retain_graph=True)
+        loss_criterion_target.backward(retain_graph=True)
 
         state_info.optimizer_CS.step()
         state_info.optimizer_CT.step()
