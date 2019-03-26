@@ -64,6 +64,7 @@ def to_var(x):
     print('cuda : ',cuda)
     if cuda:
         x = x.cuda()
+        print(x)
     return Variable(x)
 
 def main():
