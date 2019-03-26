@@ -253,19 +253,12 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         correct_target += predicted_target.eq(y.data).cpu().sum()
 
         if it % 10 == 0:
-            print(total)
-            print(correct_target.item())
-            print(correct_src.item())
-            print((100.*correct_src) / total)
-            print(100.*(correct_src / total))
-
-
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
                   .format(epoch, it, loss_gen_src.item(), loss_gen_target.item(), loss_rep_gen.item(), loss_dis_src.item(), loss_dis_target.item(), loss_rep_dis.item()
-                    , 100.*(correct_src / total), loss_criterion_src.item(), 100.*(correct_target / total), loss_criterion_target.item()))
+                    , (100.*correct_src) / float(total), loss_criterion_src.item(), (100.*correct_target) / float(total), loss_criterion_target.item()))
             print('Train, EP:{}, IT:{}, L)GS:{:.4f}, L)GT:{:.4f}, L)GR:{:.4f}, L)DS:{:.4f}, L)DT:{:.4f}, L)DR:{:.4f}, Acc)S:{:.2f}, L)S:{:.4f}, Acc)T:{:.2f}, L)T:{:.4f}'
                   .format(epoch, it, loss_gen_src.item(), loss_gen_target.item(), loss_rep_gen.item(), loss_dis_src.item(), loss_dis_target.item(), loss_rep_dis.item()
-                    , (100.*correct_src) / total, loss_criterion_src.item(), 100.*(correct_target / total), loss_criterion_target.item()))
+                    , (100.*correct_src) / float(total), loss_criterion_src.item(), (100.*correct_target) / float(total), loss_criterion_target.item()))
 
     utils.print_log('')
 
@@ -319,9 +312,9 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
     target_prediction_max_result.append(correct_target)
 
     utils.print_log('Test, {}, {}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-          .format(epoch, it, 100.*(correct_src / total), total_loss_src / (it + 1), 100.*(correct_target / total), total_loss_target / (it + 1)))
+          .format(epoch, it, (100.*correct_src) / float(total), total_loss_src / (it + 1), (100.*correct_target) / float(total), total_loss_target / (it + 1)))
     print('Test, EP:{}, IT:{}, Acc)S:{:.2f}, Loss)S:{:.4f}, Acc)T:{:.2f}, Loss)T:{:.4f}'
-          .format(epoch, it, 100.*(correct_src / total), total_loss_src / (it + 1), 100.*(correct_target / total), total_loss_target / (it + 1)))
+          .format(epoch, it, (100.*correct_src) / float(total), total_loss_src / (it + 1), (100.*correct_target) / float(total), total_loss_target / (it + 1)))
 
     return 100.*(correct_target / total)
 
