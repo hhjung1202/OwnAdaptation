@@ -111,6 +111,7 @@ def is_leaf(model):
 def make_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+    return directory
 
 # def weights_init_normal(m):
 #     if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
