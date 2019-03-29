@@ -190,7 +190,7 @@ def print_log(text, filename="log.csv"):
     with open(model_filename, "a") as myfile:
         myfile.write(text + "\n")
 
-def SVHN_loader(img_size=32, batchSize=128):
+def SVHN_loader(img_size=64, batchSize=128):
     print("SVHN Data Loading ...")
 
     rgb2grayWeights = [0.2989, 0.5870, 0.1140]
@@ -209,7 +209,7 @@ def SVHN_loader(img_size=32, batchSize=128):
     return train_loader, test_loader
 
     
-def MNIST_loader(img_size=32, batchSize=128):
+def MNIST_loader(img_size=64, batchSize=128):
     print("MNIST Data Loading ...")
 
     train_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=True,

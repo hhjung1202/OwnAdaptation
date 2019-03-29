@@ -17,14 +17,17 @@ class Discriminator(nn.Module):
         self.conv2_bn = nn.BatchNorm2d(ch_dim*2)
         self.conv3 = nn.Conv2d(ch_dim*2, ch_dim*4, kernel_size=4, stride=2, padding=1, bias=False)
         self.conv3_bn = nn.BatchNorm2d(ch_dim*4)
-        self.conv4 = nn.Conv2d(ch_dim*4, 1, kernel_size=4, stride=2, padding=0, bias=False)
+        self.conv4 = nn.Conv2d(ch_dim*4, ch_dim*8, kernel_size=4, stride=2, padding=1, bias=False)
+        self.conv4_bn = nn.BatchNorm2d(ch_dim*8)
+        self.conv5 = nn.Conv2d(ch_dim*8, 1, kernel_size=4, stride=2, padding=0, bias=False)
 
     # forward method
     def forward(self, x):
         x = F.leaky_relu(self.conv1(x), 0.2)
         x = F.leaky_relu(self.conv2_bn(self.conv2(x)), 0.2)
         x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
-        x = torch.sigmoid(self.conv4(x))
+        x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
+        x = torch.sigmoid(self.conv5(x))
 
         return x
 
@@ -33,13 +36,15 @@ class Generator(nn.Module):
     def __init__(self, out_dim, z_dim = 100, y_dim = 10, ch_dim = 128): # if MNIST, out_dim = 1; elif SVHN, out_dim = 3;
         super(Generator, self).__init__()
 
-        self.deconv1 = nn.ConvTranspose2d(z_dim + y_dim, ch_dim*4 - y_dim, kernel_size=4, stride=1, padding=0, bias=False)
-        self.deconv1_bn = nn.BatchNorm2d(ch_dim*4 - y_dim)
-        self.deconv2 = nn.ConvTranspose2d(ch_dim*4, ch_dim*2, kernel_size=4, stride=2, padding=1, bias=False)
-        self.deconv2_bn = nn.BatchNorm2d(ch_dim*2)
-        self.deconv3 = nn.ConvTranspose2d(ch_dim*2, ch_dim, kernel_size=4, stride=2, padding=1, bias=False)
-        self.deconv3_bn = nn.BatchNorm2d(ch_dim)
-        self.deconv4 = nn.ConvTranspose2d(ch_dim, out_dim, 4, 2, 1)
+        self.deconv1 = nn.ConvTranspose2d(z_dim + y_dim, ch_dim*8, kernel_size=4, stride=1, padding=0, bias=False)
+        self.deconv1_bn = nn.BatchNorm2d(ch_dim*8)
+        self.deconv2 = nn.ConvTranspose2d(ch_dim*8, ch_dim*4, kernel_size=4, stride=2, padding=1, bias=False)
+        self.deconv2_bn = nn.BatchNorm2d(ch_dim*4)
+        self.deconv3 = nn.ConvTranspose2d(ch_dim*4, ch_dim*2, kernel_size=4, stride=2, padding=1, bias=False)
+        self.deconv3_bn = nn.BatchNorm2d(ch_dim*2)
+        self.deconv4 = nn.ConvTranspose2d(ch_dim*2, ch_dim, kernel_size=4, stride=2, padding=1, bias=False)
+        self.deconv4_bn = nn.BatchNorm2d(ch_dim)
+        self.deconv5 = nn.ConvTranspose2d(ch_dim, out_dim, 4, 2, 1)
 
     # forward method
     def forward(self, z, y):
@@ -48,11 +53,10 @@ class Generator(nn.Module):
         z = torch.cat([z.view(-1, 100, 1, 1), yb.float()], 1) # batch, 110, 1, 1, DTYPE ISSUE
 
         x = F.relu(self.deconv1_bn(self.deconv1(z)))
-        x = conv_y_concat(x, yb)
-
         x = F.relu(self.deconv2_bn(self.deconv2(x)))
         x = F.relu(self.deconv3_bn(self.deconv3(x)))
-        x = torch.tanh(self.deconv4(x))
+        x = F.relu(self.deconv4_bn(self.deconv4(x)))
+        x = torch.tanh(self.deconv5(x))
         return x
 
 
@@ -61,25 +65,26 @@ class Discriminator_rep(nn.Module): # SVHN RGB Image to Black Image. I think, It
         super(Discriminator_rep, self).__init__()
 
         self.conv1 = nn.Conv2d(x_dim, ch_dim - y_dim, kernel_size=4, stride=2, padding=1, bias=False)
-        self.conv1_bn = nn.BatchNorm2d(ch_dim - y_dim)
-        self.conv2 = nn.Conv2d(ch_dim, ch_dim*2 - y_dim, kernel_size=4, stride=2, padding=1, bias=False)
-        self.conv2_bn = nn.BatchNorm2d(ch_dim*2 - y_dim)
+
+        self.conv2 = nn.Conv2d(ch_dim, ch_dim*2, kernel_size=4, stride=2, padding=1, bias=False)
+        self.conv2_bn = nn.BatchNorm2d(ch_dim*2)
         self.conv3 = nn.Conv2d(ch_dim*2, ch_dim*4, kernel_size=4, stride=2, padding=1, bias=False)
         self.conv3_bn = nn.BatchNorm2d(ch_dim*4)
-        self.conv4 = nn.Conv2d(ch_dim*4, 1, kernel_size=4, stride=2, padding=0, bias=False)
+        self.conv4 = nn.Conv2d(ch_dim*4, ch_dim*8, kernel_size=4, stride=2, padding=1, bias=False)
+        self.conv4_bn = nn.BatchNorm2d(ch_dim*8)
+        self.conv5 = nn.Conv2d(ch_dim*8, 1, kernel_size=4, stride=2, padding=0, bias=False)
 
     # forward method
     def forward(self, x, y):
         yb = y.view(y.size(0), -1, 1, 1)
         
-        x = F.leaky_relu(self.conv1_bn(self.conv1(x)), 0.2)
+        x = self.conv1(x)
         x = conv_y_concat(x, yb)
 
         x = F.leaky_relu(self.conv2_bn(self.conv2(x)), 0.2)
-        x = conv_y_concat(x, yb)
-        
         x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
-        x = F.sigmoid(self.conv4(x))
+        x = F.leaky_relu(self.conv4_bn(self.conv4(x)), 0.2)
+        x = torch.sigmoid(self.conv5(x))
 
         return x
 
@@ -108,8 +113,9 @@ class Classifier(nn.Module):
         self.layer1 = Block(in_channels=16, out_channels=16, stride=1)
         self.layer2 = Block(in_channels=16, out_channels=32, stride=2)
         self.layer3 = Block(in_channels=32, out_channels=64, stride=2)
+        self.layer4 = Block(in_channels=64, out_channels=128, stride=2)
         self.avgpool = nn.AvgPool2d(kernel_size=8, stride=1)
-        self.fc = nn.Linear(64, num_classes)
+        self.fc = nn.Linear(128, num_classes)
 
     def forward(self, x):
 
@@ -118,6 +124,7 @@ class Classifier(nn.Module):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
+        x = self.layer4(x)
 
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
