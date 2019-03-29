@@ -52,8 +52,7 @@ best_prec_result = 0
 
 args = parser.parse_args()
 
-if args.gpu != '':
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
@@ -84,11 +83,11 @@ def main():
     if cuda:
         # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
         print("USE", torch.cuda.device_count(), "GPUs!")
+        state_info.weight_cuda_init()
         cudnn.benchmark = True
     else:
         print("NO GPU")
 
-    state_info.weight_cuda_init()
     state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
 
     adversarial_loss = torch.nn.BCELoss()
@@ -131,7 +130,7 @@ def main():
             utils.save_state_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)     
 
     now = time.gmtime(time.time() - start_time)
-    print('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
+    utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
 
 
 def train(state_info, Source_train_loader, Target_train_loader, criterion, adversarial_loss, epoch): # all 
@@ -316,7 +315,7 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
     print('Test, EP:{}, IT:{}, Acc)S:{:.2f}, Loss)S:{:.4f}, Acc)T:{:.2f}, Loss)T:{:.4f}'
           .format(epoch, it, (100.*correct_src) / float(total), total_loss_src / (it + 1), (100.*correct_target) / float(total), total_loss_target / (it + 1)))
 
-    return 100.*(correct_target / total)
+    return (100.* correct_target) / total
 
 
 def make_sample_image(state_info, epoch, n_row=10):

@@ -30,13 +30,13 @@ class model_optim_state_info(object):
         
     def model_cuda_init(self):
         if torch.cuda.is_available():
-            self.gen_src = self.gen_src.cuda()
-            self.disc_src = self.disc_src.cuda()
-            self.gen_target = self.gen_target.cuda()
-            self.disc_target = self.disc_target.cuda()
-            self.disc_class = self.disc_class.cuda()
-            self.cls_src = self.cls_src.cuda()
-            self.cls_target = self.cls_target.cuda()
+            self.gen_src = nn.DataParallel(self.gen_src).cuda()
+            self.disc_src = nn.DataParallel(self.disc_src).cuda()
+            self.gen_target = nn.DataParallel(self.gen_target).cuda()
+            self.disc_target = nn.DataParallel(self.disc_target).cuda()
+            self.disc_class = nn.DataParallel(self.disc_class).cuda()
+            self.cls_src = nn.DataParallel(self.cls_src).cuda()
+            self.cls_target = nn.DataParallel(self.cls_target).cuda()
 
     def weight_cuda_init(self):
         self.gen_src.apply(self.weights_init_normal)
