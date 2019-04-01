@@ -154,7 +154,10 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
+        print(y.dtype)
+
         y_random = torch.randint(0,10,(batch_size,)).float()
+        print(y_random.dtype)
         y_random_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, y_random.view(-1, 1), 1)
         y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, y.view(-1, 1), 1)
 
