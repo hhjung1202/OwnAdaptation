@@ -235,12 +235,12 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         state_info.optimizer_CS.step()
         state_info.optimizer_CT.step()
 
-        total += output_cls_gen_src.size(0)
+        total += output_cls_gen_src.size(0).float()
         _, predicted_src = torch.max(output_cls_gen_src.data, 1)
-        correct_src += predicted_src.eq(y.data).cpu().sum()
+        correct_src += predicted_src.eq(y.data).cpu().sum().float()
 
         _, predicted_target = torch.max(output_cls_gen_target.data, 1)
-        correct_target += predicted_target.eq(y.data).cpu().sum()
+        correct_target += predicted_target.eq(y.data).cpu().sum().float()
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
@@ -286,12 +286,12 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
         loss_criterion_src = criterion(output_cls_gen_src, Source_y)
         loss_criterion_target = criterion(output_cls_gen_target, Target_y)
 
-        total += output_cls_gen_src.size(0)
+        total += output_cls_gen_src.size(0).float()
         _, predicted_src = torch.max(output_cls_gen_src.data, 1)
-        correct_src += predicted_src.eq(Source_y.data).cpu().sum()
+        correct_src += predicted_src.eq(Source_y.data).cpu().sum().float()
 
         _, predicted_target = torch.max(output_cls_gen_target.data, 1)
-        correct_target += predicted_target.eq(Target_y.data).cpu().sum()
+        correct_target += predicted_target.eq(Target_y.data).cpu().sum().float()
 
         total_loss_src += loss_criterion_src.item()
         total_loss_target += loss_criterion_target.item()
