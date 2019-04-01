@@ -28,6 +28,9 @@ parser.add_argument('--train-iters', type=int, default=40000, help='number of it
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
+parser.add_argument('--alpha', type=float, default=1.0, help='HyperParameter for Target Generator and Discriminator')
+parser.add_argument('--beta', type=float, default=1.0, help='HyperParameter for Representation Loss')
+
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
@@ -141,9 +144,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
     correct_target = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
 
-    alpha = 10
-    beta = 5
-
     for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
         
         Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
@@ -154,8 +154,11 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
+        y_random = torch.randint(0,10,(batch_size,))
+        y_random_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, y_random.view(-1, 1), 1)
         y_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, y.view(-1, 1), 1)
 
+        y_random, y_random_one = to_var(y_random, LongTensor), to_var(y_random_one, FloatTensor)
         Source_data, y, y_one = to_var(Source_data, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
         Target_data = to_var(Target_data, FloatTensor)
 
@@ -166,20 +169,20 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         state_info.optimizer_SG.zero_grad()
         state_info.optimizer_TG.zero_grad()
 
-        img_gen_src = state_info.gen_src(z, y_one)
+        img_gen_src = state_info.gen_src(z, y_random_one)
         loss_gen_src = adversarial_loss(state_info.disc_src(img_gen_src), valid)
 
-        img_gen_target = state_info.gen_target(z, y_one)
-        loss_gen_target = alpha * adversarial_loss(state_info.disc_target(img_gen_target), valid)
+        img_gen_target = state_info.gen_target(z, y_random_one)
+        loss_gen_target = args.alpha * adversarial_loss(state_info.disc_target(img_gen_target), valid)
 
         loss_gen_src.backward(retain_graph=True)
         loss_gen_target.backward(retain_graph=True)
         
         # G - Representation
 
-        loss_rep_gen_src = adversarial_loss(state_info.disc_class(img_gen_src, y_one), valid)
-        loss_rep_gen_target = adversarial_loss(state_info.disc_class(img_gen_target, y_one), valid)
-        loss_rep_gen = beta * (loss_rep_gen_src + loss_rep_gen_target) / 2
+        loss_rep_gen_src = adversarial_loss(state_info.disc_class(img_gen_src, y_random_one), valid)
+        loss_rep_gen_target = adversarial_loss(state_info.disc_class(img_gen_target, y_random_one), valid)
+        loss_rep_gen = args.beta * (loss_rep_gen_src + loss_rep_gen_target) / 2
 
         loss_rep_gen.backward(retain_graph=True)
 
@@ -197,7 +200,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         loss_dis_target_real = adversarial_loss(state_info.disc_target(Target_data), valid)
         loss_dis_target_fake = adversarial_loss(state_info.disc_target(img_gen_target.detach()), fake)
-        loss_dis_target = alpha * loss_dis_target_real + loss_dis_target_fake / 2
+        loss_dis_target = args.alpha * loss_dis_target_real + loss_dis_target_fake / 2
 
         loss_dis_src.backward(retain_graph=True)
         loss_dis_target.backward(retain_graph=True)
@@ -209,10 +212,10 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         state_info.optimizer_REP.zero_grad()
 
-        loss_rep_dis_src = adversarial_loss(state_info.disc_class(img_gen_src, y_one), fake)
-        loss_rep_dis_target = adversarial_loss(state_info.disc_class(img_gen_target, y_one), fake)
+        loss_rep_dis_src = adversarial_loss(state_info.disc_class(img_gen_src, y_random_one), fake)
+        loss_rep_dis_target = adversarial_loss(state_info.disc_class(img_gen_target, y_random_one), fake)
         loss_rep_dis_real = adversarial_loss(state_info.disc_class(Source_data, y_one), valid)
-        loss_rep_dis = beta * (loss_rep_dis_src + loss_rep_dis_target + loss_rep_dis_real) / 3
+        loss_rep_dis = args.beta * (loss_rep_dis_src + loss_rep_dis_target + loss_rep_dis_real) / 3
 
         loss_rep_dis.backward(retain_graph=True)
         state_info.optimizer_REP.step()
@@ -220,27 +223,25 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         # Class Prediction
         # NO NEED : loss_criterion_src
 
-        state_info.optimizer_CS.zero_grad()
-        state_info.optimizer_CT.zero_grad()
+        state_info.optimizer_CA.zero_grad()
         
-        output_cls_gen_src = state_info.cls_src(img_gen_src)
-        output_cls_gen_target = state_info.cls_target(img_gen_target)
+        output_cls_gen_src = state_info.cls_total(img_gen_src)
+        output_cls_gen_target = state_info.cls_total(img_gen_target)
 
-        loss_criterion_src = criterion(output_cls_gen_src, y)
-        loss_criterion_target = criterion(output_cls_gen_target, y)
+        loss_criterion_src = criterion(output_cls_gen_src, y_random)
+        loss_criterion_target = criterion(output_cls_gen_target, y_random)
 
         loss_criterion_src.backward(retain_graph=True)
         loss_criterion_target.backward(retain_graph=True)
 
-        state_info.optimizer_CS.step()
-        state_info.optimizer_CT.step()
+        state_info.optimizer_CA.step()
 
         total += float(output_cls_gen_src.size(0))
         _, predicted_src = torch.max(output_cls_gen_src.data, 1)
-        correct_src += float(predicted_src.eq(y.data).cpu().sum())
+        correct_src += float(predicted_src.eq(y_random.data).cpu().sum())
 
         _, predicted_target = torch.max(output_cls_gen_target.data, 1)
-        correct_target += float(predicted_target.eq(y.data).cpu().sum())
+        correct_target += float(predicted_target.eq(y_random.data).cpu().sum())
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
@@ -264,6 +265,7 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
 
     for it, ((Source_data, Source_y), (Target_data, Target_y)) in enumerate(zip(Source_test_loader, Target_test_loader)):
 
+        Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
         if Target_data.size(0) != Source_data.size(0):
             continue
         
@@ -280,8 +282,8 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
         img_gen_src = state_info.gen_src(z, Source_y_one)
         img_gen_target = state_info.gen_target(z, Target_y_one)
 
-        output_cls_gen_src = state_info.cls_src(Source_data)
-        output_cls_gen_target = state_info.cls_target(Target_data)
+        output_cls_gen_src = state_info.cls_total(Source_data)
+        output_cls_gen_target = state_info.cls_total(Target_data)
 
         loss_criterion_src = criterion(output_cls_gen_src, Source_y)
         loss_criterion_target = criterion(output_cls_gen_target, Target_y)
