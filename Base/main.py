@@ -315,7 +315,7 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
     print('Test, EP:{}, IT:{}, Acc)S:{:.2f}, Loss)S:{:.4f}, Acc)T:{:.2f}, Loss)T:{:.4f}'
           .format(epoch, it, (100.*correct_src) / float(total), total_loss_src / (it + 1), (100.*correct_target) / float(total), total_loss_target / (it + 1)))
 
-    return (100.* correct_target) / total
+    return (100.* correct_target) / float(total)
 
 
 def make_sample_image(state_info, epoch, n_row=10):
