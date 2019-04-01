@@ -48,7 +48,7 @@ parser.add_argument('--seed', default=None, type=int,
 rgb2grayWeights = [0.2989, 0.5870, 0.1140]
 source_prediction_max_result = []
 target_prediction_max_result = []
-best_prec_result = 0
+best_prec_result = torch.tensor(0, dtype=torch.float32)
 
 args = parser.parse_args()
 
@@ -137,9 +137,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
     utils.print_log('Type, Epoch, Batch, GCsrc, GCtar, GRloss, DCsrc, DCtar, DRloss, ACCsrc, CSloss, ACCtar, CTloss')
     state_info.set_train_mode()
-    correct_src = 0
-    correct_target = 0
-    total = 0
+    correct_src = torch.tensor(0, dtype=torch.float32)
+    correct_target = torch.tensor(0, dtype=torch.float32)
+    total = torch.tensor(0, dtype=torch.float32)
 
     for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
         
@@ -254,10 +254,10 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
                   .format(epoch, it, loss_gen_src.item(), loss_gen_target.item(), loss_rep_gen.item(), loss_dis_src.item(), loss_dis_target.item(), loss_rep_dis.item()
-                    , (100.*correct_src) / float(total), loss_criterion_src.item(), (100.*correct_target) / float(total), loss_criterion_target.item()))
+                    , 100.*correct_src / total, loss_criterion_src.item(), 100.*correct_target / total, loss_criterion_target.item()))
             print('Train, EP:{}, IT:{}, L)GS:{:.4f}, L)GT:{:.4f}, L)GR:{:.4f}, L)DS:{:.4f}, L)DT:{:.4f}, L)DR:{:.4f}, Acc)S:{:.2f}, L)S:{:.4f}, Acc)T:{:.2f}, L)T:{:.4f}'
                   .format(epoch, it, loss_gen_src.item(), loss_gen_target.item(), loss_rep_gen.item(), loss_dis_src.item(), loss_dis_target.item(), loss_rep_dis.item()
-                    , (100.*correct_src) / float(total), loss_criterion_src.item(), (100.*correct_target) / float(total), loss_criterion_target.item()))
+                    , 100.*correct_src / total, loss_criterion_src.item(), 100.*correct_target / total, loss_criterion_target.item()))
 
     utils.print_log('')
 
@@ -265,9 +265,9 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
     
     utils.print_log('Type, Epoch, Batch, ACCsrc, CSloss, ACCtar, CTloss')
     state_info.set_test_mode()
-    correct_src = 0
-    correct_target = 0
-    total = 0
+    correct_src = torch.tensor(0, dtype=torch.float32)
+    correct_target = torch.tensor(0, dtype=torch.float32)
+    total = torch.tensor(0, dtype=torch.float32)
     total_loss_src = 0
     total_loss_target = 0
 
@@ -311,11 +311,11 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
     target_prediction_max_result.append(correct_target)
 
     utils.print_log('Test, {}, {}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-          .format(epoch, it, (100.*correct_src) / float(total), total_loss_src / (it + 1), (100.*correct_target) / float(total), total_loss_target / (it + 1)))
+          .format(epoch, it, 100.*correct_src / total, total_loss_src / (it + 1), 100.*correct_target / total, total_loss_target / (it + 1)))
     print('Test, EP:{}, IT:{}, Acc)S:{:.2f}, Loss)S:{:.4f}, Acc)T:{:.2f}, Loss)T:{:.4f}'
-          .format(epoch, it, (100.*correct_src) / float(total), total_loss_src / (it + 1), (100.*correct_target) / float(total), total_loss_target / (it + 1)))
+          .format(epoch, it, 100.*correct_src / total, total_loss_src / (it + 1), 100.*correct_target / total, total_loss_target / (it + 1)))
 
-    return (100.* correct_target) / float(total)
+    return 100.*correct_target / total
 
 
 def make_sample_image(state_info, epoch, n_row=10):
