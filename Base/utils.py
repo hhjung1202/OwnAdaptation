@@ -17,15 +17,15 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self):
-        self.gen_src = Generator(out_dim=1) # input : [z, y]
-        self.disc_src = Discriminator(x_dim=1) # input : x_src, gen_src
+        self.gen_src = Generator(out_dim=3) # input : [z, y]
+        self.disc_src = Discriminator(x_dim=3) # input : x_src, gen_src
         
         self.gen_target = Generator(out_dim=3) # input : [z, y]
         self.disc_target = Discriminator(x_dim=3) # input : x_target, gen_target
 
-        self.disc_class = Discriminator_rep(x_dim=1) # [x_src, y], [gen_src, y], [gen_target(channel make 1), y]
+        self.disc_class = Discriminator_rep(x_dim=3) # [x_src, y], [gen_src, y], [gen_target(channel make 1), y]
 
-        self.cls_src = Classifier(x_dim=1) # input: gen_src
+        self.cls_src = Classifier(x_dim=3) # input: gen_src
         self.cls_target = Classifier(x_dim=3) # input: gen_target
         
     def model_cuda_init(self):

@@ -141,8 +141,12 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
     correct_target = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
 
+    alpha = 10
+    beta = 5
+
     for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
         
+        Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
         if Target_data.size(0) != Source_data.size(0):
             continue
         
@@ -166,24 +170,16 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         loss_gen_src = adversarial_loss(state_info.disc_src(img_gen_src), valid)
 
         img_gen_target = state_info.gen_target(z, y_one)
-        loss_gen_target = adversarial_loss(state_info.disc_target(img_gen_target), valid)
+        loss_gen_target = alpha * adversarial_loss(state_info.disc_target(img_gen_target), valid)
 
         loss_gen_src.backward(retain_graph=True)
         loss_gen_target.backward(retain_graph=True)
         
         # G - Representation
 
-        black_img_gen_src, black_img_gen_target = img_gen_src, img_gen_target
-        if black_img_gen_src.size(1) == 3:
-            black_img_gen_src = rgb2grayWeights[0] * black_img_gen_src[:,0,:,:] + rgb2grayWeights[1] * black_img_gen_src[:,1,:,:] + rgb2grayWeights[2] * black_img_gen_src[:,2,:,:]
-            black_img_gen_src.unsqueeze_(1)
-        if black_img_gen_target.size(1) == 3:
-            black_img_gen_target = rgb2grayWeights[0] * black_img_gen_target[:,0,:,:] + rgb2grayWeights[1] * black_img_gen_target[:,1,:,:] + rgb2grayWeights[2] * black_img_gen_target[:,2,:,:]
-            black_img_gen_target.unsqueeze_(1)
-
-        loss_rep_gen_src = adversarial_loss(state_info.disc_class(black_img_gen_src, y_one), valid)
-        loss_rep_gen_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y_one), valid)
-        loss_rep_gen = (loss_rep_gen_src + loss_rep_gen_target) / 2
+        loss_rep_gen_src = adversarial_loss(state_info.disc_class(img_gen_src, y_one), valid)
+        loss_rep_gen_target = adversarial_loss(state_info.disc_class(img_gen_target, y_one), valid)
+        loss_rep_gen = beta * (loss_rep_gen_src + loss_rep_gen_target) / 2
 
         loss_rep_gen.backward(retain_graph=True)
 
@@ -201,7 +197,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         loss_dis_target_real = adversarial_loss(state_info.disc_target(Target_data), valid)
         loss_dis_target_fake = adversarial_loss(state_info.disc_target(img_gen_target.detach()), fake)
-        loss_dis_target = loss_dis_target_real + loss_dis_target_fake / 2
+        loss_dis_target = alpha * loss_dis_target_real + loss_dis_target_fake / 2
 
         loss_dis_src.backward(retain_graph=True)
         loss_dis_target.backward(retain_graph=True)
@@ -213,15 +209,10 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         state_info.optimizer_REP.zero_grad()
 
-        black_Source_data = Source_data
-        if black_Source_data.size(1) == 3:
-            black_Source_data = rgb2grayWeights[0] * black_Source_data[:,0,:,:] + rgb2grayWeights[1] * black_Source_data[:,1,:,:] + rgb2grayWeights[2] * black_Source_data[:,2,:,:]
-            black_Source_data.unsqueeze_(1)
-
-        loss_rep_dis_src = adversarial_loss(state_info.disc_class(black_img_gen_src, y_one), fake)
-        loss_rep_dis_target = adversarial_loss(state_info.disc_class(black_img_gen_target, y_one), fake)
-        loss_rep_dis_real = adversarial_loss(state_info.disc_class(black_Source_data, y_one), valid)
-        loss_rep_dis = (loss_rep_dis_src + loss_rep_dis_target + loss_rep_dis_real) / 3
+        loss_rep_dis_src = adversarial_loss(state_info.disc_class(img_gen_src, y_one), fake)
+        loss_rep_dis_target = adversarial_loss(state_info.disc_class(img_gen_target, y_one), fake)
+        loss_rep_dis_real = adversarial_loss(state_info.disc_class(Source_data, y_one), valid)
+        loss_rep_dis = beta * (loss_rep_dis_src + loss_rep_dis_target + loss_rep_dis_real) / 3
 
         loss_rep_dis.backward(retain_graph=True)
         state_info.optimizer_REP.step()
