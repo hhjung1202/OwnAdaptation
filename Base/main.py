@@ -147,9 +147,14 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
     for it, ((Source_data, y), (Target_data, _)) in enumerate(zip(Source_train_loader, Target_train_loader)):
         
-        Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
         if Target_data.size(0) != Source_data.size(0):
             continue
+        
+        if Source_data.size(1) == 1:
+            Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
+
+        if Target_data.size(1) == 1:
+            Target_data = torch.cat([Target_data, Target_data, Target_data], 1)
         
         batch_size = Source_data.size(0)
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
@@ -270,9 +275,14 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, epoch):
 
     for it, ((Source_data, Source_y), (Target_data, Target_y)) in enumerate(zip(Source_test_loader, Target_test_loader)):
 
-        Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
         if Target_data.size(0) != Source_data.size(0):
             continue
+
+        if Source_data.size(1) == 1:
+            Source_data = torch.cat([Source_data, Source_data, Source_data], 1)
+
+        if Target_data.size(1) == 1:
+            Target_data = torch.cat([Target_data, Target_data, Target_data], 1)
         
         batch_size = Source_data.size(0)
 
