@@ -30,7 +30,7 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 
 parser.add_argument('--alpha', type=float, default=1.0, help='HyperParameter for Target Generator and Discriminator')
 parser.add_argument('--beta', type=float, default=1.0, help='HyperParameter for Representation Loss')
-parser.add_argument('--gamma', type=float, default=1.0, help='HyperParameter for Representation Loss')
+parser.add_argument('--gamma', type=float, default=1.0, help='HyperParameter for Classification Loss')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
