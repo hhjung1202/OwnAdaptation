@@ -30,6 +30,7 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 
 parser.add_argument('--alpha', type=float, default=1.0, help='HyperParameter for Target Generator and Discriminator')
 parser.add_argument('--beta', type=float, default=1.0, help='HyperParameter for Representation Loss')
+parser.add_argument('--gamma', type=float, default=1.0, help='HyperParameter for Representation Loss')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
@@ -223,17 +224,21 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         # Class Prediction
         # NO NEED : loss_criterion_src
 
+        state_info.optimizer_SG.zero_grad()
+        state_info.optimizer_TG.zero_grad()
         state_info.optimizer_CA.zero_grad()
         
         output_cls_gen_src = state_info.cls_total(img_gen_src)
         output_cls_gen_target = state_info.cls_total(img_gen_target)
 
-        loss_criterion_src = criterion(output_cls_gen_src, y_random)
-        loss_criterion_target = criterion(output_cls_gen_target, y_random)
+        loss_criterion_src = args.gamma * criterion(output_cls_gen_src, y_random)
+        loss_criterion_target = args.gamma * criterion(output_cls_gen_target, y_random)
 
         loss_criterion_src.backward(retain_graph=True)
         loss_criterion_target.backward(retain_graph=True)
 
+        state_info.optimizer_SG.step()
+        state_info.optimizer_TG.step()
         state_info.optimizer_CA.step()
 
         total += float(output_cls_gen_src.size(0))
