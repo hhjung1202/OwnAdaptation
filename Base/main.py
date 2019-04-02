@@ -236,7 +236,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         output_cls_gen_src = state_info.cls_total(img_gen_src)
         output_cls_gen_target = state_info.cls_total(img_gen_target)
 
-        loss_criterion_src_real = args.gamma * criterion(Source_data, y) * 5
+        loss_criterion_src_real = args.gamma * criterion(state_info.cls_total(Source_data), y) * 5
         loss_criterion_src = args.gamma * criterion(output_cls_gen_src, y_random)
         loss_criterion_target = args.gamma * criterion(output_cls_gen_target, y_random)
         loss_criterion = loss_criterion_src_real + loss_criterion_src + loss_criterion_target
