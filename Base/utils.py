@@ -23,34 +23,22 @@ class model_optim_state_info(object):
         self.gen_target = Generator(out_dim=3) # input : [z, y]
         self.disc_target = Discriminator(x_dim=3) # input : x_target, gen_target
 
-        self.disc_class = Discriminator_rep(x_dim=3) # [x_src, y], [gen_src, y], [gen_target(channel make 1), y]
+        self.main_model = Shared_Model(x_dim=3) # [x_src, y], [gen_src, y], [gen_target, y]
 
-        # self.cls_src = Classifier(x_dim=3) # input: gen_src
-        # self.cls_target = Classifier(x_dim=3) # input: gen_target
-
-        self.cls_total = Classifier(x_dim=3) # input: gen_src, gen_target
-        
-        
     def model_cuda_init(self):
         if torch.cuda.is_available():
             self.gen_src = nn.DataParallel(self.gen_src).cuda()
             self.disc_src = nn.DataParallel(self.disc_src).cuda()
             self.gen_target = nn.DataParallel(self.gen_target).cuda()
             self.disc_target = nn.DataParallel(self.disc_target).cuda()
-            self.disc_class = nn.DataParallel(self.disc_class).cuda()
-            # self.cls_src = nn.DataParallel(self.cls_src).cuda()
-            # self.cls_target = nn.DataParallel(self.cls_target).cuda()
-            self.cls_total = nn.DataParallel(self.cls_total).cuda()
+            self.main_model = nn.DataParallel(self.main_model).cuda()
 
     def weight_cuda_init(self):
         self.gen_src.apply(self.weights_init_normal)
         self.disc_src.apply(self.weights_init_normal)
         self.gen_target.apply(self.weights_init_normal)
         self.disc_target.apply(self.weights_init_normal)
-        self.disc_class.apply(self.weights_init_normal)
-        # self.cls_src.apply(self.weights_init_normal)
-        # self.cls_target.apply(self.weights_init_normal)
-        self.cls_total.apply(self.weights_init_normal)
+        self.main_model.apply(self.weights_init_normal)
 
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
@@ -64,52 +52,34 @@ class model_optim_state_info(object):
         self.optimizer_SD = optim.Adam(self.disc_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_TG = optim.Adam(self.gen_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_TD = optim.Adam(self.disc_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_REP = optim.Adam(self.disc_class.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        # self.optimizer_CS = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        # self.optimizer_CT = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_CA = optim.Adam(self.cls_total.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optimizer_MM = optim.Adam(self.main_model.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def set_train_mode(self):
         self.gen_src.train()
         self.disc_src.train()
         self.gen_target.train()
         self.disc_target.train()
-        self.disc_class.train()
-        # self.cls_src.train()
-        # self.cls_target.train()
-        self.cls_total.train()
+        self.main_model.train()
 
     def set_test_mode(self):
         self.gen_src.eval()
         self.disc_src.eval()
         self.gen_target.eval()
         self.disc_target.eval()
-        self.disc_class.eval()
-        # self.cls_src.eval()
-        # self.cls_target.eval()
-        self.cls_total.eval()
+        self.main_model.eval()
 
     def load_state_dict(self, checkpoint):
         self.gen_src.load_state_dict(checkpoint['SGdict'])
         self.disc_src.load_state_dict(checkpoint['SDdict'])
         self.gen_target.load_state_dict(checkpoint['TGdict'])
         self.disc_target.load_state_dict(checkpoint['TDdict'])
-        self.disc_class.load_state_dict(checkpoint['REPdict'])
-        # self.cls_src.load_state_dict(checkpoint['CSdict'])
-        # self.cls_target.load_state_dict(checkpoint['CTdict'])
-        self.cls_total.load_state_dict(checkpoint['CAdict'])
+        self.main_model.load_state_dict(checkpoint['MMdict'])
 
         self.optimizer_SG.load_state_dict(checkpoint['SGoptimizer'])
         self.optimizer_SD.load_state_dict(checkpoint['SDoptimizer'])
         self.optimizer_TG.load_state_dict(checkpoint['TGoptimizer'])
         self.optimizer_TD.load_state_dict(checkpoint['TDoptimizer'])
-        self.optimizer_REP.load_state_dict(checkpoint['REPoptimizer'])
-        # self.optimizer_CS.load_state_dict(checkpoint['CSoptimizer'])
-        # self.optimizer_CT.load_state_dict(checkpoint['CToptimizer'])
-        self.optimizer_CA.load_state_dict(checkpoint['CAoptimizer'])
-
-
-
+        self.optimizer_MM.load_state_dict(checkpoint['MMoptimizer'])
 
 
 def get_num_gen(gen):
@@ -151,22 +121,10 @@ def save_state_checkpoint(state_info, best_prec_result, filename, directory, epo
         'TDdict': state_info.disc_target.state_dict(),
         'TDoptimizer': state_info.optimizer_TD.state_dict(),
 
-        'REPmodel': state_info.disc_class,
-        'REPdict': state_info.disc_class.state_dict(),
-        'REPoptimizer': state_info.optimizer_REP.state_dict(),
+        'MMmodel': state_info.main_model,
+        'MMdict': state_info.main_model.state_dict(),
+        'MMoptimizer': state_info.optimizer_MM.state_dict(),
 
-        # 'CSmodel': state_info.cls_src,
-        # 'CSdict': state_info.cls_src.state_dict(),
-        # 'CSoptimizer': state_info.optimizer_CS.state_dict(),
-
-        # 'CTmodel': state_info.cls_target,
-        # 'CTdict': state_info.cls_target.state_dict(),
-        # 'CToptimizer': state_info.optimizer_CT.state_dict(),
-
-        'CAmodel': state_info.cls_total,
-        'CAdict': state_info.cls_total.state_dict(),
-        'CAoptimizer': state_info.optimizer_CA.state_dict(),
-        
     }, filename, directory)
 
 

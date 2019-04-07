@@ -129,9 +129,8 @@ def main():
             filename = 'checkpoint_best.pth.tar'
             utils.save_state_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
 
-        if epoch % 5 == 0:
-            filename = 'latest.pth.tar'
-            utils.save_state_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)     
+        filename = 'latest.pth.tar'
+        utils.save_state_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)     
 
     now = time.gmtime(time.time() - start_time)
     utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
@@ -184,17 +183,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
         loss_gen_src.backward(retain_graph=True)
         loss_gen_target.backward(retain_graph=True)
         
-        # G - Representation
-
-        loss_rep_gen_src = adversarial_loss(state_info.disc_class(img_gen_src, y_random_one), valid)
-        loss_rep_gen_target = adversarial_loss(state_info.disc_class(img_gen_target, y_random_one), valid)
-        loss_rep_gen = args.beta * (loss_rep_gen_src + loss_rep_gen_target) / 2
-
-        loss_rep_gen.backward(retain_graph=True)
-
-        state_info.optimizer_SG.step()
-        state_info.optimizer_TG.step()
-
         # D - Creation
 
         state_info.optimizer_SD.zero_grad()
@@ -213,6 +201,20 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion, adver
 
         state_info.optimizer_SD.step()
         state_info.optimizer_TD.step()
+
+
+
+
+        # G - Representation
+
+        loss_rep_gen_src = adversarial_loss(state_info.disc_class(img_gen_src, y_random_one), valid)
+        loss_rep_gen_target = adversarial_loss(state_info.disc_class(img_gen_target, y_random_one), valid)
+        loss_rep_gen = args.beta * (loss_rep_gen_src + loss_rep_gen_target) / 2
+
+        loss_rep_gen.backward(retain_graph=True)
+
+        state_info.optimizer_SG.step()
+        state_info.optimizer_TG.step()
 
         # D - Representation
 
