@@ -64,7 +64,6 @@ class Generator(nn.Module):
         self.model = nn.Sequential(*model)
 
     def forward(self, x):
-        print(x.size())
         return self.model(x)
 
 
