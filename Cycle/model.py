@@ -94,7 +94,7 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, x):
-        return self.model(x).squeeze()
+        return self.model(x).view(x.size(0), -1)
 
 
 class Classifier(nn.Module):
