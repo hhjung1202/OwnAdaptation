@@ -148,11 +148,11 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         if real_B.size(0) != real_A.size(0):
             continue
         
-        # if real_A.size(1) == 1:
-        #     real_A = torch.cat([real_A, real_A, real_A], 1)
+        if real_A.size(1) == 1:
+            real_A = torch.cat([real_A, real_A, real_A], 1)
 
-        # if real_B.size(1) == 1:
-        #     real_B = torch.cat([real_B, real_B, real_B], 1)
+        if real_B.size(1) == 1:
+            real_B = torch.cat([real_B, real_B, real_B], 1)
         
         batch_size = real_A.size(0)
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
@@ -299,11 +299,11 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, realA_sa
         if real_B.size(0) != real_A.size(0):
             continue
 
-        # if real_A.size(1) == 1:
-        #     real_A = torch.cat([real_A, real_A, real_A], 1)
+        if real_A.size(1) == 1:
+            real_A = torch.cat([real_A, real_A, real_A], 1)
 
-        # if real_B.size(1) == 1:
-        #     real_B = torch.cat([real_B, real_B, real_B], 1)
+        if real_B.size(1) == 1:
+            real_B = torch.cat([real_B, real_B, real_B], 1)
         
         batch_size = real_A.size(0)
 
