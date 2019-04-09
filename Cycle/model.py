@@ -26,7 +26,7 @@ class ResBlock(nn.Module):
 
 
 class Generator(nn.Module):
-    def __init__(self, in_channels=3, out_channels=3, res_blocks=6, dim=32):
+    def __init__(self, in_channels=3, out_channels=3, res_blocks=6, dim=64):
         super(Generator, self).__init__()
 
         # Initial convolution block
@@ -70,7 +70,7 @@ class Generator(nn.Module):
 
 # 여기서 추후 작업 요망
 class Discriminator(nn.Module):
-    def __init__(self, in_channels=3, dim=32):
+    def __init__(self, in_channels=3, dim=64):
         super(Discriminator, self).__init__()
 
         def d_block(in_filters, out_filters, stride=2):
@@ -97,7 +97,7 @@ class Discriminator(nn.Module):
 
 
 class Classifier(nn.Module):
-    def __init__(self, x_dim, num_classes=10, dim=32):
+    def __init__(self, x_dim, num_classes=10, dim=64):
         super(Classifier, self).__init__()
 
         model = [   nn.Conv2d(x_dim, dim, kernel_size=3, stride=1, padding=1),
