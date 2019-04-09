@@ -56,8 +56,8 @@ cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-fake_A_buffer = ImagePool(max_size=args.max_buffer)
-fake_B_buffer = ImagePool(max_size=args.max_buffer)
+fake_A_buffer = utils.ImagePool(max_size=args.max_buffer)
+fake_B_buffer = utils.ImagePool(max_size=args.max_buffer)
 
 def dataset_selector(dataset):
     if dataset == 'mnist':
