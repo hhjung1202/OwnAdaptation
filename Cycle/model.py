@@ -101,7 +101,7 @@ class Classifier(nn.Module):
         super(Classifier, self).__init__()
 
         model = [   nn.Conv2d(x_dim, dim, kernel_size=3, stride=1, padding=1),
-                    nn.BatchNorm2d(16),
+                    nn.BatchNorm2d(dim),
                     nn.ReLU(inplace=True) ]
 
         in_dim = dim
