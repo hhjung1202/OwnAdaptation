@@ -112,8 +112,8 @@ def main():
     realA_sample_iter = iter(Source_train_loader)
     realB_sample_iter = iter(Target_train_loader)
 
-    realA_sample = to_var(realA_sample_iter.next()[0])
-    realB_sample = to_var(realB_sample_iter.next()[0])
+    realA_sample = to_var(realA_sample_iter.next()[0], FloatTensor)
+    realB_sample = to_var(realB_sample_iter.next()[0], FloatTensor)
 
     for epoch in range(args.epoch):
         
