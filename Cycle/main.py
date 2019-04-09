@@ -356,7 +356,7 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     save_image(makeAtoB.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
     save_image(makeBtoA.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
 
-def merge_images(self, sources, targets, row=10):
+def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
     merged = np.zeros([3, row*h, row*w*2])
     for idx, (s, t) in enumerate(zip(sources, targets)):
