@@ -207,7 +207,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Total loss
         loss_G = loss_GAN + loss_cycle + loss_identity + loss_cls_recov
 
-        loss_G.backward()
+        loss_G.backward(retain_graph=True)
         state_info.optimizer_G_AB.step()
         state_info.optimizer_G_BA.step()
 
