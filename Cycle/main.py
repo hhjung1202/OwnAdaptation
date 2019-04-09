@@ -59,15 +59,6 @@ LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 fake_A_buffer = utils.ImagePool(max_size=args.max_buffer)
 fake_B_buffer = utils.ImagePool(max_size=args.max_buffer)
 
-def dataset_selector(data):
-    if data == 'mnist':
-        return dataset.MNIST_loader(img_size=args.img_size)
-    elif data == 'svhn':
-        return dataset.SVHN_loader(img_size=args.img_size)
-
-def to_var(x, dtype):
-    return Variable(x.type(dtype))
-
 def main():
     global args, best_prec_result
     
@@ -350,6 +341,9 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     fake_B = state_info.G_AB(realA_sample)
     fake_A = state_info.G_BA(realB_sample)
 
+    realA, fake_B = to_data(realA_sample), to_data(fake_B)
+    realB, fake_A = to_data(realB_sample), to_data(fake_A)
+
     makeAtoB = merge_images(realA_sample, fake_B)
     makeBtoA = merge_images(realB_sample, fake_A)
 
@@ -368,6 +362,22 @@ def merge_images(sources, targets, row=10):
         merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
 
     return torch.from_numpy(merged)
+
+
+def dataset_selector(data):
+    if data == 'mnist':
+        return dataset.MNIST_loader(img_size=args.img_size)
+    elif data == 'svhn':
+        return dataset.SVHN_loader(img_size=args.img_size)
+
+def to_data(x):
+    """Converts variable to numpy."""
+    if torch.cuda.is_available():
+        x = x.cpu()
+    return x.data.numpy()
+
+def to_var(x, dtype):
+    return Variable(x.type(dtype))
 
 
 # if (step+1) % self.sample_step == 0:
