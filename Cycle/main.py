@@ -59,10 +59,10 @@ LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 fake_A_buffer = utils.ImagePool(max_size=args.max_buffer)
 fake_B_buffer = utils.ImagePool(max_size=args.max_buffer)
 
-def dataset_selector(dataset):
-    if dataset == 'mnist':
+def dataset_selector(data):
+    if data == 'mnist':
         return dataset.MNIST_loader(img_size=args.img_size)
-    elif dataset == 'svhn':
+    elif data == 'svhn':
         return dataset.SVHN_loader(img_size=args.img_size)
 
 def to_var(x, dtype):
