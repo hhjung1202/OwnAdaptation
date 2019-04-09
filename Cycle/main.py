@@ -294,6 +294,12 @@ def test(state_info, Source_test_loader, Target_test_loader, criterion, realA_sa
     total_loss_src = 0
     total_loss_target = 0
 
+    if realA_sample.size(1) == 1:
+        realA_sample = torch.cat([realA_sample, realA_sample, realA_sample], 1)
+
+    if realB_sample.size(1) == 1:
+        realB_sample = torch.cat([realB_sample, realB_sample, realB_sample], 1)    
+
     for it, ((real_A, Source_y), (real_B, Target_y)) in enumerate(zip(Source_test_loader, Target_test_loader)):
 
         if real_B.size(0) != real_A.size(0):
