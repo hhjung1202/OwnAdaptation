@@ -19,7 +19,7 @@ parser.add_argument('--epoch', default=200, type=int, metavar='N', help='number 
 parser.add_argument('--decay-epoch', default=100, type=int, metavar='N', help='epoch from which to start lr decay')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=2e-4, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
@@ -31,8 +31,8 @@ parser.add_argument('--max-buffer', type=int, default=1024, help='Fake GAN Buffe
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
-parser.add_argument('--cycle', type=float, default=10.0, help='Cycle Consistency Parameter')
-parser.add_argument('--identity', type=float, default=5.0, help='Identity Consistency Parameter')
+parser.add_argument('--cycle', type=float, default=1.0, help='Cycle Consistency Parameter')
+parser.add_argument('--identity', type=float, default=1.0, help='Identity Consistency Parameter')
 parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
@@ -170,10 +170,13 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         state_info.optimizer_G_BA.zero_grad()
 
         # Identity loss
-        loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(real_B), real_B)
+        """
+            loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
+            loss_idt_B = criterion_identity(state_info.G_AB(real_B), real_B)
 
-        loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
+            loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
+        """
+        loss_identity = 0
 
         # GAN loss
         fake_B = state_info.G_AB(real_A)
@@ -203,40 +206,31 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         state_info.optimizer_G_BA.step()
 
         # -----------------------
-        #  Train Discriminator A
+        #  Train Discriminator
         # -----------------------
 
         state_info.optimizer_D_A.zero_grad()
-
-        # Real loss
-        loss_real = criterion_GAN(state_info.D_A(real_A), valid)
-        # Fake loss (on batch of previously generated samples)
-        fake_A_ = fake_A_buffer.query(fake_A)
-        loss_fake = criterion_GAN(state_info.D_A(fake_A_.detach()), fake)
-        # Total loss
-        loss_D_A = (loss_real + loss_fake) / 2
-
-        loss_D_A.backward()
-        state_info.optimizer_D_A.step()
-
-        # -----------------------
-        #  Train Discriminator B
-        # -----------------------
-
         state_info.optimizer_D_B.zero_grad()
 
         # Real loss
-        loss_real = criterion_GAN(state_info.D_B(real_B), valid)
+        loss_real_A = criterion_GAN(state_info.D_A(real_A), valid)
+        loss_real_B = criterion_GAN(state_info.D_B(real_B), valid)
+
         # Fake loss (on batch of previously generated samples)
+        fake_A_ = fake_A_buffer.query(fake_A)
         fake_B_ = fake_B_buffer.query(fake_B)
-        loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
+
+        loss_fake_A = criterion_GAN(state_info.D_A(fake_A_.detach()), fake)
+        loss_fake_B = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
+
         # Total loss
-        loss_D_B = (loss_real + loss_fake) / 2
+        loss_D_A = (loss_real_A + loss_fake_A) / 2
+        loss_D_B = (loss_real_B + loss_fake_B) / 2
 
+        loss_D_A.backward()
         loss_D_B.backward()
+        state_info.optimizer_D_A.step()
         state_info.optimizer_D_B.step()
-
-        loss_D = (loss_D_A + loss_D_B) / 2
 
         # -----------------------
         #  Train Target Classifier
