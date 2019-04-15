@@ -66,7 +66,7 @@ class model_optim_state_info(object):
         self.optimizer_TD = optim.Adam(self.disc_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_REP = optim.Adam(self.disc_class.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         # self.optimizer_CS = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        # self.optimizer_CT = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        # self.optimizer_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_CA = optim.Adam(self.cls_total.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def set_train_mode(self):

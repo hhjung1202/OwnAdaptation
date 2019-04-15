@@ -58,7 +58,7 @@ class model_optim_state_info(object):
         self.optimizer_G_BA = optim.Adam(self.G_BA.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_D_B = optim.Adam(self.D_B.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_CS = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_CT = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optimizer_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def learning_scheduler_init(self, args, load_epoch=0):
         self.lr_scheduler_G_AB = optim.lr_scheduler.LambdaLR(self.optimizer_G_AB, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
