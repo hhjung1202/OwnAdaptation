@@ -260,11 +260,11 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_identity.item(), loss_cls_recov.item(), loss_D_A.item(), loss_D_B.item()
+                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_identity, loss_cls_recov.item(), loss_D_A.item(), loss_D_B.item()
                     , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item(), 100.*correct_target / total, loss_cls_fake.item()))
 
             print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_identity.item(), loss_cls_recov.item(), loss_D_A.item(), loss_D_B.item()
+                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_identity, loss_cls_recov.item(), loss_D_A.item(), loss_D_B.item()
                     , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item(), 100.*correct_target / total, loss_cls_fake.item()))
 
     utils.print_log('')
