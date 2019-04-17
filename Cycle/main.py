@@ -341,7 +341,7 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/x'))
     img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/e'))
 
-    z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
+    z = FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim)))
 
     fake_B, x, e = state_info.G_AB(realA_sample, z)
     fake_A = state_info.G_BA(realB_sample)
