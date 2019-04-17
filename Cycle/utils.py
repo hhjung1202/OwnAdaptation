@@ -19,10 +19,10 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self):
-        self.G_AB = Generator(in_channels=3, out_channels=3) # input : [z, y]
+        self.G_AB = Generator_AB(in_channels=3, out_channels=3, z_size=100) # input : [z, y]
         self.D_A = Discriminator(in_channels=3) # input : x_src, G_AB
         
-        self.G_BA = Generator(in_channels=3, out_channels=3) # input : [z, y]
+        self.G_BA = Generator_BA(in_channels=3, out_channels=3) # input : [z, y]
         self.D_B = Discriminator(in_channels=3) # input : x_target, G_BA
 
         self.cls_src = Classifier(x_dim=3) # input: G_AB

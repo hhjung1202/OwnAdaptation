@@ -4,7 +4,6 @@ from torchvision import datasets, transforms
 def SVHN_loader(img_size, batchSize=128):
     print("SVHN Data Loading ...")
 
-    rgb2grayWeights = [0.2989, 0.5870, 0.1140]
     train_dataset = datasets.SVHN(root='/home/hhjung/hhjung/SVHN/', split='train', 
                                         transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
                                             , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
@@ -40,7 +39,6 @@ def MNIST_loader(img_size, batchSize=128):
 
 def cifar10_loader():
     batch_size = 128
-    rgb2grayWeights = [0.2989, 0.5870, 0.1140]
 
     print("cifar10 Data Loading ...")
     transform_train = transforms.Compose([

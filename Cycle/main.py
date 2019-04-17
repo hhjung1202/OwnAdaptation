@@ -15,8 +15,8 @@ parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Tr
 parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
 parser.add_argument('--td', default='svhn', type=str, help='target dataset')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
-parser.add_argument('--epoch', default=200, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--decay-epoch', default=100, type=int, metavar='N', help='epoch from which to start lr decay')
+parser.add_argument('--epoch', default=100, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--decay-epoch', default=50, type=int, metavar='N', help='epoch from which to start lr decay')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
@@ -31,8 +31,8 @@ parser.add_argument('--max-buffer', type=int, default=1024, help='Fake GAN Buffe
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
-parser.add_argument('--cycle', type=float, default=10.0, help='Cycle Consistency Parameter')
-parser.add_argument('--identity', type=float, default=5.0, help='Identity Consistency Parameter')
+parser.add_argument('--cycle', type=float, default=1.0, help='Cycle Consistency Parameter')
+parser.add_argument('--identity', type=float, default=1.0, help='Identity Consistency Parameter')
 parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
@@ -148,6 +148,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         batch_size = real_A.size(0)
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
+        z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
 
         real_A, y = to_var(real_A, FloatTensor), to_var(y, LongTensor)
         real_B = to_var(real_B, FloatTensor)
@@ -171,12 +172,12 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         # Identity loss
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(real_B), real_B)
+        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z), real_B)
 
         loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
 
         # GAN loss
-        fake_B = state_info.G_AB(real_A)
+        fake_B = state_info.G_AB(real_A, z)
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
@@ -186,7 +187,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
         loss_cycle_A = criterion_cycle(recov_A, real_A)
-        recov_B = state_info.G_AB(fake_A)
+        recov_B = state_info.G_AB(fake_A, z)
         loss_cycle_B = criterion_cycle(recov_B, real_B)
 
         loss_cycle = args.cycle * (loss_cycle_A + loss_cycle_B) / 2
@@ -338,7 +339,9 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/src'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/target'))
 
-    fake_B = state_info.G_AB(realA_sample)
+    z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
+
+    fake_B = state_info.G_AB(realA_sample, z)
     fake_A = state_info.G_BA(realB_sample)
 
     realA, fake_B = to_data(realA_sample), to_data(fake_B)
