@@ -172,12 +172,12 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         # Identity loss
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z), real_B)
+        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z)[0], real_B)
 
         loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
 
         # GAN loss
-        fake_B = state_info.G_AB(real_A, z)
+        fake_B, _, _ = state_info.G_AB(real_A, z)
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
@@ -187,7 +187,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
         loss_cycle_A = criterion_cycle(recov_A, real_A)
-        recov_B = state_info.G_AB(fake_A, z)
+        recov_B, _, _ = state_info.G_AB(fake_A, z)
         loss_cycle_B = criterion_cycle(recov_B, real_B)
 
         loss_cycle = args.cycle * (loss_cycle_A + loss_cycle_B) / 2
@@ -338,20 +338,26 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     # Sample noise
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/src'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/target'))
+    img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/x'))
+    img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/e'))
 
     z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
 
-    fake_B = state_info.G_AB(realA_sample, z)
+    fake_B, x, e = state_info.G_AB(realA_sample, z)
     fake_A = state_info.G_BA(realB_sample)
 
     realA, fake_B = to_data(realA_sample), to_data(fake_B)
     realB, fake_A = to_data(realB_sample), to_data(fake_A)
 
     makeAtoB = merge_images(realA_sample, fake_B)
+    makeX = merge_images(realA_sample, x)
+    makeE = merge_images(realA_sample, e)
     makeBtoA = merge_images(realB_sample, fake_A)
 
     save_image(makeAtoB.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
     save_image(makeBtoA.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
+    save_image(makeX.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
+    save_image(makeE.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
