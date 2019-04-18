@@ -172,17 +172,18 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         # Identity loss
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z)[0], real_B)
+        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z)[1], real_B)
 
         loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
 
         # GAN loss
-        fake_B, _, _ = state_info.G_AB(real_A, z)
+        fake_B, _, entropy = state_info.G_AB(real_A, z)
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
+        loss_GAN_AB_Entropy = criterion_GAN(entropy, valid)
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
 
-        loss_GAN = (loss_GAN_AB + loss_GAN_BA) / 2
+        loss_GAN = loss_GAN_AB + loss_GAN_BA + loss_GAN_AB_Entropy
 
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
@@ -231,13 +232,13 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Fake loss (on batch of previously generated samples)
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
+
+        loss_entropy = criterion_GAN(entropy, fake)
         # Total loss
-        loss_D_B = (loss_real + loss_fake) / 2
+        loss_D_B = loss_real + loss_fake + loss_entropy
 
         loss_D_B.backward()
         state_info.optimizer_D_B.step()
-
-        loss_D = (loss_D_A + loss_D_B) / 2
 
         # -----------------------
         #  Train Target Classifier
