@@ -24,7 +24,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='mo
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-dim', type=int, default=100, help='dimensionality of the latent space')
+parser.add_argument('--latent-dim', type=int, default=256, help='dimensionality of the latent space')
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--max-buffer', type=int, default=1024, help='Fake GAN Buffer Image')
 
@@ -167,19 +167,28 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         #  Train Generator AB and BA
         # -----------------------
 
+        state_info.optimizer_EnA.zero_grad()
+        state_info.optimizer_EnZ.zero_grad()
         state_info.optimizer_G_AB.zero_grad()
         state_info.optimizer_G_BA.zero_grad()
 
         # Identity loss
+        F_idtB = state_info.EnA(real_B)
+
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z)[1], real_B)
+        loss_idt_B = criterion_identity(state_info.G_AB(Idt_B), real_B)
 
         loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
 
         # GAN loss
-        fake_B, _, entropy = state_info.G_AB(real_A, z)
+        F_A = state_info.EnA(real_A)
+        F_Z = state_info.EnZ(z)
+        fake_B = state_info.G_AB(F_A)
+        entropy = state_info.G_AB(F_Z)
+        
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
         loss_GAN_AB_Entropy = criterion_GAN(state_info.D_B(entropy), valid)
+
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
 
@@ -188,7 +197,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
         loss_cycle_A = criterion_cycle(recov_A, real_A)
-        recov_B, _, _ = state_info.G_AB(fake_A, z)
+
+        F_fakeA = state_info.EnA(fake_A)
+        recov_B = state_info.G_AB(F_fakeA)
         loss_cycle_B = criterion_cycle(recov_B, real_B)
 
         loss_cycle = args.cycle * (loss_cycle_A + loss_cycle_B) / 2
@@ -201,6 +212,8 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         loss_G = loss_GAN + loss_cycle + loss_identity + loss_cls_recov
 
         loss_G.backward(retain_graph=True)
+        state_info.optimizer_EnA.step()
+        state_info.optimizer_EnZ.step()
         state_info.optimizer_G_AB.step()
         state_info.optimizer_G_BA.step()
 
@@ -232,7 +245,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Fake loss (on batch of previously generated samples)
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
-
         loss_entropy = criterion_GAN(state_info.D_B(entropy), fake)
         # Total loss_real
         loss_D_B = loss_real + loss_fake + loss_entropy
@@ -339,26 +351,20 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     # Sample noise
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/src'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/target'))
-    img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/x'))
-    img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/e'))
 
     z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
 
-    fake_B, x, e = state_info.G_AB(realA_sample, z)
+    fake_B = state_info.G_AB(state_info.EnA(realA_sample))
     fake_A = state_info.G_BA(realB_sample)
 
-    realA, fake_B, x, e = to_data(realA_sample), to_data(fake_B), to_data(x), to_data(e)
+    realA, fake_B = to_data(realA_sample), to_data(fake_B)
     realB, fake_A = to_data(realB_sample), to_data(fake_A)
 
     makeAtoB = merge_images(realA_sample, fake_B)
-    makeX = merge_images(realA_sample, x)
-    makeE = merge_images(realA_sample, e)
     makeBtoA = merge_images(realB_sample, fake_A)
 
     save_image(makeAtoB.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
     save_image(makeBtoA.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
-    save_image(makeX.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
-    save_image(makeE.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape

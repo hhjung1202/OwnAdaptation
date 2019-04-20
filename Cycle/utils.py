@@ -19,10 +19,13 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self):
-        self.G_AB = Generator_AB(in_channels=3, out_channels=3, z_size=100) # input : [z, y]
-        self.D_A = Discriminator(in_channels=3) # input : x_src, G_AB
         
-        self.G_BA = Generator_BA(in_channels=3, out_channels=3) # input : [z, y]
+        self.EnA = Encoder_A(in_channels=3, out_channels=1024)
+        self.EnZ = Encoder_Z(z_size=256, out_channels=1024)
+        self.G_AB = Entropy_Generator_AB(in_channels=1024, out_channels=3)
+        self.D_A = Discriminator(in_channels=3)
+        
+        self.G_BA = Generator_BA(in_channels=3, out_channels=3)
         self.D_B = Discriminator(in_channels=3) # input : x_target, G_BA
 
         self.cls_src = Classifier(x_dim=3) # input: G_AB
@@ -30,6 +33,8 @@ class model_optim_state_info(object):
         
     def model_cuda_init(self):
         if torch.cuda.is_available():
+            self.EnA = nn.DataParallel(self.EnA).cuda()
+            self.EnZ = nn.DataParallel(self.EnZ).cuda()
             self.G_AB = nn.DataParallel(self.G_AB).cuda()
             self.D_A = nn.DataParallel(self.D_A).cuda()
             self.G_BA = nn.DataParallel(self.G_BA).cuda()
@@ -38,6 +43,8 @@ class model_optim_state_info(object):
             self.cls_target = nn.DataParallel(self.cls_target).cuda()
 
     def weight_cuda_init(self):
+        self.EnA.apply(self.weights_init_normal)
+        self.EnZ.apply(self.weights_init_normal)
         self.G_AB.apply(self.weights_init_normal)
         self.D_A.apply(self.weights_init_normal)
         self.G_BA.apply(self.weights_init_normal)
@@ -53,6 +60,8 @@ class model_optim_state_info(object):
             torch.nn.init.constant_(m.bias.data, 0.0)
 
     def optimizer_init(self, lr, b1, b2, weight_decay):
+        self.optimizer_EnA = optim.Adam(self.EnA.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optimizer_EnZ = optim.Adam(self.EnZ.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_G_AB = optim.Adam(self.G_AB.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_D_A = optim.Adam(self.D_A.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optimizer_G_BA = optim.Adam(self.G_BA.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
@@ -61,6 +70,8 @@ class model_optim_state_info(object):
         self.optimizer_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def learning_scheduler_init(self, args, load_epoch=0):
+        self.lr_scheduler_EnA = optim.lr_scheduler.LambdaLR(self.optimizer_EnA, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_scheduler_EnZ = optim.lr_scheduler.LambdaLR(self.optimizer_EnZ, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         self.lr_scheduler_G_AB = optim.lr_scheduler.LambdaLR(self.optimizer_G_AB, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         self.lr_scheduler_D_A = optim.lr_scheduler.LambdaLR(self.optimizer_D_A, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         self.lr_scheduler_G_BA = optim.lr_scheduler.LambdaLR(self.optimizer_G_BA, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
@@ -69,6 +80,8 @@ class model_optim_state_info(object):
         self.lr_scheduler_CT = optim.lr_scheduler.LambdaLR(self.optimizer_CT, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         
     def learning_step(self):
+        self.lr_scheduler_EnA.step()
+        self.lr_scheduler_EnZ.step()
         self.lr_scheduler_G_AB.step()
         self.lr_scheduler_D_A.step()
         self.lr_scheduler_G_BA.step()
@@ -77,6 +90,8 @@ class model_optim_state_info(object):
         self.lr_scheduler_CT.step()
 
     def set_train_mode(self):
+        self.EnA.train()
+        self.EnZ.train()
         self.G_AB.train()
         self.D_A.train()
         self.G_BA.train()
@@ -85,6 +100,8 @@ class model_optim_state_info(object):
         self.cls_target.train()
 
     def set_test_mode(self):
+        self.EnA.eval()
+        self.EnZ.eval()
         self.G_AB.eval()
         self.D_A.eval()
         self.G_BA.eval()
@@ -93,6 +110,8 @@ class model_optim_state_info(object):
         self.cls_target.eval()
 
     def load_state_dict(self, checkpoint):
+        self.EnA.load_state_dict(checkpoint['EnAdict'])
+        self.EnZ.load_state_dict(checkpoint['EnZdict'])
         self.G_AB.load_state_dict(checkpoint['GABdict'])
         self.D_A.load_state_dict(checkpoint['DAdict'])
         self.G_BA.load_state_dict(checkpoint['GBAdict'])
@@ -100,6 +119,8 @@ class model_optim_state_info(object):
         self.cls_src.load_state_dict(checkpoint['CSdict'])
         self.cls_target.load_state_dict(checkpoint['CTdict'])
 
+        self.optimizer_EnA.load_state_dict(checkpoint['EnAoptimizer'])
+        self.optimizer_EnZ.load_state_dict(checkpoint['EnZoptimizer'])
         self.optimizer_G_AB.load_state_dict(checkpoint['GABoptimizer'])
         self.optimizer_D_A.load_state_dict(checkpoint['DAoptimizer'])
         self.optimizer_G_BA.load_state_dict(checkpoint['GBAoptimizer'])
@@ -187,6 +208,14 @@ def save_state_checkpoint(state_info, best_prec_result, filename, directory, epo
         'CTmodel': state_info.cls_target,
         'CTdict': state_info.cls_target.state_dict(),
         'CToptimizer': state_info.optimizer_CT.state_dict(),
+
+        'EnAmodel': state_info.EnA,
+        'EnAdict': state_info.EnA.state_dict(),
+        'EnAoptimizer': state_info.optimizer_EnA.state_dict(),
+
+        'EnZmodel': state_info.EnZ,
+        'EnZdict': state_info.EnZ.state_dict(),
+        'EnZoptimizer': state_info.optimizer_EnZ.state_dict(),        
 
     }, filename, directory)
 
