@@ -108,7 +108,7 @@ def main():
 
     for epoch in range(args.epoch):
         
-        train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, criterion_cycle, criterion_identity, criterion, epoch)
+        # train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, criterion_cycle, criterion_identity, criterion, epoch)
         prec_result = test(state_info, Source_test_loader, Target_test_loader, criterion, realA_sample, realB_sample, epoch)
         
         if prec_result > best_prec_result:
@@ -149,7 +149,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
-        # z2 = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
 
         real_A, y = to_var(real_A, FloatTensor), to_var(y, LongTensor)
         real_B = to_var(real_B, FloatTensor)
