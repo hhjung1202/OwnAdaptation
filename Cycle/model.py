@@ -112,7 +112,7 @@ class Entropy_Generator_AB(nn.Module):
 
         # Initial convolution block
         self.w_h = 4
-        self.fc = nn.Linear(in_channels, dim * self.w_h**2)
+        self.fc = nn.Linear(in_channels * 2, dim * self.w_h**2)
 
         model = []
         in_features = dim
@@ -130,7 +130,8 @@ class Entropy_Generator_AB(nn.Module):
 
         self.model = nn.Sequential(*model)
 
-    def forward(self, x):
+    def forward(self, x, z):
+        x = torch.cat([x,z], 1)
         x = self.fc(x)
         x = x.view(x.size(0), -1, self.w_h, self.w_h)
         x = self.model(x)

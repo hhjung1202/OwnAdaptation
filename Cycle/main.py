@@ -149,6 +149,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
         z = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
+        # z2 = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.latent_dim))))
 
         real_A, y = to_var(real_A, FloatTensor), to_var(y, LongTensor)
         real_B = to_var(real_B, FloatTensor)
@@ -173,33 +174,31 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         state_info.optimizer_G_BA.zero_grad()
 
         # Identity loss
-        F_idtB = state_info.EnA(real_B)
+        F_Z = state_info.EnZ(z)
+        # F_Z2 = state_info.EnZ(z2)
 
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(F_idtB), real_B)
+        loss_idt_B = criterion_identity(state_info.G_AB(state_info.EnA(real_B), F_Z), real_B)
 
         loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
 
         # GAN loss
-        F_A = state_info.EnA(real_A)
-        F_Z = state_info.EnZ(z)
-        fake_B = state_info.G_AB(F_A)
-        entropy = state_info.G_AB(F_Z)
-        
+        fake_B = state_info.G_AB(state_info.EnA(real_A), F_Z)
+        # entropy = state_info.G_AB(F_Z)
+
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
-        loss_GAN_AB_Entropy = criterion_GAN(state_info.D_B(entropy), valid)
+        # loss_GAN_AB_Entropy = criterion_GAN(state_info.D_B(entropy), valid)
 
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
 
-        loss_GAN = loss_GAN_AB + loss_GAN_BA + loss_GAN_AB_Entropy
+        loss_GAN = loss_GAN_AB + loss_GAN_BA # + loss_GAN_AB_Entropy
 
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
         loss_cycle_A = criterion_cycle(recov_A, real_A)
 
-        F_fakeA = state_info.EnA(fake_A)
-        recov_B = state_info.G_AB(F_fakeA)
+        recov_B = state_info.G_AB(state_info.EnA(fake_A), F_Z)
         loss_cycle_B = criterion_cycle(recov_B, real_B)
 
         loss_cycle = args.cycle * (loss_cycle_A + loss_cycle_B) / 2
@@ -245,9 +244,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         # Fake loss (on batch of previously generated samples)
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
-        loss_entropy = criterion_GAN(state_info.D_B(entropy), fake)
+        # loss_entropy = criterion_GAN(state_info.D_B(entropy), fake)
         # Total loss_real
-        loss_D_B = loss_real + loss_fake + loss_entropy
+        loss_D_B = loss_real + loss_fake # + loss_entropy
 
         loss_D_B.backward(retain_graph=True)
         state_info.optimizer_D_B.step()
@@ -354,7 +353,7 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
 
     z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
 
-    fake_B = state_info.G_AB(state_info.EnA(realA_sample))
+    fake_B = state_info.G_AB(state_info.EnA(realA_sample), state_info.EnZ(z))
     fake_A = state_info.G_BA(realB_sample)
 
     realA, fake_B = to_data(realA_sample), to_data(fake_B)
