@@ -108,7 +108,7 @@ def main():
 
     for epoch in range(args.epoch):
         
-        # train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, criterion_cycle, criterion_identity, criterion, epoch)
+        train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, criterion_cycle, criterion_identity, criterion, epoch)
         prec_result = test(state_info, Source_test_loader, Target_test_loader, criterion, realA_sample, realB_sample, epoch)
         
         if prec_result > best_prec_result:
