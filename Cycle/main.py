@@ -176,7 +176,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         F_idtB = state_info.EnA(real_B)
 
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(Idt_B), real_B)
+        loss_idt_B = criterion_identity(state_info.G_AB(F_idtB), real_B)
 
         loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
 
