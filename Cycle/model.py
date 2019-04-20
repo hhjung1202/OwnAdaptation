@@ -119,7 +119,7 @@ class Entropy_Generator_AB(nn.Module):
         out_features = dim//2
         # Upsampling
         for _ in range(3):
-            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1),
+            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
                         nn.BatchNorm2d(out_features),
                         nn.ReLU(inplace=True) ]
             in_features = out_features
