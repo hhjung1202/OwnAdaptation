@@ -226,7 +226,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
 
-        loss_D_B = loss_real + loss_fake + loss_entropy
+        loss_D_B = loss_real + loss_fake
         loss_D_B.backward(retain_graph=True)
         state_info.optimizer_D_B.step()
 
