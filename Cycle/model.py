@@ -71,7 +71,7 @@ class Encoder_A(nn.Module):
     def __init__(self, in_channels=3, latent_dim=1024, dim=32):
         super(Encoder_A, self).__init__()
 
-        self.z = nn.Sequential([   
+        self.z = nn.Sequential(*[   
                     nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
                     nn.BatchNorm2d(dim),
                     nn.ReLU(inplace=True) ])
