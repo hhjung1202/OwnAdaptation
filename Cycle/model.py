@@ -68,7 +68,7 @@ class Generator_BA(nn.Module):
 
 
 class Encoder_A(nn.Module):
-    def __init__(self, in_channels=3, out_channels=1024, dim=32):
+    def __init__(self, in_channels=3, latent_dim=1024, dim=32):
         super(Encoder_A, self).__init__()
 
         model = [   nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
@@ -86,7 +86,7 @@ class Encoder_A(nn.Module):
             out_features = in_features*2
 
         self.model = nn.Sequential(*model)
-        self.fc = nn.Linear(in_features * 4**2, out_channels)
+        self.fc = nn.Linear(in_features * 4**2, latent_dim)
 
     def forward(self, x):
         x = self.model(x)
@@ -96,10 +96,10 @@ class Encoder_A(nn.Module):
 
 
 class Encoder_Z(nn.Module):
-    def __init__(self, z_size=256, out_channels=1024):
+    def __init__(self, z_size=100, random_dim=256):
         super(Encoder_Z, self).__init__()
 
-        self.fc = nn.Linear(z_size, out_channels)
+        self.fc = nn.Linear(z_size, random_dim)
 
     def forward(self, z):
         z = self.fc(z)
@@ -107,12 +107,15 @@ class Encoder_Z(nn.Module):
 
 
 class Entropy_Generator_AB(nn.Module):
-    def __init__(self, in_channels=1024, out_channels=3, dim=256):
+    def __init__(self, in_channels=3, out_channels=3, z_size=100, latent_dim=1024, random_dim=256, dim=256):
         super(Entropy_Generator_AB, self).__init__()
 
         # Initial convolution block
         self.w_h = 4
-        self.fc = nn.Linear(in_channels * 2, dim * self.w_h**2)
+        self.fc = nn.Linear(latent_dim + random_dim, dim * self.w_h**2)
+
+        self.Encoder_A = Encoder_A(in_channels=in_channels, latent_dim=latent_dim)
+        self.Encoder_Z = Encoder_Z(z_size=z_size, random_dim=random_dim)
 
         model = []
         in_features = dim
@@ -130,8 +133,12 @@ class Entropy_Generator_AB(nn.Module):
 
         self.model = nn.Sequential(*model)
 
-    def forward(self, x, z):
-        x = torch.cat([x,z], 1)
+    def forward(self, A, Z):
+
+        A = self.Encoder_A(A)
+        Z = self.Encoder_Z(Z)
+        x = torch.cat([A,Z], 1)
+
         x = self.fc(x)
         x = x.view(x.size(0), -1, self.w_h, self.w_h)
         x = self.model(x)
@@ -139,7 +146,6 @@ class Entropy_Generator_AB(nn.Module):
 
 
 
-# 여기서 추후 작업 요망
 class Discriminator(nn.Module):
     def __init__(self, in_channels=3, dim=64):
         super(Discriminator, self).__init__()

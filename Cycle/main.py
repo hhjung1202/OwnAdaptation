@@ -24,7 +24,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='mo
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-dim', type=int, default=256, help='dimensionality of the latent space')
+parser.add_argument('--latent-dim', type=int, default=100, help='dimensionality of the latent space')
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--max-buffer', type=int, default=1024, help='Fake GAN Buffer Image')
 
@@ -167,35 +167,27 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         #  Train Generator AB and BA
         # -----------------------
 
-        state_info.optimizer_EnA.zero_grad()
-        state_info.optimizer_EnZ.zero_grad()
         state_info.optimizer_G_AB.zero_grad()
         state_info.optimizer_G_BA.zero_grad()
 
         # Identity loss
-        F_Z = state_info.EnZ(z)
-
         loss_idt_A = criterion_identity(state_info.G_BA(real_A), real_A)
-        loss_idt_B = criterion_identity(state_info.G_AB(state_info.EnA(real_B), F_Z), real_B)
-        loss_identity = args.identity * (loss_idt_A + loss_idt_B) / 2
+        loss_idt_B = criterion_identity(state_info.G_AB(real_B, z), real_B)
+        loss_identity = args.identity * (loss_idt_A + loss_idt_B)
 
         # GAN loss
-        fake_B = state_info.G_AB(state_info.EnA(real_A), F_Z)
+        fake_B = state_info.G_AB(real_A, z)
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
-
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
-
         loss_GAN = loss_GAN_AB + loss_GAN_BA
 
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
         loss_cycle_A = criterion_cycle(recov_A, real_A)
-
-        recov_B = state_info.G_AB(state_info.EnA(fake_A), F_Z)
+        recov_B = state_info.G_AB(fake_A, z)
         loss_cycle_B = criterion_cycle(recov_B, real_B)
-
-        loss_cycle = args.cycle * (loss_cycle_A + loss_cycle_B) / 2
+        loss_cycle = args.cycle * (loss_cycle_A + loss_cycle_B)
 
         # Class Consistency
         output_cls_recov = state_info.cls_src(recov_A) # Classifier
@@ -205,8 +197,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         loss_G = loss_GAN + loss_cycle + loss_identity + loss_cls_recov
 
         loss_G.backward(retain_graph=True)
-        state_info.optimizer_EnA.step()
-        state_info.optimizer_EnZ.step()
         state_info.optimizer_G_AB.step()
         state_info.optimizer_G_BA.step()
 
@@ -216,12 +206,10 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         state_info.optimizer_D_A.zero_grad()
 
-        # Real loss
         loss_real = criterion_GAN(state_info.D_A(real_A), valid)
         fake_A_ = fake_A_buffer.query(fake_A)
         loss_fake = criterion_GAN(state_info.D_A(fake_A_.detach()), fake)
-        # Total loss
-        loss_D_A = (loss_real + loss_fake) / 2
+        loss_D_A = (loss_real + loss_fake)
 
         loss_D_A.backward()
         state_info.optimizer_D_A.step()
@@ -232,11 +220,9 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         state_info.optimizer_D_B.zero_grad()
 
-        # Real loss
         loss_real = criterion_GAN(state_info.D_B(real_B), valid)
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
-        # Total loss_real
         loss_D_B = loss_real + loss_fake
 
         loss_D_B.backward(retain_graph=True)
@@ -344,7 +330,7 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
 
     z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
 
-    fake_B = state_info.G_AB(state_info.EnA(realA_sample), state_info.EnZ(z))
+    fake_B = state_info.G_AB(realA_sample, z)
     fake_A = state_info.G_BA(realB_sample)
 
     realA, fake_B = to_data(realA_sample), to_data(fake_B)
