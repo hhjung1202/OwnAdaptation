@@ -71,10 +71,12 @@ class Encoder_A(nn.Module):
     def __init__(self, in_channels=3, latent_dim=1024, dim=32):
         super(Encoder_A, self).__init__()
 
-        model = [   nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
+        self.z = nn.Sequential([   
+                    nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
                     nn.BatchNorm2d(dim),
-                    nn.ReLU(inplace=True) ]
+                    nn.ReLU(inplace=True) ])
 
+        model = []
         # Downsampling
         in_features = dim
         out_features = dim*2
@@ -89,6 +91,7 @@ class Encoder_A(nn.Module):
         self.fc = nn.Linear(in_features * 4**2, latent_dim)
 
     def forward(self, x):
+        x = self.z(x)
         print(x.size())
         x = self.model(x)
         x = x.view(x.size(0), -1)
@@ -139,7 +142,6 @@ class Entropy_Generator_AB(nn.Module):
     def forward(self, A=None, Z=None, sw=True):
 
         if(sw):
-            print(A.size())
             x = self.Encoder_A(A)
         else:
             x = self.Encoder_Z(Z)
