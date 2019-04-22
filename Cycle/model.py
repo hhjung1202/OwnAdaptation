@@ -94,9 +94,10 @@ class Encoder_A(nn.Module):
 
     def forward(self, x):
         print(x.size())
+        print(self.dim)
+        
         x = self.a(x)
         print(x.size())
-        print(self.dim)
         x = self.model(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
