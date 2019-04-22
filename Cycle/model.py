@@ -89,6 +89,7 @@ class Encoder_A(nn.Module):
         self.fc = nn.Linear(in_features * 4**2, latent_dim)
 
     def forward(self, x):
+        print(x.size())
         x = self.model(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
@@ -138,6 +139,7 @@ class Entropy_Generator_AB(nn.Module):
     def forward(self, A=None, Z=None, sw=True):
 
         if(sw):
+            print(A.size())
             x = self.Encoder_A(A)
         else:
             x = self.Encoder_Z(Z)
