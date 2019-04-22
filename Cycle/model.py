@@ -71,14 +71,10 @@ class Encoder_A(nn.Module):
     def __init__(self, in_channels=3, latent_dim=1024, dim=32):
         super(Encoder_A, self).__init__()
 
+        model = [   nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
+                    nn.BatchNorm2d(dim),
+                    nn.ReLU(inplace=True) ]
 
-        self.a = nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1)
-        self.b = nn.BatchNorm2d(dim)
-        self.c = nn.ReLU(inplace=True)
-        self.dim = dim
-
-
-        model = []
         # Downsampling
         in_features = dim
         out_features = dim*2
@@ -93,11 +89,6 @@ class Encoder_A(nn.Module):
         self.fc = nn.Linear(in_features * 4**2, latent_dim)
 
     def forward(self, x):
-        print(x.size())
-        print(self.dim)
-        
-        x = self.a(x)
-        print(x.size())
         x = self.model(x)
         x = x.view(x.size(0), -1)
         x = self.fc(x)
@@ -212,3 +203,16 @@ class Classifier(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         return x
+
+def set_requires_grad(nets, requires_grad=False):
+    """Set requies_grad=Fasle for all the networks to avoid unnecessary computations
+    Parameters:
+        nets (network list)   -- a list of networks
+        requires_grad (bool)  -- whether the networks require gradients or not
+    """
+    if not isinstance(nets, list):
+        nets = [nets]
+    for net in nets:
+        if net is not None:
+            for param in net.parameters():
+                param.requires_grad = requires_grad

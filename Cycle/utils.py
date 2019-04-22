@@ -22,7 +22,7 @@ class model_optim_state_info(object):
         
         # self.EnA = Encoder_A(in_channels=3, out_channels=1024)
         # self.EnZ = Encoder_Z(z_size=256, out_channels=1024)
-        self.G_AB = Entropy_Generator_AB(in_channels=1024, out_channels=3, z_size=256, latent_dim=1024)
+        self.G_AB = Entropy_Generator_AB(in_channels=3, out_channels=3, z_size=256, latent_dim=1024)
         self.D_A = Discriminator(in_channels=3)
         
         self.G_BA = Generator_BA(in_channels=3, out_channels=3)
