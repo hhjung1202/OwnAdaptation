@@ -68,7 +68,7 @@ class Generator_BA(nn.Module):
 
 
 class Encoder_A(nn.Module):
-    def __init__(self, in_channels=3, out_channels=1024, dim=32):
+    def __init__(self, in_channels=3, latent_dim=1024, dim=32):
         super(Encoder_A, self).__init__()
 
         model = [   nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
@@ -86,7 +86,7 @@ class Encoder_A(nn.Module):
             out_features = in_features*2
 
         self.model = nn.Sequential(*model)
-        self.fc = nn.Linear(in_features * 4**2, out_channels)
+        self.fc = nn.Linear(in_features * 4**2, latent_dim)
 
     def forward(self, x):
         x = self.model(x)
@@ -96,10 +96,10 @@ class Encoder_A(nn.Module):
 
 
 class Encoder_Z(nn.Module):
-    def __init__(self, z_size=256, out_channels=1024):
+    def __init__(self, z_size=256, latent_dim=1024):
         super(Encoder_Z, self).__init__()
 
-        self.fc = nn.Linear(z_size, out_channels)
+        self.fc = nn.Linear(z_size, latent_dim)
 
     def forward(self, z):
         z = self.fc(z)
@@ -107,12 +107,15 @@ class Encoder_Z(nn.Module):
 
 
 class Entropy_Generator_AB(nn.Module):
-    def __init__(self, in_channels=1024, out_channels=3, dim=256):
+    def __init__(self, in_channels=3, out_channels=3, dim=256, z_size=256, latent_dim=1024):
         super(Entropy_Generator_AB, self).__init__()
 
         # Initial convolution block
         self.w_h = 4
-        self.fc = nn.Linear(in_channels, dim * self.w_h**2)
+        self.fc = nn.Linear(latent_dim, dim * self.w_h**2)
+
+        self.Encoder_A = Encoder_A(in_channels=in_channels, latent_dim=latent_dim)
+        self.Encoder_Z = Encoder_Z(z_size=z_size, latent_dim=latent_dim)
 
         model = []
         in_features = dim
@@ -130,7 +133,15 @@ class Entropy_Generator_AB(nn.Module):
 
         self.model = nn.Sequential(*model)
 
-    def forward(self, x):
+        
+
+    def forward(self, A=None, Z=None, sw=True):
+
+        if(sw):
+            x = self.Encoder_A(A)
+        else:
+            x = self.Encoder_Z(Z)
+
         x = self.fc(x)
         x = x.view(x.size(0), -1, self.w_h, self.w_h)
         x = self.model(x)
