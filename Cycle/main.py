@@ -34,7 +34,7 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 parser.add_argument('--cycle', type=float, default=1.0, help='Cycle Consistency Parameter')
 parser.add_argument('--identity', type=float, default=1.0, help='Identity Consistency Parameter')
 parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
-parser.add_argument('--entropy', type=float, default=0.1, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
+parser.add_argument('--entropy', type=float, default=0.1, help='Entropy parameter')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
