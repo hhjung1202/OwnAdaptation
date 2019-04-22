@@ -178,13 +178,11 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
 
         # GAN loss
         fake_B = state_info.G_AB(A=real_A, sw=True)
-        entropy = state_info.G_AB(Z=z, sw=False)
         loss_GAN_AB = criterion_GAN(state_info.D_B(fake_B), valid)
-        loss_GAN_AB_Entropy = criterion_GAN(state_info.D_B(entropy), valid)
 
         fake_A = state_info.G_BA(real_B)
         loss_GAN_BA = criterion_GAN(state_info.D_A(fake_A), valid)
-        loss_GAN = loss_GAN_AB + loss_GAN_BA + args.entropy * loss_GAN_AB_Entropy
+        loss_GAN = loss_GAN_AB + loss_GAN_BA
 
         # Cycle loss
         recov_A = state_info.G_BA(fake_B)
@@ -227,7 +225,6 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         loss_real = criterion_GAN(state_info.D_B(real_B), valid)
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
-        loss_entropy = criterion_GAN(state_info.D_B(entropy), fake)
 
         loss_D_B = loss_real + loss_fake + loss_entropy
         loss_D_B.backward(retain_graph=True)
