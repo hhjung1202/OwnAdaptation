@@ -24,6 +24,41 @@ class ResBlock(nn.Module):
             x = self.downsample(x)
         return F.relu(out + x)
 
+class Generator_BA(nn.Module):
+    def __init__(self, in_channels=3, out_channels=3, dim=256, latent_dim=1024):
+        super(Generator_BA, self).__init__()
+
+        # Initial convolution block
+        self.w_h = 4
+        self.fc = nn.Linear(latent_dim, dim * self.w_h**2)
+
+        self.Encoder_A = Encoder_A(in_channels=in_channels, latent_dim=latent_dim)
+
+        model = []
+        in_features = dim
+        out_features = dim//2
+        # Upsampling
+        for _ in range(3):
+            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
+                        nn.BatchNorm2d(out_features),
+                        nn.ReLU(inplace=True) ]
+            in_features = out_features
+            out_features = in_features//2
+
+        model += [  nn.Conv2d(in_features, out_channels, kernel_size=3, stride=1, padding=1),
+                    nn.Tanh() ]
+
+        self.model = nn.Sequential(*model)
+
+        
+
+    def forward(self, B):
+
+        x = self.Encoder_A(B)
+        x = self.fc(x)
+        x = x.view(x.size(0), -1, self.w_h, self.w_h)
+        x = self.model(x)
+        return x
 
 class Generator_BA(nn.Module):
     def __init__(self, in_channels=3, out_channels=3, res_blocks=3, dim=64):
