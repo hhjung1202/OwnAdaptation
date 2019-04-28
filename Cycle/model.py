@@ -60,47 +60,6 @@ class Generator_BA(nn.Module):
         x = self.model(x)
         return x
 
-class Generator_BA(nn.Module):
-    def __init__(self, in_channels=3, out_channels=3, res_blocks=3, dim=64):
-        super(Generator_BA, self).__init__()
-
-        # Initial convolution block
-        model = [   nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
-                    nn.BatchNorm2d(dim),
-                    nn.ReLU(inplace=True) ]
-
-        # Downsampling
-        in_features = dim
-        out_features = dim*2
-        for _ in range(2):
-            model += [  nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
-                        nn.BatchNorm2d(out_features),
-                        nn.ReLU(inplace=True) ]
-            in_features = out_features
-            out_features = in_features*2
-
-        # Residual blocks
-        for _ in range(res_blocks):
-            model += [ResBlock(in_features, in_features, stride=1)]
-
-        # Upsampling
-        out_features = in_features//2
-        for _ in range(2):
-            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
-                        nn.BatchNorm2d(out_features),
-                        nn.ReLU(inplace=True) ]
-            in_features = out_features
-            out_features = in_features//2
-
-        # Output layer
-        model += [  nn.Conv2d(in_features, out_channels, kernel_size=3, stride=1, padding=1),
-                    nn.Tanh() ]
-
-        self.model = nn.Sequential(*model)
-
-    def forward(self, x):
-        return self.model(x)
-
 
 class Encoder_A(nn.Module):
     def __init__(self, in_channels=3, latent_dim=1024, dim=32):
