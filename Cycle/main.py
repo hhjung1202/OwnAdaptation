@@ -34,6 +34,7 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 parser.add_argument('--cycle', type=float, default=1.0, help='Cycle Consistency Parameter')
 parser.add_argument('--identity', type=float, default=1.0, help='Identity Consistency Parameter')
 parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
+parser.add_argument('--dis', type=float, default=10.0, help='Discriminator parameter')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
@@ -209,7 +210,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         loss_real = criterion_GAN(state_info.D_A(real_A), valid)
         fake_A_ = fake_A_buffer.query(fake_A)
         loss_fake = criterion_GAN(state_info.D_A(fake_A_.detach()), fake)
-        loss_D_A = (loss_real + loss_fake)
+        loss_D_A = args.dis * (loss_real + loss_fake)
 
         loss_D_A.backward()
         state_info.optimizer_D_A.step()
@@ -223,7 +224,7 @@ def train(state_info, Source_train_loader, Target_train_loader, criterion_GAN, c
         loss_real = criterion_GAN(state_info.D_B(real_B), valid)
         fake_B_ = fake_B_buffer.query(fake_B)
         loss_fake = criterion_GAN(state_info.D_B(fake_B_.detach()), fake)
-        loss_D_B = loss_real + loss_fake
+        loss_D_B = args.dis * (loss_real + loss_fake)
 
         loss_D_B.backward(retain_graph=True)
         state_info.optimizer_D_B.step()
@@ -327,20 +328,30 @@ def make_sample_image(state_info, epoch, realA_sample, realB_sample):
     # Sample noise
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/src'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/target'))
+    img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/recovABA'))
+    img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/recovBAB'))
 
     z = Variable(FloatTensor(np.random.normal(0, 1, (realA_sample.size(0), args.latent_dim))))
 
     fake_B = state_info.G_AB(realA_sample, z)
     fake_A = state_info.G_BA(realB_sample)
 
+    recov_A = state_info.G_BA(fake_B)
+    recov_B = state_info.G_AB(fake_A, z)
+
     realA, fake_B = to_data(realA_sample), to_data(fake_B)
     realB, fake_A = to_data(realB_sample), to_data(fake_A)
+    recov_A ,recov_B = to_data(recov_A), to_data(recov_B)
 
     makeAtoB = merge_images(realA_sample, fake_B)
     makeBtoA = merge_images(realB_sample, fake_A)
+    makeAtoBtoA = merge_images(realA_sample, recov_A)
+    makeBtoAtoB = merge_images(realB_sample, recov_B)
 
     save_image(makeAtoB.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
     save_image(makeBtoA.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
+    save_image(makeAtoBtoA.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
+    save_image(makeBtoAtoB.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
