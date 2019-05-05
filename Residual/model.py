@@ -102,8 +102,9 @@ class Generator_Residual(nn.Module):
         x = self.tgt_encoder(tgt)
         res = self.res_encoder(res)
         x = self.tgt_decoder(x + res)
-        
-        c = self.fc(F.max_pool2d(res.view(res.size(0), -1), 2))
+
+        c = F.max_pool2d(res, 2)
+        c = self.fc(c.view(c.size(0), -1))
 
         return x, c
 
