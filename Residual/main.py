@@ -129,12 +129,10 @@ def main():
 
 def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, G-GAN, G-CYCLE, G-RECON, G-CLASS, D-Src, D-Target, accREAL, ~loss, accRECOV, ~loss')
+    utils.print_log('Type, Epoch, Batch, G-GAN, G-RECON, G-CLASS, D-Target, acc')
     
     state_info.set_train_mode()
     correct_real = torch.tensor(0, dtype=torch.float32)
-    correct_recov = torch.tensor(0, dtype=torch.float32)
-    correct_target = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
 
     for it, ((real_S, y), (real_T, _), (shuffle_T, _)) in enumerate(zip(Source_train_loader, Target_train_loader, Target_shuffle_loader)):
@@ -150,62 +148,23 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         real_T, shuffle_T = to_var(real_T, FloatTensor), to_var(shuffle_T, FloatTensor)
 
         # -----------------------
-        #  Train Source Classifier
-        # -----------------------
-
-        state_info.optim_CS.zero_grad()
-        output_cls_real = state_info.cls_src(real_S) # Classifier
-        loss_cls_clear = criterion(output_cls_real, y)
-        loss_cls_clear.backward()
-        state_info.optim_CS.step()
-
-        # -----------------------
-        #  Train Generator AB and BA
+        #  Train Generator
         # -----------------------
         state_info.optim_G_Residual.zero_grad()
-        state_info.optim_G_Restore.zero_grad()
 
         # GAN loss
-        fake_T = state_info.G_Residual(real_S, shuffle_T)
-        loss_GAN_T = criterion_GAN(state_info.D_tgt(fake_T), valid)
-        fake_S = state_info.G_Restore(fake_T)
-        loss_GAN_S = criterion_GAN(state_info.D_src(fake_S), valid)
+        fake_T, output_c = state_info.G_Residual(real_S, shuffle_T)
 
-        loss_GAN = args.gen * (loss_GAN_T + loss_GAN_S)
-
-        # Reconstruction loss
+        loss_GAN = args.gen * criterion_GAN(state_info.D_tgt(fake_T), valid)
         loss_Recon = args.recon * criterion_Recov(fake_T, shuffle_T)
-
-        # Cycle loss
-        loss_cycle = args.cycle * criterion_Cycle(fake_S, real_S)
-
-        # Class Consistency
-        output_cls_recov = state_info.cls_src(fake_S) # Classifier
-        loss_cls_recov = args.cls * criterion(output_cls_recov, y)
-
-        # Total loss
-        loss_G = loss_GAN + loss_cycle + loss_cls_recov + loss_Recon
+        loss_cls = args.cls * criterion(output_c, y)
+        loss_G = loss_GAN + loss_Recon + loss_cls
 
         loss_G.backward(retain_graph=True)
         state_info.optim_G_Residual.step()
-        state_info.optim_G_Restore.step()
 
         # -----------------------
-        #  Train Discriminator A
-        # -----------------------
-
-        state_info.optim_D_src.zero_grad()
-
-        loss_real = criterion_GAN(state_info.D_src(real_S), valid)
-        fake_S_ = fake_S_buffer.query(fake_S)
-        loss_fake = criterion_GAN(state_info.D_src(fake_S_.detach()), fake)
-
-        loss_D_src = args.dis * (loss_real + loss_fake)
-        loss_D_src.backward()
-        state_info.optim_D_src.step()
-
-        # -----------------------
-        #  Train Discriminator B
+        #  Train Discriminator
         # -----------------------
 
         state_info.optim_D_tgt.zero_grad()
@@ -223,20 +182,15 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         total += float(batch_size)
-        _, predicted_real = torch.max(output_cls_real.data, 1)
+        _, predicted_real = torch.max(output_c.data, 1)
         correct_real += float(predicted_real.eq(y.data).cpu().sum())
-
-        _, predicted_recov = torch.max(output_cls_recov.data, 1)
-        correct_recov += float(predicted_recov.eq(y.data).cpu().sum())
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
-                    , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item()))
+                  .format(epoch, it, loss_GAN.item(), loss_Recon.item(), loss_cls.item(), loss_D_tgt.item(), 100.*correct_real / total))
 
             print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
-                    , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item()))
+                  .format(epoch, it, loss_GAN.item(), loss_Recon.item(), loss_cls.item(), loss_D_tgt.item(), 100.*correct_real / total))
 
     utils.print_log('')
 
@@ -244,7 +198,6 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
     
     utils.print_log('Type, Epoch, Batch, accSource')
     state_info.set_test_mode()
-    correct_src = torch.tensor(0, dtype=torch.float32)
     correct_src_fake = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
     total_loss_src = 0
@@ -260,12 +213,10 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
         real_S, Source_y = to_var(real_S, FloatTensor), to_var(Source_y, LongTensor)
         real_T, Target_y = to_var(real_T, FloatTensor), to_var(Target_y, LongTensor)
 
-        fake_T = state_info.G_Residual(real_S, real_T)
-        fake_S = state_info.G_Restore(fake_T)
-        output_cls_src_fake = state_info.cls_src(fake_S) # Classifier
+        _, output_c = state_info.G_Residual(real_S, real_T)
 
         total += float(batch_size)
-        _, predicted_src_fake = torch.max(output_cls_src_fake.data, 1)
+        _, predicted_src_fake = torch.max(output_c.data, 1)
         correct_src_fake += float(predicted_src_fake.eq(Source_y.data).cpu().sum())
 
     make_sample_image(state_info, epoch, realS_sample, realT_sample) # img_gen_src, Source_y, img_gen_target, Target_y
@@ -281,24 +232,17 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
 def make_sample_image(state_info, epoch, realS_sample, realT_sample):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
     # Sample noise
-    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/cycle'))
-    img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS_T'))
-    img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT_T'))
+    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS_T'))
+    img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT_T'))
 
-    fake_T = state_info.G_Residual(realS_sample, realT_sample)
-    fake_S = state_info.G_Restore(fake_T)
+    fake_T, _ = state_info.G_Residual(realS_sample, realT_sample)
+    fake_T = to_data(fake_T)
 
-    realS, fake_T = to_data(realS_sample), to_data(fake_T)
-    realT, fake_S = to_data(realT_sample), to_data(fake_S)
-
-    cycle = merge_images(realS_sample, fake_S)
     residual1 = merge_images(realS_sample, fake_T)
     residual2 = merge_images(realT_sample, fake_T)
 
-
-    save_image(cycle.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
-    save_image(residual1.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
-    save_image(residual2.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
+    save_image(residual1.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
+    save_image(residual2.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
