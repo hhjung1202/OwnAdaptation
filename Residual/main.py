@@ -254,12 +254,6 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
 
         if real_T.size(0) != real_S.size(0):
             continue
-
-        if real_S.size(1) == 1:
-            real_S = torch.cat([real_S, real_S, real_S], 1)
-
-        if real_T.size(1) == 1:
-            real_T = torch.cat([real_T, real_T, real_T], 1)
         
         batch_size = real_S.size(0)
 
