@@ -142,12 +142,6 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         if real_T.size(0) != real_S.size(0):
             continue
         
-        if real_S.size(1) == 1:
-            real_S = torch.cat([real_S, real_S, real_S], 1)
-
-        if real_T.size(1) == 1:
-            real_T = torch.cat([real_T, real_T, real_T], 1)
-        
         batch_size = real_S.size(0)
         valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
         fake = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
@@ -256,12 +250,6 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
     total = torch.tensor(0, dtype=torch.float32)
     total_loss_src = 0
     total_loss_target = 0
-
-    if realS_sample.size(1) == 1:
-        realS_sample = torch.cat([realS_sample, realS_sample, realS_sample], 1)
-
-    if realT_sample.size(1) == 1:
-        realT_sample = torch.cat([realT_sample, realT_sample, realT_sample], 1)    
 
     for it, ((real_S, Source_y), (real_T, Target_y)) in enumerate(zip(Source_test_loader, Target_test_loader)):
 
