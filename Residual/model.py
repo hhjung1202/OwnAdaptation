@@ -119,7 +119,7 @@ class Discriminator(nn.Module):
             nn.BatchNorm2d(dim),
             nn.LeakyReLU(0.2, inplace=True),
             
-            nn.MaxPool2d(kernel_size=2)
+            nn.MaxPool2d(kernel_size=2),
 
             nn.Conv2d(dim, 2*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
