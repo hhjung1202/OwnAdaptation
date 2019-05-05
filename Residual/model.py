@@ -68,7 +68,11 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
+            nn.ConvTranspose2d(2*dim, dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(dim, out_ch, 4, stride=2, padding=1),
             nn.Tanh(),
         )
 
