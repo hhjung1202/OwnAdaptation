@@ -129,8 +129,8 @@ def main():
 
 def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, G-GAN, G-CYCLE, G-ID, G-CLASS, D-A, D-B, accREAL, ~loss, accRECOV, ~loss, accTAR, ~loss')
-
+    utils.print_log('Type, Epoch, Batch, G-GAN, G-CYCLE, G-RECON, G-CLASS, D-Src, D-Target, accREAL, ~loss, accRECOV, ~loss')
+    
     state_info.set_train_mode()
     correct_real = torch.tensor(0, dtype=torch.float32)
     correct_recov = torch.tensor(0, dtype=torch.float32)
@@ -230,19 +230,19 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         correct_recov += float(predicted_recov.eq(y.data).cpu().sum())
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
+            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
+                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
                     , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item()))
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
+            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
+                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
                     , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item()))
 
     utils.print_log('')
 
 def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT_sample, epoch):
     
-    utils.print_log('Type, Epoch, Batch, accSource, accTarget')
+    utils.print_log('Type, Epoch, Batch, accSource')
     state_info.set_test_mode()
     correct_src = torch.tensor(0, dtype=torch.float32)
     correct_src_fake = torch.tensor(0, dtype=torch.float32)
