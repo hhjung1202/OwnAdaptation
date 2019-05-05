@@ -28,11 +28,11 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(8*dim),
-            nn.ReLU(inplace=True),
+            # nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
+            # nn.BatchNorm2d(8*dim),
+            # nn.ReLU(inplace=True),
 
-            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
         )
@@ -46,11 +46,11 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(8*dim),
-            nn.ReLU(inplace=True),
+            # nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
+            # nn.BatchNorm2d(8*dim),
+            # nn.ReLU(inplace=True),
 
-            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
         )
@@ -68,11 +68,11 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(2*dim, dim, 4, stride=2, padding=1),
-            nn.BatchNorm2d(dim),
-            nn.ReLU(inplace=True),
+            # nn.ConvTranspose2d(2*dim, dim, 4, stride=2, padding=1),
+            # nn.BatchNorm2d(dim),
+            # nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(dim, out_ch, 4, stride=2, padding=1),
+            nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
             nn.Tanh(),
         )
 
@@ -89,6 +89,7 @@ class Generator_Residual(nn.Module):
 
         num_fc = 8 * dim * 2**2
         self.fc = nn.Sequential(
+            nn.MaxPool2d(kernel_size=2),
             nn.Linear(num_fc, num_fc),
             nn.ReLU(inplace=True),
             nn.Linear(num_fc, num_classes),
