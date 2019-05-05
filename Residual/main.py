@@ -186,10 +186,10 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         correct_real += float(predicted_real.eq(y.data).cpu().sum())
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
+            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
                   .format(epoch, it, loss_GAN.item(), loss_Recon.item(), loss_cls.item(), loss_D_tgt.item(), 100.*correct_real / total))
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
+            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
                   .format(epoch, it, loss_GAN.item(), loss_Recon.item(), loss_cls.item(), loss_D_tgt.item(), 100.*correct_real / total))
 
     utils.print_log('')
