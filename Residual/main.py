@@ -26,7 +26,7 @@ parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first 
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--latent-dim', type=int, default=100, help='dimensionality of the latent space')
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
-parser.add_argument('--max-buffer', type=int, default=8096, help='Fake GAN Buffer Image')
+parser.add_argument('--max-buffer', type=int, default=8196, help='Fake GAN Buffer Image')
 
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
@@ -111,7 +111,7 @@ def main():
 
     for epoch in range(args.epoch):
         
-        # train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
+        train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
         prec_result = test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT_sample, epoch)
         
         if prec_result > best_prec_result:
