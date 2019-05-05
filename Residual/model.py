@@ -24,8 +24,16 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(2*dim, 4*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(8*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
         )
 
@@ -34,15 +42,27 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(2*dim, 4*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(8*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
         )
 
         self.tgt_decoder = nn.Sequential(
-            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(4*dim),
+            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(8*dim, 4*dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),            
 
             nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
@@ -63,17 +83,11 @@ class Generator_Residual(nn.Module):
         #     nn.ReLU(inplace=True),
         # )
 
-        self.src_classifier = nn.Sequential(
-            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=2, padding=1),
-            nn.BatchNorm2d(8*dim),
-            nn.ReLU(inplace=True),
-    
-            nn.AvgPool2d(kernel_size=4, stride=1)
-        )
+        num_fc = 8 * dim * 2**2
         self.fc = nn.Sequential(
-            nn.Linear(8*dim, 8*dim),
+            nn.Linear(num_fc, num_fc),
             nn.ReLU(inplace=True),
-            nn.Linear(8*dim, num_classes),
+            nn.Linear(num_fc, num_classes),
         )
 
     def forward(self, src, tgt):
@@ -85,8 +99,7 @@ class Generator_Residual(nn.Module):
         res = self.res_encoder(res)
         x = self.tgt_decoder(x + res)
         
-        c = self.src_classifier(res)
-        c = self.fc(c.view(c.size(0), -1))
+        c = self.fc(res.view(res.size(0), -1))
 
         return x, c
 

@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Tr
 parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
 parser.add_argument('--td', default='svhn', type=str, help='target dataset')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
-parser.add_argument('--epoch', default=200, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch', default=400, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--decay-epoch', default=100, type=int, metavar='N', help='epoch from which to start lr decay')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
