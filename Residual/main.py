@@ -162,7 +162,6 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
         #  Train Generator AB and BA
         # -----------------------
-
         state_info.optim_G_Residual.zero_grad()
         state_info.optim_G_Restore.zero_grad()
 
@@ -178,7 +177,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         loss_Recon = args.recon * criterion_Recov(fake_T, shuffle_T)
 
         # Cycle loss
-        loss_cycle = args.cycle * criterion_cycle(fake_S, real_S)
+        loss_cycle = args.cycle * criterion_Cycle(fake_S, real_S)
 
         # Class Consistency
         output_cls_recov = state_info.cls_src(fake_S) # Classifier
