@@ -71,9 +71,9 @@ class Generator_Residual(nn.Module):
             nn.AvgPool2d(kernel_size=4, stride=1)
         )
         self.fc = nn.Sequential(
-            nn.Linear(8*dim, 8*dim)
+            nn.Linear(8*dim, 8*dim),
             nn.ReLU(inplace=True),
-            nn.Linear(8*dim, num_classes)
+            nn.Linear(8*dim, num_classes),
         )
 
     def forward(self, src, tgt):
