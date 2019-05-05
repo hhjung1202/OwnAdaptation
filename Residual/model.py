@@ -2,121 +2,164 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class ResBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride, downsample=None):
-        super(ResBlock, self).__init__()
-
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1)
-        self.bn1 = nn.BatchNorm2d(out_channels) #
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-
-        self.downsample = downsample
-        if downsample is not None:
-            self.downsample = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride), #avgPooling?
-                nn.BatchNorm2d(out_channels))
-
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
-        if self.downsample is not None:
-            x = self.downsample(x)
-        return F.relu(out + x)
-
-
-class Generator(nn.Module):
-    def __init__(self, in_channels=3, out_channels=3, res_blocks=6, dim=64):
-        super(Generator, self).__init__()
+class Generator_Residual(nn.Module):
+    def __init__(self, tgt_ch=3, src_ch=1, out_ch=3, dim=32):
+        super(Generator_Residual, self).__init__()
 
         # Initial convolution block
-        model = [   nn.Conv2d(in_channels, dim, kernel_size=3, stride=1, padding=1),
-                    nn.BatchNorm2d(dim),
-                    nn.ReLU(inplace=True) ]
+        self.src_encoder = nn.Sequential(
+            nn.Conv2d(src_ch, dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(inplace=True)
+        )
 
-        # Downsampling
-        in_features = dim
-        out_features = dim*2
-        for _ in range(2):
-            model += [  nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
-                        nn.BatchNorm2d(out_features),
-                        nn.ReLU(inplace=True) ]
-            in_features = out_features
-            out_features = in_features*2
+        self.tgt_encoder = nn.Sequential(
+            nn.Conv2d(tgt_ch, dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(inplace=True)
+        )
 
-        # Residual blocks
-        for _ in range(res_blocks):
-            model += [ResBlock(in_features, in_features, stride=1)]
+        self.tgt_g = nn.Sequential(
+            nn.Conv2d(dim, 2*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
 
-        # Upsampling
-        out_features = in_features//2
-        for _ in range(2):
-            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
-                        nn.BatchNorm2d(out_features),
-                        nn.ReLU(inplace=True) ]
-            in_features = out_features
-            out_features = in_features//2
+            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
 
-        # Output layer
-        model += [  nn.Conv2d(in_features, out_channels, kernel_size=3, stride=1, padding=1),
-                    nn.Tanh() ]
+            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
 
-        self.model = nn.Sequential(*model)
+            nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
+        )
 
-    def forward(self, x):
-        return self.model(x)
+        self.residual_g = nn.Sequential(
+            nn.Conv2d(2*dim, 2*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
+        )
+
+        self.out_deconv = nn.Sequential(
+            nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
+            nn.Tanh()
+        )
+
+    def forward(self, src, tgt):
+        src = self.src_encoder(src)
+        tgt = self.tgt_encoder(tgt)
+        x = self.tgt_g(tgt)
+        residual = self.residual_g(torch.cat([src, tgt], 1))
+        x = x + residual
+        x = self.out_deconv(x)
+        return x
 
 
+class Generator_Restore(nn.Module):
+    def __init__(self, input_ch=3, out_ch=1, dim=32):
+        super(Generator_Restore, self).__init__()
+
+        self.encoder = nn.Sequential(
+            nn.Conv2d(input_ch, dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(inplace=True)
+        )
+
+        self.generator = nn.Sequential(
+            nn.Conv2d(dim, 2*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
+        )
+
+        self.out_deconv = nn.Sequential(
+            nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
+            nn.Tanh()
+        )
+
+    def forward(self, tgt):
+        x = self.encoder(tgt)
+        x = self.generator(x)
+        x = self.out_deconv(x)
+        return x
 
 # 여기서 추후 작업 요망
 class Discriminator(nn.Module):
-    def __init__(self, in_channels=3, dim=64):
+    def __init__(self, input_ch=3, dim=24):
         super(Discriminator, self).__init__()
 
-        def d_block(in_filters, out_filters, stride=2):
-            """Returns downsampling layers of each discriminator block"""
+        self.model = nn.Sequential(
+            nn.Conv2d(input_ch, dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.LeakyReLU(0.2, inplace=True),
+            
+            nn.MaxPool2d(kernel_size=2)
 
-            layers = [  nn.Conv2d(in_filters, out_filters, kernel_size=3, stride=stride, padding=1),
-                        nn.BatchNorm2d(out_filters),
-                        nn.LeakyReLU(0.2, inplace=True),
-                        nn.Conv2d(out_filters, out_filters, kernel_size=3, stride=1, padding=1),
-                        nn.BatchNorm2d(out_filters),
-                        nn.LeakyReLU(0.2, inplace=True)  ]
+            nn.Conv2d(dim, 2*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.LeakyReLU(0.2, inplace=True),
+        )
+        fc_size = 2 * dim * 4**2
+        self.fc1 = nn.Linear(fc_size, fc_size)
+        self.fc2 = nn.Linear(fc_size, fc_size//4)
+        self.fc3 = nn.Linear(fc_size//4, 1)
+
+    def forward(self, x):
+        x = self.model(x)
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+class Classifier(nn.Module):
+    def __init__(self, input_ch=1, num_classes=10, dim=32):
+        super(Classifier, self).__init__()
+
+        def block(in_ch, out_ch, stride=1):
+            layers = [  
+                nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=stride, padding=1),
+                nn.BatchNorm2d(out_ch),
+                nn.ReLU(inplace=True),  ]
             return layers
 
         self.model = nn.Sequential(
-            *d_block(in_channels, dim, stride=1), 
-            *d_block(dim, 2*dim),
-            *d_block(2*dim, 4*dim),
-            *d_block(4*dim, 8*dim),
-            nn.Conv2d(8*dim, 1, 4, padding=0)
+            *block(input_ch, dim, stride=1), 
+            *block(dim, 2*dim, stride=2), 
+            *block(2*dim, 4*dim, stride=2), 
+            *block(4*dim, 8*dim, stride=2), 
         )
 
-    def forward(self, x):
-        return self.model(x).view(x.size(0), -1)
-
-
-class Classifier(nn.Module):
-    def __init__(self, x_dim, num_classes=10, dim=64):
-        super(Classifier, self).__init__()
-
-        model = [   nn.Conv2d(x_dim, dim, kernel_size=3, stride=1, padding=1),
-                    nn.BatchNorm2d(dim),
-                    nn.ReLU(inplace=True) ]
-
-        in_dim = dim
-        out_dim = 2*dim
-        for _ in range(3):
-            model += [ResBlock(in_channels=in_dim, out_channels=out_dim, stride=2, downsample=True)]
-            in_dim = out_dim
-            out_dim = 2*in_dim
-
-        self.model = nn.Sequential(*model)
         self.avgpool = nn.AvgPool2d(kernel_size=4, stride=1)
-        self.fc = nn.Linear(in_dim, num_classes)
+        self.fc = nn.Linear(8*dim, num_classes)
 
     def forward(self, x):
-        
         x = self.model(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)

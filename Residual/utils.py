@@ -19,31 +19,31 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self):
-        self.G_AB = Generator(in_channels=3, out_channels=3) # input : [z, y]
-        self.D_A = Discriminator(in_channels=3) # input : x_src, G_AB
+        self.G_Residual = Generator_Residual(tgt_ch=3, src_ch=1, out_ch=3) # input : [z, y]
+        self.D_tgt = Discriminator(input_ch=3) # input : x_src, G_AB
         
-        self.G_BA = Generator(in_channels=3, out_channels=3) # input : [z, y]
-        self.D_B = Discriminator(in_channels=3) # input : x_target, G_BA
+        self.G_Restore = Generator_Restore(input_ch=3, out_ch=1) # input : [z, y]
+        self.D_src = Discriminator(input_ch=1) # input : x_target, G_BA
 
-        self.cls_src = Classifier(x_dim=3) # input: G_AB
-        self.cls_target = Classifier(x_dim=3) # input: G_BA
+        self.cls_src = Classifier(input_ch=1) # input: G_AB
+        # self.cls_target = Classifier(input_ch=3) # input: G_BA
         
     def model_cuda_init(self):
         if torch.cuda.is_available():
-            self.G_AB = nn.DataParallel(self.G_AB).cuda()
-            self.D_A = nn.DataParallel(self.D_A).cuda()
-            self.G_BA = nn.DataParallel(self.G_BA).cuda()
-            self.D_B = nn.DataParallel(self.D_B).cuda()
+            self.G_Residual = nn.DataParallel(self.G_Residual).cuda()
+            self.D_tgt = nn.DataParallel(self.D_tgt).cuda()
+            self.G_Restore = nn.DataParallel(self.G_Restore).cuda()
+            self.D_src = nn.DataParallel(self.D_src).cuda()
             self.cls_src = nn.DataParallel(self.cls_src).cuda()
-            self.cls_target = nn.DataParallel(self.cls_target).cuda()
+            # self.cls_target = nn.DataParallel(self.cls_target).cuda()
 
     def weight_cuda_init(self):
-        self.G_AB.apply(self.weights_init_normal)
-        self.D_A.apply(self.weights_init_normal)
-        self.G_BA.apply(self.weights_init_normal)
-        self.D_B.apply(self.weights_init_normal)
+        self.G_Residual.apply(self.weights_init_normal)
+        self.D_tgt.apply(self.weights_init_normal)
+        self.G_Restore.apply(self.weights_init_normal)
+        self.D_src.apply(self.weights_init_normal)
         self.cls_src.apply(self.weights_init_normal)
-        self.cls_target.apply(self.weights_init_normal)
+        # self.cls_target.apply(self.weights_init_normal)
 
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
@@ -53,59 +53,59 @@ class model_optim_state_info(object):
             torch.nn.init.constant_(m.bias.data, 0.0)
 
     def optimizer_init(self, lr, b1, b2, weight_decay):
-        self.optimizer_G_AB = optim.Adam(self.G_AB.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_D_A = optim.Adam(self.D_A.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_G_BA = optim.Adam(self.G_BA.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_D_B = optim.Adam(self.D_B.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_CS = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optimizer_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optim_G_Residual = optim.Adam(self.G_Residual.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optim_D_tgt = optim.Adam(self.D_tgt.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optim_G_Restore = optim.Adam(self.G_Restore.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optim_D_src = optim.Adam(self.D_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optim_CS = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        # self.optim_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def learning_scheduler_init(self, args, load_epoch=0):
-        self.lr_scheduler_G_AB = optim.lr_scheduler.LambdaLR(self.optimizer_G_AB, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        self.lr_scheduler_D_A = optim.lr_scheduler.LambdaLR(self.optimizer_D_A, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        self.lr_scheduler_G_BA = optim.lr_scheduler.LambdaLR(self.optimizer_G_BA, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        self.lr_scheduler_D_B = optim.lr_scheduler.LambdaLR(self.optimizer_D_B, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        self.lr_scheduler_CS = optim.lr_scheduler.LambdaLR(self.optimizer_CS, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        self.lr_scheduler_CT = optim.lr_scheduler.LambdaLR(self.optimizer_CT, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_G_Residual = optim.lr_scheduler.LambdaLR(self.optim_G_Residual, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_D_tgt = optim.lr_scheduler.LambdaLR(self.optim_D_tgt, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_G_Restore = optim.lr_scheduler.LambdaLR(self.optim_G_Restore, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_D_src = optim.lr_scheduler.LambdaLR(self.optim_D_src, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_CS = optim.lr_scheduler.LambdaLR(self.optim_CS, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        # self.lr_CT = optim.lr_scheduler.LambdaLR(self.optim_CT, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         
     def learning_step(self):
-        self.lr_scheduler_G_AB.step()
-        self.lr_scheduler_D_A.step()
-        self.lr_scheduler_G_BA.step()
-        self.lr_scheduler_D_B.step()
-        self.lr_scheduler_CS.step()
-        self.lr_scheduler_CT.step()
+        self.lr_G_Residual.step()
+        self.lr_D_tgt.step()
+        self.lr_G_Restore.step()
+        self.lr_D_src.step()
+        self.lr_CS.step()
+        # self.lr_scheduler_CT.step()
 
     def set_train_mode(self):
-        self.G_AB.train()
-        self.D_A.train()
-        self.G_BA.train()
-        self.D_B.train()
+        self.G_Residual.train()
+        self.D_tgt.train()
+        self.G_Restore.train()
+        self.D_src.train()
         self.cls_src.train()
-        self.cls_target.train()
+        # self.cls_target.train()
 
     def set_test_mode(self):
-        self.G_AB.eval()
-        self.D_A.eval()
-        self.G_BA.eval()
-        self.D_B.eval()
+        self.G_Residual.eval()
+        self.D_tgt.eval()
+        self.G_Restore.eval()
+        self.D_src.eval()
         self.cls_src.eval()
-        self.cls_target.eval()
+        # self.cls_target.eval()
 
     def load_state_dict(self, checkpoint):
-        self.G_AB.load_state_dict(checkpoint['GABdict'])
-        self.D_A.load_state_dict(checkpoint['DAdict'])
-        self.G_BA.load_state_dict(checkpoint['GBAdict'])
-        self.D_B.load_state_dict(checkpoint['DBdict'])
+        self.G_Residual.load_state_dict(checkpoint['G_Residual_dict'])
+        self.D_tgt.load_state_dict(checkpoint['D_tgt_dict'])
+        self.G_Restore.load_state_dict(checkpoint['G_Restore_dict'])
+        self.D_src.load_state_dict(checkpoint['D_src_dict'])
         self.cls_src.load_state_dict(checkpoint['CSdict'])
-        self.cls_target.load_state_dict(checkpoint['CTdict'])
+        # self.cls_target.load_state_dict(checkpoint['CTdict'])
 
-        self.optimizer_G_AB.load_state_dict(checkpoint['GABoptimizer'])
-        self.optimizer_D_A.load_state_dict(checkpoint['DAoptimizer'])
-        self.optimizer_G_BA.load_state_dict(checkpoint['GBAoptimizer'])
-        self.optimizer_D_B.load_state_dict(checkpoint['DBoptimizer'])
-        self.optimizer_CS.load_state_dict(checkpoint['CSoptimizer'])
-        self.optimizer_CT.load_state_dict(checkpoint['CToptimizer'])
+        self.optim_G_Residual.load_state_dict(checkpoint['G_Residual_optimizer'])
+        self.optim_D_tgt.load_state_dict(checkpoint['D_tgt_optimizer'])
+        self.optim_G_Restore.load_state_dict(checkpoint['G_Restore_optimizer'])
+        self.optim_D_src.load_state_dict(checkpoint['D_src_optimizer'])
+        self.optim_CS.load_state_dict(checkpoint['CSoptimizer'])
+        # self.optimizer_CT.load_state_dict(checkpoint['CToptimizer'])
 
 
 class ImagePool():
@@ -151,32 +151,31 @@ def save_state_checkpoint(state_info, best_prec_result, filename, directory, epo
         'epoch': epoch,
         'Best_Prec': best_prec_result,
 
-        'GABmodel': state_info.G_AB,
-        'GABdict': state_info.G_AB.state_dict(),
-        'GABoptimizer': state_info.optimizer_G_AB.state_dict(),
+        'G_Residual_model': state_info.G_Residual,
+        'G_Residual_dict': state_info.G_Residual.state_dict(),
+        'G_Residual_optimizer': state_info.optim_G_Residual.state_dict(),
 
-        'DAmodel': state_info.D_A,
-        'DAdict': state_info.D_A.state_dict(),
-        'DAoptimizer': state_info.optimizer_D_A.state_dict(),
+        'D_tgt_model': state_info.D_tgt,
+        'D_tgt_dict': state_info.D_tgt.state_dict(),
+        'D_tgt_optimizer': state_info.optim_D_tgt.state_dict(),
 
-        'GBAmodel': state_info.G_BA,
-        'GBAdict': state_info.G_BA.state_dict(),
-        'GBAoptimizer': state_info.optimizer_G_BA.state_dict(),
+        'G_Restore_model': state_info.G_Restore,
+        'G_Restore_dict': state_info.G_Restore.state_dict(),
+        'G_Restore_optimizer': state_info.optim_G_Restore.state_dict(),
 
-        'DBmodel': state_info.D_B,
-        'DBdict': state_info.D_B.state_dict(),
-        'DBoptimizer': state_info.optimizer_D_B.state_dict(),
+        'D_src_model': state_info.D_src,
+        'D_src_dict': state_info.D_src.state_dict(),
+        'D_src_optimizer': state_info.optim_D_src.state_dict(),
 
         'CSmodel': state_info.cls_src,
         'CSdict': state_info.cls_src.state_dict(),
-        'CSoptimizer': state_info.optimizer_CS.state_dict(),
+        'CSoptimizer': state_info.optim_CS.state_dict(),
 
-        'CTmodel': state_info.cls_target,
-        'CTdict': state_info.cls_target.state_dict(),
-        'CToptimizer': state_info.optimizer_CT.state_dict(),
+        # 'CTmodel': state_info.cls_target,
+        # 'CTdict': state_info.cls_target.state_dict(),
+        # 'CToptimizer': state_info.optimizer_CT.state_dict(),
 
     }, filename, directory)
-
 
 def save_checkpoint(state, filename, model_dir):
 
