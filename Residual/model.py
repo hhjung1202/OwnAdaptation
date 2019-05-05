@@ -89,7 +89,6 @@ class Generator_Residual(nn.Module):
 
         num_fc = 8 * dim * 2**2
         self.fc = nn.Sequential(
-            nn.MaxPool2d(kernel_size=2),
             nn.Linear(num_fc, num_fc),
             nn.ReLU(inplace=True),
             nn.Linear(num_fc, num_classes),
@@ -104,7 +103,7 @@ class Generator_Residual(nn.Module):
         res = self.res_encoder(res)
         x = self.tgt_decoder(x + res)
         
-        c = self.fc(res.view(res.size(0), -1))
+        c = self.fc(F.max_pool2d(res.view(res.size(0), -1), 2))
 
         return x, c
 
