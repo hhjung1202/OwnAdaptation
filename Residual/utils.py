@@ -179,7 +179,7 @@ def save_state_checkpoint(state_info, best_prec_result, filename, directory, epo
 
         'CTmodel': state_info.cls_target,
         'CTdict': state_info.cls_target.state_dict(),
-        'CToptimizer': state_info.optimizer_CT.state_dict(),
+        'CToptimizer': state_info.optim_CT.state_dict(),
 
     }, filename, directory)
 
