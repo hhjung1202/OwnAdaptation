@@ -44,7 +44,7 @@ class Generator_Residual(nn.Module):
             nn.ReLU(inplace=True),
 
             nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(4*dim),
+            nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
         )
 
