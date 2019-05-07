@@ -231,7 +231,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         correct_recov += float(predicted_recov.eq(y.data).cpu().sum())
 
         _, predicted_target = torch.max(output_cls_target.data, 1)
-        correct_target += float(predicted_target.eq(y_random.data).cpu().sum())
+        correct_target += float(predicted_target.eq(y.data).cpu().sum())
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
