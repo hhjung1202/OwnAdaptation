@@ -213,11 +213,11 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         #  Train Target Classifier
         # -----------------------
 
-        state_info.optimizer_CT.zero_grad()
+        state_info.optim_CT.zero_grad()
         output_cls_target = state_info.cls_target(fake_T) # Classifier
         loss_cls_fake = criterion(output_cls_target, y)
         loss_cls_fake.backward()
-        state_info.optimizer_CT.step()
+        state_info.optim_CT.step()
 
         # -----------------------
         #  Log Print
