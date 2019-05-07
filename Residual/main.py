@@ -112,10 +112,6 @@ def main():
     realT_sample = to_var(realT_sample_iter.next()[0], FloatTensor)
     realS_sample, realS_y = to_var(realS_sample[0], FloatTensor), to_var(realS_sample[1], FloatTensor)
 
-    print(realS_sample.size())
-    print(realS_y.size())
-    print(realS_y)
-
     for epoch in range(args.epoch):
         
         train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
@@ -153,6 +149,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         real_S, y, y_one = to_var(real_S, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
         real_T, shuffle_T = to_var(real_T, FloatTensor), to_var(shuffle_T, FloatTensor)
 
+        print(y_one)
         # -----------------------
         #  Train Generator
         # -----------------------
@@ -204,6 +201,9 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
     utils.print_log('')
 
 def test(state_info, realS_sample, realS_y, realT_sample, epoch):
+
+    realS_y = torch.FloatTensor(realS_sample.size(0), 10).zero_().scatter_(1, realS_y.view(-1, 1), 1)
+    realS_y = to_var(realS_y, FloatTensor)
     
     state_info.set_test_mode()
     make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample) # img_gen_src, Source_y, img_gen_target, Target_y
