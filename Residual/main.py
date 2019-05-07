@@ -110,7 +110,7 @@ def main():
 
     realS_sample = realS_sample_iter.next()
     realT_sample = to_var(realT_sample_iter.next()[0], FloatTensor)
-    realS_sample, realS_y = to_var(realS_sample[0], FloatTensor), to_var(realS_sample[1], FloatTensor)
+    realS_sample, realS_y = to_var(realS_sample[0], FloatTensor), to_var(realS_sample[1], LongTensor)
 
     for epoch in range(args.epoch):
         
