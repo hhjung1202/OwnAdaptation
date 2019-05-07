@@ -22,7 +22,7 @@ class model_optim_state_info(object):
         self.G_Residual = Generator_Residual(tgt_ch=3, src_ch=1, out_ch=3) # input : [z, y]
         self.D_tgt = Discriminator(input_ch=3) # input : x_src, G_AB
         
-        self.G_Restore = Generator_Restore(input_ch=3, out_ch=1) # input : [z, y]
+        self.G_Restore = Generator_Restore(fake_ch=3, base_ch=3, out_ch=1) # input : [z, y]
         self.D_src = Discriminator(input_ch=1) # input : x_target, G_BA
 
         self.cls_src = Classifier(input_ch=1) # input: G_AB
@@ -30,9 +30,10 @@ class model_optim_state_info(object):
 
     def forward(self, real_S, shuffle_T):
         fake_T = self.G_Residual(real_S, shuffle_T)
-        fake_S = self.G_Restore(fake_T)
+        fake_S = self.G_Restore(fake_T, shuffle_T)
         output_cls_recov = self.cls_src(fake_S)
-        return fake_T, fake_S, output_cls_recov
+        output_cls_target = self.cls_target(fake_T)
+        return fake_T, fake_S, output_cls_recov, output_cls_target
         
     def model_cuda_init(self):
         if torch.cuda.is_available():

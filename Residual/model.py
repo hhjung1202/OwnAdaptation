@@ -74,17 +74,25 @@ class Generator_Residual(nn.Module):
         x = self.src_decoder(x)
         return x
 
+
 class Generator_Restore(nn.Module):
-    def __init__(self, input_ch=3, out_ch=1, dim=32):
+    def __init__(self, fake_ch=3, base_ch=3, out_ch=1, dim=32):
         super(Generator_Restore, self).__init__()
 
-        self.encoder = nn.Sequential(
-            nn.Conv2d(input_ch, dim, kernel_size=4, stride=2, padding=1),
+        # Initial convolution block
+        self.fake_init = nn.Sequential(
+            nn.Conv2d(fake_ch, dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(dim),
             nn.ReLU(inplace=True)
         )
 
-        self.generator = nn.Sequential(
+        self.base_init = nn.Sequential(
+            nn.Conv2d(base_ch, dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(inplace=True)
+        )
+
+        self.fake_encoder = nn.Sequential(
             nn.Conv2d(dim, 2*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
@@ -93,25 +101,51 @@ class Generator_Restore(nn.Module):
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
+            nn.ReLU(inplace=True),
+        )
+
+        self.res_encoder = nn.Sequential(
+            nn.Conv2d(2*dim, 2*dim, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
+            nn.ReLU(inplace=True),
+        )
+
+        self.fake_decoder = nn.Sequential(
+            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(8*dim, 4*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
             nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
-            nn.ReLU(inplace=True),
-        )
+            nn.ReLU(inplace=True),            
 
-        self.out_deconv = nn.Sequential(
             nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
-            nn.Tanh()
+            nn.Tanh(),
         )
 
-    def forward(self, tgt):
-        x = self.encoder(tgt)
-        x = self.generator(x)
-        x = self.out_deconv(x)
+    def forward(self, fakeT, baseT):
+        fakeT = self.fake_init(fakeT)
+        baseT = self.base_init(baseT)
+        x = self.fake_encoder(fakeT)
+        residual = self.res_encoder(torch.cat([fakeT, baseT], 1))
+        x = x - residual
+        x = self.fake_decoder(x)
         return x
+
 
 # 여기서 추후 작업 요망
 class Discriminator(nn.Module):

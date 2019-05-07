@@ -166,7 +166,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_G_Restore.zero_grad()
 
         # GAN loss
-        fake_T, fake_S, output_cls_recov = state_info.forward(real_S, shuffle_T)
+        fake_T, fake_S, output_cls_recov, output_cls_target = state_info.forward(real_S, shuffle_T)
 
         loss_GAN_T = criterion_GAN(state_info.D_tgt(fake_T), valid)
         loss_GAN_S = criterion_GAN(state_info.D_src(fake_S), valid)
@@ -214,7 +214,6 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         state_info.optim_CT.zero_grad()
-        output_cls_target = state_info.cls_target(fake_T) # Classifier
         loss_cls_fake = criterion(output_cls_target, y)
         loss_cls_fake.backward()
         state_info.optim_CT.step()
