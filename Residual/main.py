@@ -263,13 +263,12 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
         real_S, Source_y = to_var(real_S, FloatTensor), to_var(Source_y, LongTensor)
         real_T, Target_y = to_var(real_T, FloatTensor), to_var(Target_y, LongTensor)
 
-        fake_T = state_info.G_Residual(real_S, real_T)
-        fake_S = state_info.G_Restore(fake_T)
-        output_cls_src_fake = state_info.cls_src(fake_S) # Classifier
+        fake_T, fake_S, output_cls_recov, _ = state_info.forward(real_S, real_T)
+
         output_cls_target = state_info.cls_target(real_T) # Classifier
 
         total += float(batch_size)
-        _, predicted_src_fake = torch.max(output_cls_src_fake.data, 1)
+        _, predicted_src_fake = torch.max(output_cls_recov.data, 1)
         correct_src_fake += float(predicted_src_fake.eq(Source_y.data).cpu().sum())
 
         _, predicted_target = torch.max(output_cls_target.data, 1)
@@ -293,8 +292,7 @@ def make_sample_image(state_info, epoch, realS_sample, realT_sample):
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS_T'))
     img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT_T'))
 
-    fake_T = state_info.G_Residual(realS_sample, realT_sample)
-    fake_S = state_info.G_Restore(fake_T)
+    fake_T, fake_S, _, _ = state_info.forward(realS_sample, realT_sample)
 
     realS, fake_T = to_data(realS_sample), to_data(fake_T)
     realT, fake_S = to_data(realT_sample), to_data(fake_S)
