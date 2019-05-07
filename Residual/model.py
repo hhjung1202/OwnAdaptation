@@ -85,6 +85,7 @@ class Generator_Residual(nn.Module):
     def conv_y_concat(self, x, y):
         print('x', x.size())
         print('y', y.size())
+        y = y.view(-1, y.size(1), 1, 1)
         x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
         return x
 
