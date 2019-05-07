@@ -149,7 +149,6 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         real_S, y, y_one = to_var(real_S, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
         real_T, shuffle_T = to_var(real_T, FloatTensor), to_var(shuffle_T, FloatTensor)
 
-        print(y_one)
         # -----------------------
         #  Train Generator
         # -----------------------
