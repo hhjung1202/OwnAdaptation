@@ -3,15 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator_Residual(nn.Module):
-    def __init__(self, tgt_ch=3, src_ch=1, out_ch=3, num_classes=10, dim=32):
+    def __init__(self, tgt_ch=3, out_ch=3, y=10, dim=32):
         super(Generator_Residual, self).__init__()
-
-        # Initial convolution block
-        self.src_init = nn.Sequential(
-            nn.Conv2d(src_ch, dim, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(dim),
-            nn.ReLU(inplace=True)
-        )
 
         self.tgt_init = nn.Sequential(
             nn.Conv2d(tgt_ch, dim, kernel_size=4, stride=2, padding=1),
@@ -24,13 +17,9 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(2*dim, 4*dim, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
-
-            # nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(8*dim),
-            # nn.ReLU(inplace=True),
 
             nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(8*dim),
@@ -38,17 +27,13 @@ class Generator_Residual(nn.Module):
         )
 
         self.res_encoder = nn.Sequential(
-            nn.Conv2d(2*dim, 2*dim, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(dim + y, 2*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(2*dim, 4*dim, kernel_size=4, stride=2, padding=1),
+            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
-
-            # nn.Conv2d(4*dim, 8*dim, kernel_size=4, stride=2, padding=1),
-            # nn.BatchNorm2d(8*dim),
-            # nn.ReLU(inplace=True),
 
             nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(8*dim),
@@ -60,58 +45,62 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(8*dim, 4*dim, 4, stride=2, padding=1),
+            nn.Conv2d(8*dim, 4*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(4*dim),
-            nn.ReLU(inplace=True),            
+            nn.ReLU(inplace=True),
 
             nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),            
+
+            nn.ConvTranspose2d(2*dim, dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
             nn.ReLU(inplace=True),
 
-            # nn.ConvTranspose2d(2*dim, dim, 4, stride=2, padding=1),
-            # nn.BatchNorm2d(dim),
-            # nn.ReLU(inplace=True),
-
-            nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
+            nn.Conv2d(dim, out_ch, kernel_size=3, stride=1, padding=1),
             nn.Tanh(),
         )
 
-        
-        # self.src_decoder = nn.Sequential(
-        #     nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(4*dim),
-        #     nn.ReLU(inplace=True),
-
-        #     nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
-        #     nn.BatchNorm2d(2*dim),
-        #     nn.ReLU(inplace=True),
-        # )
-
-        num_fc = 8 * dim * 2**2
-        self.fc = nn.Sequential(
-            nn.Linear(num_fc, num_fc),
+        self.res_decoder = nn.Sequential(
+            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
             nn.ReLU(inplace=True),
-            nn.Linear(num_fc, num_classes),
+
+            nn.Conv2d(8*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(2*dim),
+            nn.ReLU(inplace=True),            
+
+            nn.ConvTranspose2d(2*dim, dim, 4, stride=2, padding=1),
+            nn.BatchNorm2d(dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(dim, out_ch, kernel_size=3, stride=1, padding=1),
+            nn.Tanh(),
         )
 
-    def forward(self, src, tgt):
-        src = self.src_init(src)
-        tgt = self.tgt_init(tgt)
+    def conv_y_concat(self, x, y):
+        x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
+        return x
 
-        res = torch.cat([src, tgt], 1)
+    def forward(self, tgt, y):
+        tgt = self.tgt_init(tgt)
+        res = self.conv_y_concat(tgt, y) # 추가 실험을 통해서 여러 개로 두도록 학습시켜보자, dim 여러개로 학습을 해보자
+
         x = self.tgt_encoder(tgt)
         res = self.res_encoder(res)
+
         x = self.tgt_decoder(x + res)
+        res = self.res_decoder(res)
 
-        c = F.max_pool2d(res, 2)
-        c = self.fc(c.view(c.size(0), -1))
-
-        return x, c
+        return x, res
 
 
-# 여기서 추후 작업 요망
 class Discriminator(nn.Module):
-    def __init__(self, input_ch=3, dim=24):
+    def __init__(self, input_ch=3, dim=32):
         super(Discriminator, self).__init__()
 
         self.model = nn.Sequential(
@@ -137,4 +126,3 @@ class Discriminator(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
-
