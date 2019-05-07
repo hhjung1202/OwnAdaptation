@@ -114,7 +114,7 @@ def main():
 
     for epoch in range(args.epoch):
         
-        # train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
+        train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
         test(state_info, realS_sample, realS_y, realT_sample, epoch)
         # if prec_result > best_prec_result:
         #     best_prec_result = prec_result
