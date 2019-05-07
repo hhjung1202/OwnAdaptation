@@ -26,7 +26,13 @@ class model_optim_state_info(object):
         self.D_src = Discriminator(input_ch=1) # input : x_target, G_BA
 
         self.cls_src = Classifier(input_ch=1) # input: G_AB
-        # self.cls_target = Classifier(input_ch=3) # input: G_BA
+        self.cls_target = Classifier(input_ch=3) # input: G_BA
+
+    def forward(self, real_S, shuffle_T):
+        fake_T = self.G_Residual(real_S, shuffle_T)
+        fake_S = self.G_Restore(fake_T)
+        output_cls_recov = self.cls_src(fake_S)
+        return fake_T, fake_S, output_cls_recov
         
     def model_cuda_init(self):
         if torch.cuda.is_available():
@@ -35,7 +41,7 @@ class model_optim_state_info(object):
             self.G_Restore = nn.DataParallel(self.G_Restore).cuda()
             self.D_src = nn.DataParallel(self.D_src).cuda()
             self.cls_src = nn.DataParallel(self.cls_src).cuda()
-            # self.cls_target = nn.DataParallel(self.cls_target).cuda()
+            self.cls_target = nn.DataParallel(self.cls_target).cuda()
 
     def weight_cuda_init(self):
         self.G_Residual.apply(self.weights_init_normal)
@@ -43,7 +49,7 @@ class model_optim_state_info(object):
         self.G_Restore.apply(self.weights_init_normal)
         self.D_src.apply(self.weights_init_normal)
         self.cls_src.apply(self.weights_init_normal)
-        # self.cls_target.apply(self.weights_init_normal)
+        self.cls_target.apply(self.weights_init_normal)
 
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
@@ -58,7 +64,7 @@ class model_optim_state_info(object):
         self.optim_G_Restore = optim.Adam(self.G_Restore.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optim_D_src = optim.Adam(self.D_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
         self.optim_CS = optim.Adam(self.cls_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        # self.optim_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+        self.optim_CT = optim.Adam(self.cls_target.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def learning_scheduler_init(self, args, load_epoch=0):
         self.lr_G_Residual = optim.lr_scheduler.LambdaLR(self.optim_G_Residual, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
@@ -66,7 +72,7 @@ class model_optim_state_info(object):
         self.lr_G_Restore = optim.lr_scheduler.LambdaLR(self.optim_G_Restore, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         self.lr_D_src = optim.lr_scheduler.LambdaLR(self.optim_D_src, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         self.lr_CS = optim.lr_scheduler.LambdaLR(self.optim_CS, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        # self.lr_CT = optim.lr_scheduler.LambdaLR(self.optim_CT, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_CT = optim.lr_scheduler.LambdaLR(self.optim_CT, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         
     def learning_step(self):
         self.lr_G_Residual.step()
@@ -74,7 +80,7 @@ class model_optim_state_info(object):
         self.lr_G_Restore.step()
         self.lr_D_src.step()
         self.lr_CS.step()
-        # self.lr_scheduler_CT.step()
+        self.lr_CT.step()
 
     def set_train_mode(self):
         self.G_Residual.train()
@@ -82,7 +88,7 @@ class model_optim_state_info(object):
         self.G_Restore.train()
         self.D_src.train()
         self.cls_src.train()
-        # self.cls_target.train()
+        self.cls_target.train()
 
     def set_test_mode(self):
         self.G_Residual.eval()
@@ -90,7 +96,7 @@ class model_optim_state_info(object):
         self.G_Restore.eval()
         self.D_src.eval()
         self.cls_src.eval()
-        # self.cls_target.eval()
+        self.cls_target.eval()
 
     def load_state_dict(self, checkpoint):
         self.G_Residual.load_state_dict(checkpoint['G_Residual_dict'])
@@ -98,14 +104,14 @@ class model_optim_state_info(object):
         self.G_Restore.load_state_dict(checkpoint['G_Restore_dict'])
         self.D_src.load_state_dict(checkpoint['D_src_dict'])
         self.cls_src.load_state_dict(checkpoint['CSdict'])
-        # self.cls_target.load_state_dict(checkpoint['CTdict'])
+        self.cls_target.load_state_dict(checkpoint['CTdict'])
 
         self.optim_G_Residual.load_state_dict(checkpoint['G_Residual_optimizer'])
         self.optim_D_tgt.load_state_dict(checkpoint['D_tgt_optimizer'])
         self.optim_G_Restore.load_state_dict(checkpoint['G_Restore_optimizer'])
         self.optim_D_src.load_state_dict(checkpoint['D_src_optimizer'])
         self.optim_CS.load_state_dict(checkpoint['CSoptimizer'])
-        # self.optimizer_CT.load_state_dict(checkpoint['CToptimizer'])
+        self.optim_CT.load_state_dict(checkpoint['CToptimizer'])
 
 
 class ImagePool():
@@ -171,9 +177,9 @@ def save_state_checkpoint(state_info, best_prec_result, filename, directory, epo
         'CSdict': state_info.cls_src.state_dict(),
         'CSoptimizer': state_info.optim_CS.state_dict(),
 
-        # 'CTmodel': state_info.cls_target,
-        # 'CTdict': state_info.cls_target.state_dict(),
-        # 'CToptimizer': state_info.optimizer_CT.state_dict(),
+        'CTmodel': state_info.cls_target,
+        'CTdict': state_info.cls_target.state_dict(),
+        'CToptimizer': state_info.optimizer_CT.state_dict(),
 
     }, filename, directory)
 

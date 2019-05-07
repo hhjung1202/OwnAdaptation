@@ -129,7 +129,7 @@ def main():
 
 def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, G-GAN, G-CYCLE, G-RECON, G-CLASS, D-Src, D-Target, accREAL, ~loss, accRECOV, ~loss')
+    utils.print_log('Type, Epoch, Batch, G-GAN, G-CYCLE, G-RECON, G-CLASS, D-Src, D-Target, accREAL, ~loss, accRECOV, ~loss, accTarget, ~loss')
     
     state_info.set_train_mode()
     correct_real = torch.tensor(0, dtype=torch.float32)
@@ -166,27 +166,18 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_G_Restore.zero_grad()
 
         # GAN loss
-        fake_T = state_info.G_Residual(real_S, shuffle_T)
+        fake_T, fake_S, output_cls_recov = state_info.forward(real_S, shuffle_T)
+
         loss_GAN_T = criterion_GAN(state_info.D_tgt(fake_T), valid)
-        fake_S = state_info.G_Restore(fake_T)
         loss_GAN_S = criterion_GAN(state_info.D_src(fake_S), valid)
 
         loss_GAN = args.gen * (loss_GAN_T + loss_GAN_S)
-
-        # Reconstruction loss
-        loss_Recon = args.recon * criterion_Recov(fake_T, shuffle_T)
-
-        # Cycle loss
         loss_cycle = args.cycle * criterion_Cycle(fake_S, real_S)
-
-        # Class Consistency
-        output_cls_recov = state_info.cls_src(fake_S) # Classifier
+        loss_Recon = args.recon * criterion_Recov(fake_T, shuffle_T)
         loss_cls_recov = args.cls * criterion(output_cls_recov, y)
-
-        # Total loss
         loss_G = loss_GAN + loss_cycle + loss_cls_recov + loss_Recon
-
         loss_G.backward(retain_graph=True)
+
         state_info.optim_G_Residual.step()
         state_info.optim_G_Restore.step()
 
@@ -195,9 +186,10 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         state_info.optim_D_src.zero_grad()
+        fake_S_ = fake_S_buffer.query(fake_S)
+        fake_T_ = fake_T_buffer.query(fake_T)
 
         loss_real = criterion_GAN(state_info.D_src(real_S), valid)
-        fake_S_ = fake_S_buffer.query(fake_S)
         loss_fake = criterion_GAN(state_info.D_src(fake_S_.detach()), fake)
 
         loss_D_src = args.dis * (loss_real + loss_fake)
@@ -211,12 +203,21 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_D_tgt.zero_grad()
 
         loss_real = criterion_GAN(state_info.D_tgt(real_T), valid)
-        fake_T_ = fake_T_buffer.query(fake_T)
         loss_fake = criterion_GAN(state_info.D_tgt(fake_T_.detach()), fake)
 
         loss_D_tgt = args.dis * (loss_real + loss_fake)
         loss_D_tgt.backward()
         state_info.optim_D_tgt.step()
+
+        # -----------------------
+        #  Train Target Classifier
+        # -----------------------
+
+        state_info.optimizer_CT.zero_grad()
+        output_cls_target = state_info.cls_target(fake_T) # Classifier
+        loss_cls_fake = criterion(output_cls_target, y)
+        loss_cls_fake.backward()
+        state_info.optimizer_CT.step()
 
         # -----------------------
         #  Log Print
@@ -229,23 +230,26 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         _, predicted_recov = torch.max(output_cls_recov.data, 1)
         correct_recov += float(predicted_recov.eq(y.data).cpu().sum())
 
-        if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
-                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
-                    , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item()))
+        _, predicted_target = torch.max(output_cls_gen_target.data, 1)
+        correct_target += float(predicted_target.eq(y_random.data).cpu().sum())
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
+        if it % 10 == 0:
+            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
                   .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
-                    , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item()))
+                    , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item(), 100.*correct_target / total, loss_cls_fake.item()))
+
+            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}, {:.2f}, {:.4f}'
+                  .format(epoch, it, loss_GAN.item(), loss_cycle.item(), loss_Recon.item(), loss_cls_recov.item(), loss_D_src.item(), loss_D_tgt.item()
+                    , 100.*correct_real / total, loss_cls_clear.item(), 100.*correct_recov / total, loss_cls_recov.item(), 100.*correct_target / total, loss_cls_fake.item()))
 
     utils.print_log('')
 
 def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT_sample, epoch):
     
-    utils.print_log('Type, Epoch, Batch, accSource')
+    utils.print_log('Type, Epoch, Batch, accSource, accTarget')
     state_info.set_test_mode()
-    correct_src = torch.tensor(0, dtype=torch.float32)
     correct_src_fake = torch.tensor(0, dtype=torch.float32)
+    correct_target = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
     total_loss_src = 0
     total_loss_target = 0
@@ -263,19 +267,24 @@ def test(state_info, Source_test_loader, Target_test_loader, realS_sample, realT
         fake_T = state_info.G_Residual(real_S, real_T)
         fake_S = state_info.G_Restore(fake_T)
         output_cls_src_fake = state_info.cls_src(fake_S) # Classifier
+        output_cls_target = state_info.cls_target(real_T) # Classifier
 
         total += float(batch_size)
         _, predicted_src_fake = torch.max(output_cls_src_fake.data, 1)
         correct_src_fake += float(predicted_src_fake.eq(Source_y.data).cpu().sum())
 
+        _, predicted_target = torch.max(output_cls_target.data, 1)
+        correct_target += float(predicted_target.eq(Target_y.data).cpu().sum())
+
     make_sample_image(state_info, epoch, realS_sample, realT_sample) # img_gen_src, Source_y, img_gen_target, Target_y
 
     source_prediction_max_result.append(correct_src_fake)
+    target_prediction_max_result.append(correct_target)
 
-    utils.print_log('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct_src_fake / total))
-    print('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct_src_fake / total))
+    utils.print_log('Test, {}, {}, {:.2f}, {:.2f}'.format(epoch, it, 100.*correct_src_fake / total, 100.*correct_target / total))
+    print('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct_src_fake / total, 100.*correct_target / total))
 
-    return 100.*correct_src_fake / total
+    return 100.*correct_target / total
 
 
 def make_sample_image(state_info, epoch, realS_sample, realT_sample):

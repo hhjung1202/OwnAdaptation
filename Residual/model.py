@@ -7,19 +7,19 @@ class Generator_Residual(nn.Module):
         super(Generator_Residual, self).__init__()
 
         # Initial convolution block
-        self.src_encoder = nn.Sequential(
+        self.src_init = nn.Sequential(
             nn.Conv2d(src_ch, dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(dim),
             nn.ReLU(inplace=True)
         )
 
-        self.tgt_encoder = nn.Sequential(
+        self.tgt_init = nn.Sequential(
             nn.Conv2d(tgt_ch, dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(dim),
             nn.ReLU(inplace=True)
         )
 
-        self.tgt_g = nn.Sequential(
+        self.src_encoder = nn.Sequential(
             nn.Conv2d(dim, 2*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
@@ -28,16 +28,13 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
-            nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
-            nn.BatchNorm2d(2*dim),
-            nn.ReLU(inplace=True),
         )
 
-        self.residual_g = nn.Sequential(
+        self.res_encoder = nn.Sequential(
             nn.Conv2d(2*dim, 2*dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
             nn.ReLU(inplace=True),
@@ -46,29 +43,36 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(4*dim, 4*dim, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(4*dim),
+            nn.ReLU(inplace=True),
+        )
+
+        self.src_decoder = nn.Sequential(
+            nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(8*dim),
+            nn.ReLU(inplace=True),
+
+            nn.Conv2d(8*dim, 4*dim, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(4*dim),
             nn.ReLU(inplace=True),
 
             nn.ConvTranspose2d(4*dim, 2*dim, 4, stride=2, padding=1),
             nn.BatchNorm2d(2*dim),
-            nn.ReLU(inplace=True),
-        )
+            nn.ReLU(inplace=True),            
 
-        self.out_deconv = nn.Sequential(
             nn.ConvTranspose2d(2*dim, out_ch, 4, stride=2, padding=1),
-            nn.Tanh()
+            nn.Tanh(),
         )
 
     def forward(self, src, tgt):
-        src = self.src_encoder(src)
-        tgt = self.tgt_encoder(tgt)
-        x = self.tgt_g(tgt)
-        residual = self.residual_g(torch.cat([src, tgt], 1))
+        src = self.src_init(src)
+        tgt = self.tgt_init(tgt)
+        x = self.src_encoder(src)
+        residual = self.res_encoder(torch.cat([src, tgt], 1))
         x = x + residual
-        x = self.out_deconv(x)
+        x = self.src_decoder(x)
         return x
-
 
 class Generator_Restore(nn.Module):
     def __init__(self, input_ch=3, out_ch=1, dim=32):
