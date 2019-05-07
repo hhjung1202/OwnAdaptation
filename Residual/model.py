@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator_Residual(nn.Module):
-    def __init__(self, tgt_ch=3, out_ch=3, y=10, dim=32):
+    def __init__(self, tgt_ch=3, out_tgt=3, out_src=1, y=10, dim=32):
         super(Generator_Residual, self).__init__()
 
         self.tgt_init = nn.Sequential(
@@ -57,7 +57,7 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(dim, out_ch, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(dim, out_tgt, kernel_size=3, stride=1, padding=1),
             nn.Tanh(),
         )
 
@@ -78,13 +78,11 @@ class Generator_Residual(nn.Module):
             nn.BatchNorm2d(dim),
             nn.ReLU(inplace=True),
 
-            nn.Conv2d(dim, out_ch, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(dim, out_src, kernel_size=3, stride=1, padding=1),
             nn.Tanh(),
         )
 
     def conv_y_concat(self, x, y):
-        print('x', x.size())
-        print('y', y.size())
         y = y.view(-1, y.size(1), 1, 1)
         x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
         return x
