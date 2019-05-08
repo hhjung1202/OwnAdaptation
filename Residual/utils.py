@@ -19,9 +19,9 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self):
-        self.G_Residual = Generator_Residual(tgt_ch=3, out_tgt=3, out_src=1, y=10, dim=32) # input : [z, y]
-        self.D_tgt = Discriminator(input_ch=3) # input : x_src, G_AB
-        self.D_src = Discriminator_Source(input_ch=1, y=10) # input : x_target, G_BA
+        self.G_Residual = Generator_Residual(tgt_ch=1, out_tgt=1, out_src=3, y=10, dim=32) # input : [z, y]
+        self.D_tgt = Discriminator(input_ch=1) # input : x_src, G_AB
+        self.D_src = Discriminator_Source(input_ch=3, y=10) # input : x_target, G_BA
         
         # self.G_Restore = Generator_Restore(input_ch=3, out_ch=1) # input : [z, y]
 
