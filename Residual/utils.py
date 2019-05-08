@@ -147,7 +147,6 @@ class ImagePool_ver2():
             return images
         to_return = []
         for _, (image, y) in enumerate(zip(data.data, label.data)):
-        for image in data.data:
             image = torch.unsqueeze(image, 0)
             y = torch.unsqueeze(y, 0)
             if len(self.data) < self.max_size:
