@@ -146,6 +146,8 @@ class ImagePool_ver2():
         if self.max_size <= 0:  # if the buffer size is 0, do nothing
             return images
         to_return = []
+        img = []
+        l = []
         for _, (image, y) in enumerate(zip(data.data, label.data)):
             image = torch.unsqueeze(image, 0)
             y = torch.unsqueeze(y, 0)
@@ -159,7 +161,12 @@ class ImagePool_ver2():
                     self.data[i] = (image, y)
                 else:
                     to_return.append((image, y))
-        return Variable(torch.cat(to_return))
+
+        for x, y in to_return:
+            img.append(x)
+            l.append(y)
+
+        return Variable(torch.cat(img)), Variable(torch.cat(l))
 
 
 class LambdaLR():
