@@ -157,7 +157,7 @@ class ImagePool_ver2():
             else:
                 if random.uniform(0,1) > 0.5:
                     i = random.randint(0, self.max_size-1)
-                    to_return.append(self.data[i].clone())
+                    to_return.append(self.data[i]+tuple())
                     self.data[i] = (image, y)
                 else:
                     to_return.append((image, y))
