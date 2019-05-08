@@ -125,3 +125,39 @@ class Discriminator(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+class Discriminator_Source(nn.Module):
+    def __init__(self, input_ch=1, y=10, dim=32):
+        super(Discriminator_Source, self).__init__()
+
+        def block(in_filters, out_filters, kernel_size=4, stride=2):
+            return nn.Sequential(
+                nn.Conv2d(in_filters, out_filters, kernel_size=kernel_size, stride=stride, padding=1),
+                nn.BatchNorm2d(out_filters),
+                nn.LeakyReLU(0.2, inplace=True)
+            )
+
+        self.block1 = block(in_filters=input_ch, out_filters=dim, kernel_size=4, stride=2)
+        self.block2 = block(in_filters=dim+y, out_filters=2*dim, kernel_size=4, stride=2)
+        self.block3 = block(in_filters=2*dim+y, out_filters=4*dim, kernel_size=4, stride=2)
+
+        fc_size = 4 * dim * 4**2
+        self.fc1 = nn.Linear(fc_size + y, fc_size)
+        self.fc2 = nn.Linear(fc_size + y, fc_size//4)
+        self.fc3 = nn.Linear(fc_size//4 + y, 1)
+
+    def conv_y_concat(self, x, y):
+        y = y.view(-1, y.size(1), 1, 1)
+        x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
+        return x
+
+    def forward(self, x, y):
+        x = self.block1(x)
+        x = self.block2(self.conv_y_concat(x,y))
+        x = self.block3(self.conv_y_concat(x,y))
+
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(torch.cat([x,y],1)))
+        x = F.relu(self.fc2(torch.cat([x,y],1)))
+        x = self.fc3(torch.cat([x,y],1))
+        return x
