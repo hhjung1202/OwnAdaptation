@@ -136,6 +136,33 @@ class ImagePool():
                     to_return.append(image)
         return Variable(torch.cat(to_return))
 
+
+class ImagePool_ver2():
+    def __init__(self, max_size=1024):
+        self.max_size = max_size
+        self.data = []
+
+    def query(self, data, label):
+        if self.max_size <= 0:  # if the buffer size is 0, do nothing
+            return images
+        to_return = []
+        for _, (image, y) in enumerate(zip(data.data, label.data)):
+        for image in data.data:
+            image = torch.unsqueeze(image, 0)
+            y = torch.unsqueeze(y, 0)
+            if len(self.data) < self.max_size:
+                self.data.append((image, y))
+                to_return.append((image, y))
+            else:
+                if random.uniform(0,1) > 0.5:
+                    i = random.randint(0, self.max_size-1)
+                    to_return.append(self.data[i].clone())
+                    self.data[i] = (image, y)
+                else:
+                    to_return.append((image, y))
+        return Variable(torch.cat(to_return))
+
+
 class LambdaLR():
     def __init__(self, n_epochs, offset, decay_start_epoch):
         assert ((n_epochs - decay_start_epoch) > 0), "Decay must start before the training session ends!"

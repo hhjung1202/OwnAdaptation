@@ -62,7 +62,7 @@ cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-fake_S_buffer = utils.ImagePool(max_size=args.max_buffer)
+fake_S_buffer = utils.ImagePool_ver2(max_size=args.max_buffer)
 fake_T_buffer = utils.ImagePool(max_size=args.max_buffer)
 
 # adversarial_loss = torch.nn.BCELoss()
@@ -173,11 +173,13 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_D_tgt.zero_grad()
         state_info.optim_D_src.zero_grad()
 
-        # fake_T_ = fake_T_buffer.query(fake_T)
+        fake_T_ = fake_T_buffer.query(fake_T)
+        fake_S_, y_one_ = fake_S_buffer.query(fake_S, y_one)
+        
         loss_real_T = criterion_GAN(state_info.D_tgt(real_T), valid)
-        loss_fake_T = criterion_GAN(state_info.D_tgt(fake_T.detach()), fake)
+        loss_fake_T = criterion_GAN(state_info.D_tgt(fake_T_.detach()), fake)
         loss_real_S = criterion_GAN(state_info.D_src(real_S, y_one), valid)
-        loss_fake_S = criterion_GAN(state_info.D_src(fake_S.detach(), y_one), fake)
+        loss_fake_S = criterion_GAN(state_info.D_src(fake_S_.detach(), y_one_), fake)
 
         loss_Target = args.dis * (loss_real_T + loss_fake_T)
         loss_Source = args.dis2 * (loss_real_S + loss_fake_S)
