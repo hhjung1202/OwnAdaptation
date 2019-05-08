@@ -39,6 +39,7 @@ parser.add_argument('--gen2', type=float, default=1.0, help='Source Generator lo
 parser.add_argument('--dis', type=float, default=1.0, help='Target Discriminator loss weight')
 parser.add_argument('--dis2', type=float, default=1.0, help='Source Discriminator loss weight')
 parser.add_argument('--recon', type=float, default=0.0, help='Discriminator loss weight')
+parser.add_argument('--recon2', type=float, default=0.0, help='Discriminator loss weight')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
@@ -66,7 +67,7 @@ fake_T_buffer = utils.ImagePool(max_size=args.max_buffer)
 
 # adversarial_loss = torch.nn.BCELoss()
 criterion_GAN = torch.nn.MSELoss()
-criterion_Cycle = torch.nn.L1Loss()
+criterion_L1 = torch.nn.L1Loss()
 criterion_Recov = torch.nn.MSELoss()
 criterion = nn.CrossEntropyLoss().cuda()
 
@@ -159,7 +160,8 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         loss_GAN_T = args.gen * criterion_GAN(state_info.D_tgt(fake_T), valid)
         loss_GAN_S = args.gen2 * criterion_GAN(state_info.D_src(fake_S, y_one), valid)
         loss_Recon = criterion_Recov(fake_T, shuffle_T)
-        loss_G = loss_GAN_T + loss_GAN_S + args.recon * loss_Recon
+        loss_Recon2 = criterion_L1(fake_S, real_S)
+        loss_G = loss_GAN_T + loss_GAN_S + args.recon * loss_Recon + args.recon2 * loss_Recon2
 
         loss_G.backward(retain_graph=True)
         state_info.optim_G_Residual.step()
@@ -191,11 +193,11 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
-                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Target.item(), loss_Source.item()))
+            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
+                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item()))
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
-                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Target.item(), loss_Source.item()))
+            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
+                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item()))
 
     utils.print_log('')
 
