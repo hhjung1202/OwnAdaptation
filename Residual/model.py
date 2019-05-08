@@ -26,19 +26,16 @@ class Generator_Residual(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.res_encoder = nn.Sequential(
-            nn.Conv2d(dim + y, 2*dim, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(2*dim),
-            nn.ReLU(inplace=True),
+        def block(in_filters, out_filters, kernel_size=4, stride=2):
+            return nn.Sequential(
+                nn.Conv2d(in_filters, out_filters, kernel_size=kernel_size, stride=stride, padding=1),
+                nn.BatchNorm2d(out_filters),
+                nn.ReLU(inplace=True),
+            )
 
-            nn.Conv2d(2*dim, 4*dim, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(4*dim),
-            nn.ReLU(inplace=True),
-
-            nn.Conv2d(4*dim, 8*dim, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(8*dim),
-            nn.ReLU(inplace=True),
-        )
+        self.res_encoder1 = block(in_filters=dim+y, out_filters=2*dim, kernel_size=4, stride=2)
+        self.res_encoder2 = block(in_filters=2*dim+y, out_filters=4*dim, kernel_size=3, stride=1)
+        self.res_encoder3 = block(in_filters=4*dim+y, out_filters=8*dim, kernel_size=3, stride=1)
 
         self.tgt_decoder = nn.Sequential(
             nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
@@ -89,11 +86,12 @@ class Generator_Residual(nn.Module):
 
     def forward(self, tgt, y):
         tgt = self.tgt_init(tgt)
-        res = self.conv_y_concat(tgt, y) # 추가 실험을 통해서 여러 개로 두도록 학습시켜보자, dim 여러개로 학습을 해보자
+
+        res = self.res_encoder1(self.conv_y_concat(tgt, y))
+        res = self.res_encoder2(self.conv_y_concat(res, y))
+        res = self.res_encoder3(self.conv_y_concat(res, y))
 
         x = self.tgt_encoder(tgt)
-        res = self.res_encoder(res)
-
         x = self.tgt_decoder(x + res)
         res = self.res_decoder(res)
 
