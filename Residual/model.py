@@ -34,7 +34,7 @@ class Generator_Residual(nn.Module):
                 nn.ReLU(inplace=True),
             )
 
-        self.res_encoder1 = block(in_filters=dim+y, out_filters=2*dim, kernel_size=4, stride=2)
+        self.res_encoder1 = block(in_filters=dim+y+rand_dim, out_filters=2*dim, kernel_size=4, stride=2)
         self.res_encoder2 = block(in_filters=2*dim+y, out_filters=4*dim, kernel_size=3, stride=1)
         self.res_encoder3 = block(in_filters=4*dim, out_filters=8*dim, kernel_size=3, stride=1)
 
