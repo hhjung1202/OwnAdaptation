@@ -18,19 +18,22 @@ class model_optim_state_info(object):
     def __init__(self):
         pass
 
-    def model_init(self):
-        self.G_Residual = Generator_Residual(tgt_ch=1, out_tgt=1, out_src=3, y=10, dim=32) # input : [z, y]
-        self.D_tgt = Discriminator(input_ch=1) # input : x_src, G_AB
-        self.D_src = Discriminator_Source(input_ch=3, y=10) # input : x_target, G_BA
+    def model_init(self, src_ch=3, tar_ch=1, rand_dim=16, label=10, dim=32):
+        self.G_Residual = Generator_Residual(tgt_ch=tar_ch, out_tgt=tar_ch, out_src=src_ch, y=label, dim=dim, rand_dim=rand_dim) # input : [z, y]
+        self.D_tgt = Discriminator(input_ch=tar_ch) # input : x_src, G_AB
+        self.D_src = Discriminator_Source(input_ch=src_ch, y=label) # input : x_target, G_BA
         
         # self.G_Restore = Generator_Restore(input_ch=3, out_ch=1) # input : [z, y]
 
         # self.cls_src = Classifier(input_ch=1) # input: G_AB
         # self.cls_target = Classifier(input_ch=3) # input: G_BA
 
-    def forward(self, tgt, y):
-        fake_T, fake_S = self.G_Residual(tgt, y)
-        return fake_T, fake_S
+    def forward(self, tgt, y, rand, test=False):
+        fake_T, fake_S, img_TT, img_ST, img_TS = self.G_Residual(tgt, y, rand)
+        if test:
+            return fake_T, fake_S, img_TT, img_ST, img_TS
+        else:
+            return fake_T, fake_S
 
         
     def model_cuda_init(self):

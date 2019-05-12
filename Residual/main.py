@@ -24,7 +24,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='mo
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-dim', type=int, default=100, help='dimensionality of the latent space')
+parser.add_argument('--random', type=int, default=16, help='dimension of the random')
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--max-buffer', type=int, default=8196, help='Fake GAN Buffer Image')
 
@@ -67,8 +67,8 @@ fake_T_buffer = utils.ImagePool(max_size=args.max_buffer)
 
 # adversarial_loss = torch.nn.BCELoss()
 criterion_GAN = torch.nn.MSELoss()
-criterion_L1 = torch.nn.L1Loss()
-criterion_Recov = torch.nn.MSELoss()
+# criterion_L1 = torch.nn.L1Loss()
+criterion_L2 = torch.nn.MSELoss()
 criterion = nn.CrossEntropyLoss().cuda()
 
 def main():
@@ -77,12 +77,12 @@ def main():
     utils.default_model_dir = args.dir
     start_time = time.time()
 
-    Source_train_loader, Source_test_loader = dataset_selector(args.sd)
-    Target_train_loader, Target_test_loader = dataset_selector(args.td)
-    Target_shuffle_loader, _ = dataset_selector(args.td)
+    Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
+    Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
+    Target_shuffle_loader, _, _ = dataset_selector(args.td)
 
     state_info = utils.model_optim_state_info()
-    state_info.model_init()
+    state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, rand_dim=args.random)
     state_info.model_cuda_init()
 
     if cuda:
@@ -150,17 +150,19 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         real_S, y, y_one = to_var(real_S, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
         real_T, shuffle_T = to_var(real_T, FloatTensor), to_var(shuffle_T, FloatTensor)
 
+        rand = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.random, args.img_size//2, args.img_size//2))))
+
         # -----------------------
         #  Train Generator
         # -----------------------
 
         state_info.optim_G_Residual.zero_grad()
-        fake_T, fake_S = state_info.forward(shuffle_T, y_one)
+        fake_T, fake_S = state_info.forward(shuffle_T, y_one, rand)
 
         loss_GAN_T = args.gen * criterion_GAN(state_info.D_tgt(fake_T), valid)
         loss_GAN_S = args.gen2 * criterion_GAN(state_info.D_src(fake_S, y_one), valid)
-        loss_Recon = criterion_Recov(fake_T, shuffle_T)
-        loss_Recon2 = criterion_L1(fake_S, real_S)
+        loss_Recon = criterion_L2(fake_T, shuffle_T)
+        loss_Recon2 = criterion_L2(fake_S, real_S)
         loss_G = loss_GAN_T + loss_GAN_S + args.recon * loss_Recon + args.recon2 * loss_Recon2
 
         loss_G.backward(retain_graph=True)
@@ -173,13 +175,10 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_D_tgt.zero_grad()
         state_info.optim_D_src.zero_grad()
 
-        fake_T_ = fake_T_buffer.query(fake_T)
-        fake_S_, y_one_ = fake_S_buffer.query(fake_S, y_one)
-        
         loss_real_T = criterion_GAN(state_info.D_tgt(real_T), valid)
-        loss_fake_T = criterion_GAN(state_info.D_tgt(fake_T_.detach()), fake)
+        loss_fake_T = criterion_GAN(state_info.D_tgt(fake_T.detach()), fake)
         loss_real_S = criterion_GAN(state_info.D_src(real_S, y_one), valid)
-        loss_fake_S = criterion_GAN(state_info.D_src(fake_S_.detach(), y_one_), fake)
+        loss_fake_S = criterion_GAN(state_info.D_src(fake_S.detach(), y_one_), fake)
 
         loss_Target = args.dis * (loss_real_T + loss_fake_T)
         loss_Source = args.dis2 * (loss_real_S + loss_fake_S)
@@ -217,17 +216,28 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT'))
     img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/cross'))
+    img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TT'))
+    img_path5 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/ST'))
+    img_path6 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TS'))
 
-    fake_T, fake_S = state_info.forward(realT_sample, realS_y)
+    rand = Variable(FloatTensor(np.random.normal(0, 1, (realT_sample.size(0), args.random, args.img_size//2, args.img_size//2))))
+    fake_T, fake_S, img_TT, img_ST, img_TS = state_info.forward(realT_sample, realS_y, rand, test=True)
     fake_T, fake_S = to_data(fake_T), to_data(fake_S)
+    img_TT, img_ST, img_TS = to_data(img_TT), to_data(img_ST), to_data(img_TS)
 
-    residual1 = merge_images(realS_sample, fake_S)
-    residual2 = merge_images(realT_sample, fake_T)
-    residual3 = merge_images(realS_sample, fake_T)
+    cat1 = merge_images(realS_sample, fake_S)
+    cat2 = merge_images(realT_sample, fake_T)
+    cat3 = merge_images(realS_sample, fake_T)
+    cat4 = merge_images(realT_sample, img_TT)
+    cat5 = merge_images(realS_sample, img_ST)
+    cat6 = merge_images(realT_sample, img_TS)
 
-    save_image(residual1.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
-    save_image(residual2.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
-    save_image(residual3.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
+    save_image(cat1.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
+    save_image(cat2.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
+    save_image(cat3.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
+    save_image(cat4.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
+    save_image(cat5.data, os.path.join(img_path5, '%d.png' % epoch), normalize=True)
+    save_image(cat6.data, os.path.join(img_path6, '%d.png' % epoch), normalize=True)
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
@@ -245,9 +255,9 @@ def merge_images(sources, targets, row=10):
 
 def dataset_selector(data):
     if data == 'mnist':
-        return dataset.MNIST_loader(img_size=args.img_size)
+        return dataset.MNIST_loader(img_size=args.img_size), 1
     elif data == 'svhn':
-        return dataset.SVHN_loader(img_size=args.img_size)
+        return dataset.SVHN_loader(img_size=args.img_size), 3
 
 def to_data(x):
     """Converts variable to numpy."""

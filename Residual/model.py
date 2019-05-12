@@ -3,9 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class Generator_Residual(nn.Module):
-    def __init__(self, tgt_ch=3, out_tgt=3, out_src=1, y=10, dim=32):
+    def __init__(self, tgt_ch=3, out_tgt=3, out_src=1, y=10, dim=32, rand_dim=16):
         super(Generator_Residual, self).__init__()
 
+        self.rand_dim = rand_dim
         self.tgt_init = nn.Sequential(
             nn.Conv2d(tgt_ch, dim, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(dim),
@@ -35,7 +36,7 @@ class Generator_Residual(nn.Module):
 
         self.res_encoder1 = block(in_filters=dim+y, out_filters=2*dim, kernel_size=4, stride=2)
         self.res_encoder2 = block(in_filters=2*dim+y, out_filters=4*dim, kernel_size=3, stride=1)
-        self.res_encoder3 = block(in_filters=4*dim+y, out_filters=8*dim, kernel_size=3, stride=1)
+        self.res_encoder3 = block(in_filters=4*dim, out_filters=8*dim, kernel_size=3, stride=1)
 
         self.tgt_decoder = nn.Sequential(
             nn.Conv2d(8*dim, 8*dim, kernel_size=3, stride=1, padding=1),
@@ -79,23 +80,32 @@ class Generator_Residual(nn.Module):
             nn.Tanh(),
         )
 
-    def conv_y_concat(self, x, y):
+    def conv_y_concat(self, x, y, rand=None):
         y = y.view(-1, y.size(1), 1, 1)
-        x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
+        if rand is None:
+            x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
+        else:
+            x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda(), rand], 1)
         return x
 
-    def forward(self, tgt, y):
+    def forward(self, tgt, y, rand):
+        # rand = rand.view(-1, self.rand_dim, 16, 16)
         tgt = self.tgt_init(tgt)
 
-        res = self.res_encoder1(self.conv_y_concat(tgt, y))
+        res = self.res_encoder1(self.conv_y_concat(tgt, y, rand))
         res = self.res_encoder2(self.conv_y_concat(res, y))
-        res = self.res_encoder3(self.conv_y_concat(res, y))
+        res = self.res_encoder3(res, y)
 
         x = self.tgt_encoder(tgt)
+
+        img_TT = self.tgt_decoder(x)
+        img_ST = self.tgt_decoder(res)
+        img_TS = self.res_decoder(x)
+
         x = self.tgt_decoder(x + res)
         res = self.res_decoder(res)
 
-        return x, res
+        return x, res, img_TT, img_ST, img_TS
 
 
 class Discriminator(nn.Module):
@@ -142,9 +152,9 @@ class Discriminator_Source(nn.Module):
         self.block3 = block(in_filters=2*dim+y, out_filters=4*dim, kernel_size=4, stride=2)
 
         fc_size = 4 * dim * 4**2
-        self.fc1 = nn.Linear(fc_size + y, fc_size)
-        self.fc2 = nn.Linear(fc_size + y, fc_size//4)
-        self.fc3 = nn.Linear(fc_size//4 + y, 1)
+        self.fc1 = nn.Linear(fc_size, fc_size)
+        self.fc2 = nn.Linear(fc_size, fc_size//4)
+        self.fc3 = nn.Linear(fc_size//4, 1)
 
     def conv_y_concat(self, x, y):
         y = y.view(-1, y.size(1), 1, 1)
@@ -157,7 +167,7 @@ class Discriminator_Source(nn.Module):
         x = self.block3(self.conv_y_concat(x,y))
 
         x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(torch.cat([x,y],1)))
-        x = F.relu(self.fc2(torch.cat([x,y],1)))
-        x = self.fc3(torch.cat([x,y],1))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
         return x
