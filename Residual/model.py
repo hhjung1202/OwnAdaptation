@@ -94,7 +94,7 @@ class Generator_Residual(nn.Module):
 
         res = self.res_encoder1(self.conv_y_concat(tgt, y, rand))
         res = self.res_encoder2(self.conv_y_concat(res, y))
-        res = self.res_encoder3(res, y)
+        res = self.res_encoder3(res)
 
         x = self.tgt_encoder(tgt)
 
