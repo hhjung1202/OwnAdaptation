@@ -40,6 +40,7 @@ parser.add_argument('--dis', type=float, default=1.0, help='Target Discriminator
 parser.add_argument('--dis2', type=float, default=1.0, help='Source Discriminator loss weight')
 parser.add_argument('--recon', type=float, default=1.0, help='Discriminator loss weight')
 parser.add_argument('--recon2', type=float, default=1.0, help='Discriminator loss weight')
+parser.add_argument('--feature', type=float, default=1e-4, help='Feature loss weight')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
@@ -194,7 +195,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         state_info.optim_G_Residual.zero_grad()
-        loss_feature = criterion_L2(x_, res_)
+        loss_feature = args.feature * criterion_L2(x_, res_)
         loss_feature.backward()
         state_info.optim_G_Residual.step()
 
