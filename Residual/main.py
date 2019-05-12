@@ -178,7 +178,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         loss_real_T = criterion_GAN(state_info.D_tgt(real_T), valid)
         loss_fake_T = criterion_GAN(state_info.D_tgt(fake_T.detach()), fake)
         loss_real_S = criterion_GAN(state_info.D_src(real_S, y_one), valid)
-        loss_fake_S = criterion_GAN(state_info.D_src(fake_S.detach(), y_one_), fake)
+        loss_fake_S = criterion_GAN(state_info.D_src(fake_S.detach(), y_one), fake)
 
         loss_Target = args.dis * (loss_real_T + loss_fake_T)
         loss_Source = args.dis2 * (loss_real_S + loss_fake_S)
