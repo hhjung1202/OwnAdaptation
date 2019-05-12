@@ -17,7 +17,7 @@ def SVHN_loader(img_size, batchSize=128):
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batchSize, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batchSize, shuffle=False)
-    return train_loader, test_loader
+    return train_loader, test_loader, 3
 
     
 def MNIST_loader(img_size, batchSize=128):
@@ -35,7 +35,7 @@ def MNIST_loader(img_size, batchSize=128):
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batchSize, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batchSize, shuffle=False)
-    return train_loader, test_loader
+    return train_loader, test_loader, 1
 
 
 def cifar10_loader():

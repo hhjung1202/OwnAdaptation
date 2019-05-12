@@ -12,11 +12,11 @@ import dataset
 import math
 
 parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Training')
-parser.add_argument('--sd', default='svhn', type=str, help='source dataset')
-parser.add_argument('--td', default='mnist', type=str, help='target dataset')
+parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
+parser.add_argument('--td', default='svhn', type=str, help='target dataset')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
-parser.add_argument('--epoch', default=400, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--decay-epoch', default=100, type=int, metavar='N', help='epoch from which to start lr decay')
+parser.add_argument('--epoch', default=200, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--decay-epoch', default=80, type=int, metavar='N', help='epoch from which to start lr decay')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
@@ -38,8 +38,8 @@ parser.add_argument('--gen', type=float, default=1.0, help='Target Generator los
 parser.add_argument('--gen2', type=float, default=1.0, help='Source Generator loss weight')
 parser.add_argument('--dis', type=float, default=1.0, help='Target Discriminator loss weight')
 parser.add_argument('--dis2', type=float, default=1.0, help='Source Discriminator loss weight')
-parser.add_argument('--recon', type=float, default=0.0, help='Discriminator loss weight')
-parser.add_argument('--recon2', type=float, default=0.0, help='Discriminator loss weight')
+parser.add_argument('--recon', type=float, default=1.0, help='Discriminator loss weight')
+parser.add_argument('--recon2', type=float, default=1.0, help='Discriminator loss weight')
 
 parser.add_argument('--print-freq', '-p', default=10, type=int,
                     metavar='N', help='print frequency (default: 10)')
@@ -255,9 +255,9 @@ def merge_images(sources, targets, row=10):
 
 def dataset_selector(data):
     if data == 'mnist':
-        return dataset.MNIST_loader(img_size=args.img_size), 1
+        return dataset.MNIST_loader(img_size=args.img_size)
     elif data == 'svhn':
-        return dataset.SVHN_loader(img_size=args.img_size), 3
+        return dataset.SVHN_loader(img_size=args.img_size)
 
 def to_data(x):
     """Converts variable to numpy."""
