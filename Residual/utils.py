@@ -29,11 +29,11 @@ class model_optim_state_info(object):
         # self.cls_target = Classifier(input_ch=3) # input: G_BA
 
     def forward(self, tgt, y, rand, test=False):
-        fake_T, fake_S, img_TT, img_ST, img_TS = self.G_Residual(tgt, y, rand)
+        fake_T, fake_S, x_, res_, img_TT, img_ST, img_TS = self.G_Residual(tgt, y, rand)
         if test:
             return fake_T, fake_S, img_TT, img_ST, img_TS
         else:
-            return fake_T, fake_S
+            return fake_T, fake_S, x_, res_
 
         
     def model_cuda_init(self):

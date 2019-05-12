@@ -98,14 +98,17 @@ class Generator_Residual(nn.Module):
 
         x = self.tgt_encoder(tgt)
 
-        img_TT = self.tgt_decoder(x)
-        img_ST = self.tgt_decoder(res)
-        img_TS = self.res_decoder(x)
+        x_ = x
+        res_ = res
 
         x = self.tgt_decoder(x + res)
         res = self.res_decoder(res)
 
-        return x, res, img_TT, img_ST, img_TS
+        img_TT = self.tgt_decoder(x_)
+        img_ST = self.tgt_decoder(res_)
+        img_TS = self.res_decoder(x_)
+
+        return x, res, x_, res_, img_TT, img_ST, img_TS
 
 
 class Discriminator(nn.Module):

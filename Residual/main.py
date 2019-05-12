@@ -132,7 +132,7 @@ def main():
 
 def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, G-GAN-T, G-GAN-S, G-RECON, D-Target, D-Source')
+    utils.print_log('Type, Epoch, Batch, G-GAN-T, G-GAN-S, G-RECON_T, G-RECON_Src, D-Target, D-Source, Feature_loss')
     
     state_info.set_train_mode()
 
@@ -157,7 +157,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         state_info.optim_G_Residual.zero_grad()
-        fake_T, fake_S = state_info.forward(shuffle_T, y_one, rand)
+        fake_T, fake_S, x_, res_ = state_info.forward(shuffle_T, y_one, rand)
 
         loss_GAN_T = args.gen * criterion_GAN(state_info.D_tgt(fake_T), valid)
         loss_GAN_S = args.gen2 * criterion_GAN(state_info.D_src(fake_S, y_one), valid)
@@ -190,15 +190,24 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_D_src.step()
 
         # -----------------------
+        #  Train Discriminator
+        # -----------------------
+
+        state_info.optim_G_Residual.zero_grad()
+        loss_feature = criterion_L2(x_, res_)
+        loss_feature.backward()
+        state_info.optim_G_Residual.step()
+
+        # -----------------------
         #  Log Print
         # -----------------------
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
-                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item()))
+            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
+                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item(), loss_feature.item()))
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
-                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item()))
+            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
+                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item(), loss_feature.item()))
 
     utils.print_log('')
 
