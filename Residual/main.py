@@ -133,7 +133,7 @@ def main():
 
 def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, G-GAN-T, G-GAN-S, G-RECON_T, G-RECON_Src, D-Target, D-Source, Feature_loss')
+    utils.print_log('Type, Epoch, Batch, G-GAN-T, G-GAN-S, G-RECON_T, G-RECON_Src, D-Target, D-Source, OP Gan, OP Dis')
     
     state_info.set_train_mode()
 
@@ -158,13 +158,14 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         # -----------------------
 
         state_info.optim_G_Residual.zero_grad()
-        fake_T, fake_S, x_, res_ = state_info.forward(shuffle_T, y_one, rand)
+        fake_T, fake_S, img_ST = state_info.forward(shuffle_T, y_one, rand)
 
         loss_GAN_T = args.gen * criterion_GAN(state_info.D_tgt(fake_T), valid)
         loss_GAN_S = args.gen2 * criterion_GAN(state_info.D_src(fake_S, y_one), valid)
+        loss_OP = args.gen * criterion_GAN(state_info.D_tgt(img_ST), valid)
         loss_Recon = criterion_L2(fake_T, shuffle_T)
         loss_Recon2 = criterion_L2(fake_S, real_S)
-        loss_G = loss_GAN_T + loss_GAN_S + args.recon * loss_Recon + args.recon2 * loss_Recon2
+        loss_G = loss_GAN_T + loss_GAN_S + loss_OP + args.recon * loss_Recon + args.recon2 * loss_Recon2
 
         loss_G.backward(retain_graph=True)
         state_info.optim_G_Residual.step()
@@ -178,10 +179,11 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
 
         loss_real_T = criterion_GAN(state_info.D_tgt(real_T), valid)
         loss_fake_T = criterion_GAN(state_info.D_tgt(fake_T.detach()), fake)
+        loss_fake_OP = criterion_GAN(state_info.D_tgt(img_ST.detach()), fake)
         loss_real_S = criterion_GAN(state_info.D_src(real_S, y_one), valid)
         loss_fake_S = criterion_GAN(state_info.D_src(fake_S.detach(), y_one), fake)
 
-        loss_Target = args.dis * (loss_real_T + loss_fake_T)
+        loss_Target = args.dis * (loss_real_T + loss_fake_T + loss_fake_OP)
         loss_Source = args.dis2 * (loss_real_S + loss_fake_S)
 
         loss_Target.backward()
@@ -191,24 +193,15 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
         state_info.optim_D_src.step()
 
         # -----------------------
-        #  Train Discriminator
-        # -----------------------
-
-        state_info.optim_G_Residual.zero_grad()
-        loss_feature = args.feature * criterion_L2(x_, res_)
-        loss_feature.backward()
-        state_info.optim_G_Residual.step()
-
-        # -----------------------
         #  Log Print
         # -----------------------
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
-                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item(), loss_feature.item()))
+            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
+                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item(), loss_OP.item(), loss_fake_OP.item()))
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
-                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item(), loss_feature.item()))
+            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.4f}'
+                  .format(epoch, it, loss_GAN_T.item(), loss_GAN_S.item(), loss_Recon.item(), loss_Recon2.item(), loss_Target.item(), loss_Source.item(), loss_OP.item(), loss_fake_OP.item()))
 
     utils.print_log('')
 

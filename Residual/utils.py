@@ -33,7 +33,7 @@ class model_optim_state_info(object):
         if test:
             return fake_T, fake_S, img_TT, img_ST, img_TS
         else:
-            return fake_T, fake_S, x_, res_
+            return fake_T, fake_S, img_ST
 
         
     def model_cuda_init(self):
