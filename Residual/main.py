@@ -116,7 +116,7 @@ def main():
 
     for epoch in range(args.epoch):
         
-        train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
+        train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, tar_ch, epoch)
         test(state_info, realS_sample, realS_y, realT_sample, epoch)
         # if prec_result > best_prec_result:
         #     best_prec_result = prec_result
@@ -131,7 +131,7 @@ def main():
     utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
 
 
-def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch): # all 
+def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, tar_ch, epoch): # all 
 
     utils.print_log('Type, Epoch, Batch, G-GAN-T, G-GAN-S, G-RECON_T, G-RECON_Src, D-Target, D-Source, OP Gan, OP Dis')
     
