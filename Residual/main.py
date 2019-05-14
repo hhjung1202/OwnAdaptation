@@ -217,15 +217,17 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
     # Sample noise
 
-    t1 = F.pad(realS_sample, (2, 2, 2, 2), mode='reflect')
-    t2 = F.pad(realT_sample, (2, 2, 2, 2), mode='reflect')
     smoothing = utils.GaussianSmoothing(3, 5, 1)
-    output = smoothing(t1)
-    smoothing = utils.GaussianSmoothing(1, 5, 1)
-    output2 = smoothing(t2)
+
+    output = F.pad(realS_sample, (2, 2, 2, 2), mode='reflect')
+    output = smoothing(output)
+    output = F.pad(output, (2, 2, 2, 2), mode='reflect')
+    output1 = smoothing(output)
+    output1 = F.pad(output1, (2, 2, 2, 2), mode='reflect')
+    output2 = smoothing(output1)
 
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test'))
-    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test2'))
+    img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test2'))
     # img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS'))
     # img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT'))
     # img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/cross'))
@@ -240,8 +242,8 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     output = to_data(output)
     output2 = to_data(output2)
 
-    cat1 = merge_images(realS_sample, output)
-    cat2 = merge_images(realT_sample, output2)
+    cat1 = merge_images(realS_sample, output1)
+    cat2 = merge_images(realS_sample, output2)
     # cat1 = merge_images(realS_sample, fake_S)
     # cat2 = merge_images(realT_sample, fake_T)
     # cat3 = merge_images(realS_sample, fake_T)
