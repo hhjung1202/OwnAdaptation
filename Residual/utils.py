@@ -184,6 +184,17 @@ class GaussianSmoothing(nn.Module):
         """
         return self.conv(input, weight=self.weight, groups=self.groups)
 
+def multiple_Gaussian(input, num_iter=8, channels=3, kernel_size=5, sigma=1, dim=2):
+
+    smoothing = GaussianSmoothing(channels, kernel_size, sigma)
+
+    for _ in range(num_iter):
+        input = F.pad(input, (2, 2, 2, 2), mode='reflect')
+        input = smoothing(input)
+
+    return input
+    
+
 class ImagePool():
     def __init__(self, max_size=1024):
         self.max_size = max_size

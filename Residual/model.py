@@ -35,7 +35,7 @@ class Generator_Residual(nn.Module):
             )
 
         self.res_encoder1 = block(in_filters=dim+y+rand_dim, out_filters=2*dim, kernel_size=4, stride=2)
-        self.res_encoder2 = block(in_filters=2*dim+y, out_filters=4*dim, kernel_size=3, stride=1)
+        self.res_encoder2 = block(in_filters=2*dim, out_filters=4*dim, kernel_size=3, stride=1)
         self.res_encoder3 = block(in_filters=4*dim, out_filters=8*dim, kernel_size=3, stride=1)
 
         self.tgt_decoder = nn.Sequential(
@@ -93,7 +93,7 @@ class Generator_Residual(nn.Module):
         tgt = self.tgt_init(tgt)
 
         res = self.res_encoder1(self.conv_y_concat(tgt, y, rand))
-        res = self.res_encoder2(self.conv_y_concat(res, y))
+        res = self.res_encoder2(res)
         res = self.res_encoder3(res)
 
         x = self.tgt_encoder(tgt)
