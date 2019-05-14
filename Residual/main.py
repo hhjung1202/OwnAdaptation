@@ -227,7 +227,6 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     output = smoothing(output)
     output = F.pad(output, (2, 2, 2, 2), mode='reflect')
     output = smoothing(output)
-    output = F.pad(output, (2, 2, 2, 2), mode='reflect')
 
     output1 = F.pad(output, (2, 2, 2, 2), mode='reflect')
     output1 = smoothing(output1)
