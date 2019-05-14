@@ -150,7 +150,7 @@ def train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_l
 
         real_S, y, y_one = to_var(real_S, FloatTensor), to_var(y, LongTensor), to_var(y_one, FloatTensor)
         real_T, shuffle_T = to_var(real_T, FloatTensor), to_var(shuffle_T, FloatTensor)
-        shuffle_T = utils.multiple_Gaussian(shuffle_T, num_iter=8, channels=3, kernel_size=5, sigma=1, dim=2)
+        shuffle_T = utils.multiple_Gaussian(shuffle_T, num_iter=8, channels=tar_ch, kernel_size=5, sigma=1, dim=2)
         rand = Variable(FloatTensor(np.random.normal(0, 1, (batch_size, args.random, args.img_size//2, args.img_size//2))))
 
         # -----------------------
