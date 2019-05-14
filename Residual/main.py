@@ -217,11 +217,12 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
     # Sample noise
 
-
+    t1 = F.pad(realS_sample, (2, 2, 2, 2), mode='reflect')
+    t2 = F.pad(realT_sample, (2, 2, 2, 2), mode='reflect')
     smoothing = utils.GaussianSmoothing(3, 5, 1)
-    output = smoothing(to_var(realS_sample, torch.cuda.FloatTensor))
+    output = smoothing(t1)
     smoothing = utils.GaussianSmoothing(1, 5, 1)
-    output2 = smoothing(to_var(realT_sample, torch.cuda.FloatTensor))
+    output2 = smoothing(t2)
 
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test'))
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test2'))
