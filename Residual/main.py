@@ -221,10 +221,10 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
 
     output = F.pad(realS_sample, (2, 2, 2, 2), mode='reflect')
     output = smoothing(output)
-    output = F.pad(output, (2, 2, 2, 2), mode='reflect')
-    output1 = smoothing(output)
-    output1 = F.pad(output1, (2, 2, 2, 2), mode='reflect')
-    output2 = smoothing(output1)
+    output1 = F.pad(output, (2, 2, 2, 2), mode='reflect')
+    output1 = smoothing(output1)
+    output2 = F.pad(output1, (2, 2, 2, 2), mode='reflect')
+    output2 = smoothing(output2)
 
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test2'))
@@ -239,7 +239,7 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     # fake_T, fake_S, img_TT, img_ST, img_TS = state_info.forward(realT_sample, realS_y, rand, test=True)
     # fake_T, fake_S = to_data(fake_T), to_data(fake_S)
     # img_TT, img_ST, img_TS = to_data(img_TT), to_data(img_ST), to_data(img_TS)
-    output = to_data(output)
+    output1 = to_data(output1)
     output2 = to_data(output2)
 
     cat1 = merge_images(realS_sample, output1)
