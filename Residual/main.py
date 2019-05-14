@@ -116,7 +116,7 @@ def main():
 
     for epoch in range(args.epoch):
         
-        train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
+        # train(state_info, Source_train_loader, Target_train_loader, Target_shuffle_loader, epoch)
         test(state_info, realS_sample, realS_y, realT_sample, epoch)
         # if prec_result > best_prec_result:
         #     best_prec_result = prec_result
@@ -216,31 +216,45 @@ def test(state_info, realS_sample, realS_y, realT_sample, epoch):
 def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
     # Sample noise
-    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS'))
-    img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT'))
-    img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/cross'))
-    img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TT'))
-    img_path5 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/ST'))
-    img_path6 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TS'))
 
-    rand = Variable(FloatTensor(np.random.normal(0, 1, (realT_sample.size(0), args.random, args.img_size//2, args.img_size//2))))
-    fake_T, fake_S, img_TT, img_ST, img_TS = state_info.forward(realT_sample, realS_y, rand, test=True)
-    fake_T, fake_S = to_data(fake_T), to_data(fake_S)
-    img_TT, img_ST, img_TS = to_data(img_TT), to_data(img_ST), to_data(img_TS)
 
-    cat1 = merge_images(realS_sample, fake_S)
-    cat2 = merge_images(realT_sample, fake_T)
-    cat3 = merge_images(realS_sample, fake_T)
-    cat4 = merge_images(realT_sample, img_TT)
-    cat5 = merge_images(realS_sample, img_ST)
-    cat6 = merge_images(realT_sample, img_TS)
+    smoothing = utils.GaussianSmoothing(3, 5, 1)
+    output = smoothing(realS_sample)
+    output2 = smoothing(realT_sample)
+
+    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test'))
+    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test2'))
+    # img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resS'))
+    # img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/resT'))
+    # img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/cross'))
+    # img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TT'))
+    # img_path5 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/ST'))
+    # img_path6 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TS'))
+
+    # rand = Variable(FloatTensor(np.random.normal(0, 1, (realT_sample.size(0), args.random, args.img_size//2, args.img_size//2))))
+    # fake_T, fake_S, img_TT, img_ST, img_TS = state_info.forward(realT_sample, realS_y, rand, test=True)
+    # fake_T, fake_S = to_data(fake_T), to_data(fake_S)
+    # img_TT, img_ST, img_TS = to_data(img_TT), to_data(img_ST), to_data(img_TS)
+    output = to_data(output)
+    output2 = to_data(output2)
+
+    cat1 = merge_images(realS_sample, output)
+    cat2 = merge_images(realT_sample, output2)
+    # cat1 = merge_images(realS_sample, fake_S)
+    # cat2 = merge_images(realT_sample, fake_T)
+    # cat3 = merge_images(realS_sample, fake_T)
+    # cat4 = merge_images(realT_sample, img_TT)
+    # cat5 = merge_images(realS_sample, img_ST)
+    # cat6 = merge_images(realT_sample, img_TS)
 
     save_image(cat1.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
     save_image(cat2.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
-    save_image(cat3.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
-    save_image(cat4.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
-    save_image(cat5.data, os.path.join(img_path5, '%d.png' % epoch), normalize=True)
-    save_image(cat6.data, os.path.join(img_path6, '%d.png' % epoch), normalize=True)
+    # save_image(cat1.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
+    # save_image(cat2.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
+    # save_image(cat3.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
+    # save_image(cat4.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
+    # save_image(cat5.data, os.path.join(img_path5, '%d.png' % epoch), normalize=True)
+    # save_image(cat6.data, os.path.join(img_path6, '%d.png' % epoch), normalize=True)
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape

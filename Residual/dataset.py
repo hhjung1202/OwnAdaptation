@@ -37,7 +37,6 @@ def MNIST_loader(img_size, batchSize=128):
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batchSize, shuffle=False)
     return train_loader, test_loader, 1
 
-
 def cifar10_loader():
     batch_size = 128
     rgb2grayWeights = [0.2989, 0.5870, 0.1140]
