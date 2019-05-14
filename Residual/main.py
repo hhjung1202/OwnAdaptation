@@ -220,6 +220,7 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
 
     smoothing = utils.GaussianSmoothing(3, 5, 1)
     output = smoothing(to_var(realS_sample, torch.cuda.FloatTensor))
+    smoothing = utils.GaussianSmoothing(1, 5, 1)
     output2 = smoothing(to_var(realT_sample, torch.cuda.FloatTensor))
 
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test'))
