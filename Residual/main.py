@@ -219,8 +219,8 @@ def make_sample_image(state_info, epoch, realS_sample, realS_y, realT_sample):
 
 
     smoothing = utils.GaussianSmoothing(3, 5, 1)
-    output = smoothing(realS_sample)
-    output2 = smoothing(realT_sample)
+    output = smoothing(realS_sample.cuda())
+    output2 = smoothing(realT_sample.cuda())
 
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test'))
     img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Test2'))
