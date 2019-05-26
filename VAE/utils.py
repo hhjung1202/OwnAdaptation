@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from torch.nn import functional as F
 import torch.optim as optim
 import numpy as np
-from model import *
+from .model import *
 import csv
 import random
 import os
