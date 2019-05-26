@@ -7,7 +7,7 @@ from utils import idx2onehot
 
 class VAE(nn.Module):
     def __init__(self, img_dim=3, latent_size=100, num_class=10, dim=128):
-        super().__init__()
+        super(VAE, self).__init__()
 
         self.latent_size = latent_size
 
@@ -38,7 +38,7 @@ class VAE(nn.Module):
 
 class Encoder(nn.Module):
     def __init__(self, in_dim=3, latent_size=100, dim=128):
-        super().__init__()
+        super(Encoder, self).__init__()
 
         def block(In, Out, kernel_size=2, stride=2, padding=0):
             return nn.Sequential(
@@ -69,7 +69,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     def __init__(self, out_dim=3, latent_size=100, dim=128):
-        super().__init__()
+        super(Decoder, self).__init__()
 
         self.init = nn.Sequential(
             nn.Linear(latent_size, 4*dim * 4**2),
@@ -106,7 +106,7 @@ class Decoder(nn.Module):
 
 class Inform(nn.Module):
     def __init__(self, latent_size=100, num_class=10):
-        super().__init__()
+        super(Inform, self).__init__()
 
         self.fc1 = nn.Linear(latent_size, latent_size)
         self.fc2 = nn.Linear(latent_size, num_class)
