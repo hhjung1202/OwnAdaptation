@@ -2,9 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import idx2onehot
-
-
 class VAE(nn.Module):
     def __init__(self, img_dim=3, latent_size=100, num_class=10, dim=128):
         super(VAE, self).__init__()
