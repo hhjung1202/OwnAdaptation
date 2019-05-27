@@ -61,6 +61,7 @@ best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+print(args.gpu)
 
 cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
