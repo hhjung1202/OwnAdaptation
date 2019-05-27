@@ -33,7 +33,7 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
     final_checkpoint = utils.load_checkpoint(utils.default_model_dir, is_final=True, is_source=True)
     if final_checkpoint:
-        best_prec_result = checkpoint['Best_Prec']
+        best_prec_result = final_checkpoint['Best_Prec']
         state_info.pretrain_load_state_dict(final_checkpoint)
         print('load pretrained final model, best_prec_result :', best_prec_result)
         return
