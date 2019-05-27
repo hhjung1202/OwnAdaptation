@@ -57,7 +57,7 @@ class Encoder(nn.Module):
         x = self.block2(x)
         x = self.block3(x)
         
-        x = x.view(v.size(0), -1)
+        x = x.view(x.size(0), -1)
         means = self.linear_means(x)
         log_vars = self.linear_log_var(x)
 
