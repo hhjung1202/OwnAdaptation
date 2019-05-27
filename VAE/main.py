@@ -61,7 +61,6 @@ best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-print(args.gpu)
 
 cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
@@ -91,12 +90,13 @@ def main():
     state_info = utils.model_optim_state_info()
     state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
     state_info.model_cuda_init()
-    state_info.weight_init()
-    state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
 
     if cuda:
         print("USE", torch.cuda.device_count(), "GPUs!")
+        state_info.weight_init()
         cudnn.benchmark = True
+    
+    state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
 
     pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
 
