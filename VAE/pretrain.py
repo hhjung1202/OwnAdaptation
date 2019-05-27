@@ -19,6 +19,9 @@ criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = nn.CrossEntropyLoss(reduction='sum')
 
 
+FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+
 def loss_fn(recon_x, x, means, log_var, cls_output, y):
     BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
     KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
@@ -27,10 +30,6 @@ def loss_fn(recon_x, x, means, log_var, cls_output, y):
     return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
-
-    # cuda = True if torch.cuda.is_available() else False
-    # FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-    # LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
     start_epoch = 0
     final_checkpoint = utils.load_checkpoint(utils.default_model_dir, is_final=True, is_source=True)
