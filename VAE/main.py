@@ -67,15 +67,15 @@ FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 start_epoch = 0
 
-criterion_BCE = torch.nn.BCELoss(reduction='sum')
-criterion = nn.CrossEntropyLoss(reduction='sum')
+# criterion_BCE = torch.nn.BCELoss(reduction='sum')
+# criterion = nn.CrossEntropyLoss(reduction='sum')
 
-def loss_fn(recon_x, x, means, log_var, cls_output, y):
-    BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
-    KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
-    CE = criterion(cls_output, y)
+# def loss_fn(recon_x, x, means, log_var, cls_output, y):
+#     BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
+#     KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
+#     CE = criterion(cls_output, y)
 
-    return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
+#     return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
 
 def main():
     global args, best_prec_result
@@ -83,8 +83,8 @@ def main():
     utils.default_model_dir = args.dir
     start_time = time.time()
 
-    Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
-    Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
+    # Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
+    # Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
     # Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
 
     # state_info = utils.model_optim_state_info()
