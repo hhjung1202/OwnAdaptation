@@ -18,8 +18,9 @@ class VAE(nn.Module):
 
         means, log_var = self.encoder(x)
 
-        std = torch.exp(0.5 * log_var)
-        eps = torch.randn([batch_size, self.latent_size])
+        std = torch.exp(0.5 * log_var).cuda()
+        eps = torch.randn([batch_size, self.latent_size]).cuda()
+
         z = eps * std + means
 
         cls_output = self.inform(z)
