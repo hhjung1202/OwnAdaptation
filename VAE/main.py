@@ -8,7 +8,7 @@ import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
-from pretrain import pretrain
+from pretrain
 import dataset
 import math
 
@@ -97,7 +97,7 @@ def main():
         print("USE", torch.cuda.device_count(), "GPUs!")
         cudnn.benchmark = True
 
-    pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
+    pretrain.pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
 
     checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
     if not checkpoint:
