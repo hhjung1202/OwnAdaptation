@@ -65,7 +65,6 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
-start_epoch = 0
 
 criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = nn.CrossEntropyLoss(reduction='sum')
@@ -80,6 +79,7 @@ def loss_fn(recon_x, x, means, log_var, cls_output, y):
 def main():
     global args, best_prec_result
     
+    start_epoch = 0
     utils.default_model_dir = args.dir
     start_time = time.time()
 

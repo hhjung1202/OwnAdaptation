@@ -14,7 +14,6 @@ import math
 source_prediction_max_result = []
 target_prediction_max_result = []
 best_prec_result = torch.tensor(0, dtype=torch.float32)
-start_epoch2 = 0
 
 criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = nn.CrossEntropyLoss(reduction='sum')
@@ -28,6 +27,7 @@ def loss_fn(recon_x, x, means, log_var, cls_output, y):
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
+    start_epoch = 0
     final_checkpoint = utils.load_checkpoint(utils.default_model_dir, is_final=True, is_source=True)
     if final_checkpoint:
         best_prec_result = checkpoint['Best_Prec']
@@ -39,12 +39,12 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
     if not checkpoint:
         state_info.learning_scheduler_init(args)
     else:
-        start_epoch2 = checkpoint['epoch'] + 1
+        start_epoch = checkpoint['epoch'] + 1
         best_prec_result = checkpoint['Best_Prec']
         state_info.pretrain_load_state_dict(checkpoint)
-        state_info.pretrain_learning_scheduler_init(args, load_epoch=start_epoch2)
+        state_info.pretrain_learning_scheduler_init(args, load_epoch=start_epoch)
 
-    for epoch in range(start_epoch2, args.epoch):
+    for epoch in range(start_epoch, args.epoch):
         
         train(args, state_info, train_loader, epoch)
         prec_result = test(args, state_info, test_loader, Src_sample, epoch)
