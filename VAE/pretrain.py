@@ -19,8 +19,8 @@ criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = nn.CrossEntropyLoss(reduction='sum')
 
 
-FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+# FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+# LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
 def loss_fn(recon_x, x, means, log_var, cls_output, y):
     BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
@@ -76,7 +76,7 @@ def train(args, state_info, train_loader, epoch): # all
     for it, (x, y) in enumerate(train_loader):
 
         batch_size = x.size(0)
-        x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
+        x, y = to_var(x, torch.cuda.FloatTensor), to_var(y, torch.cuda.LongTensor)
         recon_x, means, log_var, z, cls_output = state_info.pretrain_forward(x)
 
         #  Train 
@@ -109,7 +109,7 @@ def test(args, state_info, test_loader, Src_sample, epoch):
     for it, (x, y) in enumerate(test_loader):
 
         batch_size = x.size(0)
-        x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
+        x, y = to_var(x, torch.cuda.FloatTensor), to_var(y, torch.cuda.LongTensor)
         _, cls_output, _ = state_info.pretrain_forward(x, test=True)
 
         #  Log Print
