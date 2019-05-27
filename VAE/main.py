@@ -87,11 +87,11 @@ def main():
     Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
     # Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
 
-    state_info = utils.model_optim_state_info()
-    state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
-    state_info.model_cuda_init()
-    state_info.weight_init()
-    state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
+    # state_info = utils.model_optim_state_info()
+    # state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
+    # state_info.model_cuda_init()
+    # state_info.weight_init()
+    # state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
 
     if cuda:
         print("USE", torch.cuda.device_count(), "GPUs!")
