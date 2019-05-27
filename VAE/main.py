@@ -85,7 +85,7 @@ def main():
 
     Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
     Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
-    Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
+    # Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
 
     state_info = utils.model_optim_state_info()
     state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
@@ -97,36 +97,36 @@ def main():
         print("USE", torch.cuda.device_count(), "GPUs!")
         cudnn.benchmark = True
 
-    pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
+    # pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
 
-    checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
-    if not checkpoint:
-        state_info.learning_scheduler_init(args)
-    else:
-        start_epoch = checkpoint['epoch'] + 1
-        best_prec_result = checkpoint['Best_Prec']
-        state_info.load_state_dict(checkpoint)
-        state_info.learning_scheduler_init(args, load_epoch=start_epoch)
+    # checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
+    # if not checkpoint:
+    #     state_info.learning_scheduler_init(args)
+    # else:
+    #     start_epoch = checkpoint['epoch'] + 1
+    #     best_prec_result = checkpoint['Best_Prec']
+    #     state_info.load_state_dict(checkpoint)
+    #     state_info.learning_scheduler_init(args, load_epoch=start_epoch)
 
-    for epoch in range(start_epoch, args.epoch):
+    # for epoch in range(start_epoch, args.epoch):
         
-        train(state_info, Target_train_loader, epoch)
-        test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch)
+    #     train(state_info, Target_train_loader, epoch)
+    #     test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch)
 
-        # if prec_result > best_prec_result:
-        #     best_prec_result = prec_result
-        #     filename = 'checkpoint_best.pth.tar'
-        #     utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
+    #     # if prec_result > best_prec_result:
+    #     #     best_prec_result = prec_result
+    #     #     filename = 'checkpoint_best.pth.tar'
+    #     #     utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
 
-        filename = 'latest.pth.tar'
-        utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
-        state_info.learning_step() 
+    #     filename = 'latest.pth.tar'
+    #     utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
+    #     state_info.learning_step() 
 
-    filename = 'target_final.pth.tar'
-    utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
+    # filename = 'target_final.pth.tar'
+    # utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
 
-    now = time.gmtime(time.time() - start_time)
-    utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
+    # now = time.gmtime(time.time() - start_time)
+    # utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
 
 
 def train(state_info, Target_train_loader, epoch): # all 
