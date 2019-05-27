@@ -8,7 +8,7 @@ import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
-from pretrain import pretrain
+# from pretrain import pretrain
 import dataset
 import math
 
@@ -60,6 +60,7 @@ best_prec_result = torch.tensor(0, dtype=torch.float32)
 
 args = parser.parse_args()
 
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
@@ -84,48 +85,48 @@ def main():
 
     Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
     Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
-    # Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
+    Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
 
-    # state_info = utils.model_optim_state_info()
-    # state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
-    # state_info.model_cuda_init()
-    # state_info.weight_init()
-    # state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
+    state_info = utils.model_optim_state_info()
+    state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
+    state_info.model_cuda_init()
+    state_info.weight_init()
+    state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
 
     if cuda:
         print("USE", torch.cuda.device_count(), "GPUs!")
         cudnn.benchmark = True
 
-    # pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
+    pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
 
-    # checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
-    # if not checkpoint:
-    #     state_info.learning_scheduler_init(args)
-    # else:
-    #     start_epoch = checkpoint['epoch'] + 1
-    #     best_prec_result = checkpoint['Best_Prec']
-    #     state_info.load_state_dict(checkpoint)
-    #     state_info.learning_scheduler_init(args, load_epoch=start_epoch)
+    checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
+    if not checkpoint:
+        state_info.learning_scheduler_init(args)
+    else:
+        start_epoch = checkpoint['epoch'] + 1
+        best_prec_result = checkpoint['Best_Prec']
+        state_info.load_state_dict(checkpoint)
+        state_info.learning_scheduler_init(args, load_epoch=start_epoch)
 
-    # for epoch in range(start_epoch, args.epoch):
+    for epoch in range(start_epoch, args.epoch):
         
-    #     train(state_info, Target_train_loader, epoch)
-    #     test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch)
+        train(state_info, Target_train_loader, epoch)
+        test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch)
 
-    #     # if prec_result > best_prec_result:
-    #     #     best_prec_result = prec_result
-    #     #     filename = 'checkpoint_best.pth.tar'
-    #     #     utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
+        # if prec_result > best_prec_result:
+        #     best_prec_result = prec_result
+        #     filename = 'checkpoint_best.pth.tar'
+        #     utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
 
-    #     filename = 'latest.pth.tar'
-    #     utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
-    #     state_info.learning_step() 
+        filename = 'latest.pth.tar'
+        utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
+        state_info.learning_step() 
 
-    # filename = 'target_final.pth.tar'
-    # utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
+    filename = 'target_final.pth.tar'
+    utils.save_target_checkpoint(state_info, best_prec_result, filename, utils.default_model_dir, epoch)
 
-    # now = time.gmtime(time.time() - start_time)
-    # utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
+    now = time.gmtime(time.time() - start_time)
+    utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
 
 
 def train(state_info, Target_train_loader, epoch): # all 
@@ -204,6 +205,7 @@ def make_sample_image(state_info, Src_sample, Src_label, Tgt_sample, Tgt_label, 
     SS = merge_images(Src_sample, S_)
     ST = merge_images(Src_sample, _T)
 
+
     T_, _, z = state_info.forward(Tgt_sample, test=True)
     _S, _ = state_info.forward_z(z)
     T_, _S = to_data(S_), to_data(_T)
@@ -258,5 +260,4 @@ def extract_sample(Source_train_loader, Target_train_loader):
     return Src_sample, Src_label, Tgt_sample, Tgt_label
 
 if __name__=='__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     main()
