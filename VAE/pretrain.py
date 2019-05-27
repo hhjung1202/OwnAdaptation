@@ -40,7 +40,7 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
     checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=True)    
     if not checkpoint:
-        state_info.learning_scheduler_init(args)
+        state_info.pretrain_learning_scheduler_init(args)
     else:
         start_epoch = checkpoint['epoch'] + 1
         best_prec_result = checkpoint['Best_Prec']
