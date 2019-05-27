@@ -18,6 +18,10 @@ best_prec_result = torch.tensor(0, dtype=torch.float32)
 criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = nn.CrossEntropyLoss(reduction='sum')
 
+cuda = True if torch.cuda.is_available() else False
+FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+
 def loss_fn(recon_x, x, means, log_var, cls_output, y):
     BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
     KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
