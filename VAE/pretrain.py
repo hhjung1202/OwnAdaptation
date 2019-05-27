@@ -50,7 +50,7 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
     for epoch in range(start_epoch, args.epoch):
         
-        train(args, state_info, train_loader, epoch)
+        # train(args, state_info, train_loader, epoch)
         prec_result = test(args, state_info, test_loader, Src_sample, epoch)
 
         if prec_result > best_prec_result:
