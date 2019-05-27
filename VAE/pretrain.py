@@ -30,7 +30,8 @@ def loss_fn(recon_x, x, means, log_var, cls_output, y):
     return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
-
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+    
     start_epoch = 0
     final_checkpoint = utils.load_checkpoint(utils.default_model_dir, is_final=True, is_source=True)
     if final_checkpoint:
