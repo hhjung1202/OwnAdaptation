@@ -157,7 +157,7 @@ def train(state_info, Target_train_loader, epoch): # all
         #  Log Print
         total += float(cls_output.size(0))
         _, predicted = torch.max(cls_output.data, 1)
-        correct += float(predicted.eq(y.data).cpu().sum())
+        correct += float(predicted.eq(cls_src.data).cpu().sum())
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
@@ -185,7 +185,7 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
         #  Log Print
         total += float(cls_output.size(0))
         _, predicted = torch.max(cls_output.data, 1)
-        correct += float(predicted.eq(y.data).cpu().sum())
+        correct += float(predicted.eq(cls_src.data).cpu().sum())
         
         if it % 10 == 0:
             utils.print_log('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct / total))
