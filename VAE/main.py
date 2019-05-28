@@ -157,9 +157,7 @@ def train(state_info, Target_train_loader, epoch): # all
         #  Log Print
         total += float(cls_output.size(0))
         _, predicted = torch.max(cls_output.data, 1)
-        print(cls_src.size())
-        print(predicted.size())
-        
+
         correct += float(predicted.eq(cls_src.data).cpu().sum())
 
         if it % 10 == 0:
@@ -184,7 +182,9 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
         _, cls_output, _, cls_src, _ = state_info.forward(x, test=True)
 
         # mapping info of <y, cls_output> print
-
+        cls_src = torch.max(cls_src.data, 1)
+        cls_src = to_var(cls_src, LongTensor)
+        
         #  Log Print
         total += float(cls_output.size(0))
         _, predicted = torch.max(cls_output.data, 1)
