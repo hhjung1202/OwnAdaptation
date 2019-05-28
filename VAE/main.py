@@ -22,7 +22,7 @@ parser.add_argument('--decay-epoch', default=80, type=int, metavar='N', help='ep
 # parser.add_argument('--Pepoch', default=20, type=int, metavar='N', help='Pretrain model number of total epoch to run')
 # parser.add_argument('--Pdecay-epoch', default=80, type=int, metavar='N', help='Pretrain model lr decay')
 parser.add_argument('-b', '--batch-size', default=64, type=int, metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
@@ -75,7 +75,7 @@ def loss_fn(recon_x, x, means, log_var, cls_output, y):
     KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
     CE = criterion(cls_output, y)
 
-    return (BCE + KLD) / x.size(0), BCE, KLD, CE
+    return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
 
 def main():
     global args, best_prec_result
