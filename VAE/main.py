@@ -143,7 +143,9 @@ def train(state_info, Target_train_loader, epoch): # all
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         recon_x, means, log_var, z, cls_output, cls_src = state_info.forward(x)
         
+        print('1',cls_src)
         _, cls_src = torch.max(cls_src.data, 1)
+        print('2',cls_src)
         cls_src = to_var(cls_src, LongTensor)
 
         #  Train 
@@ -185,6 +187,8 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
         print('cls_src', cls_src)
         cls_src = torch.max(cls_src.data, 1)
         print('cls_src2', cls_src)
+        print('cls_src2', cls_src[1])
+
         cls_src = to_var(cls_src, LongTensor)
 
         #  Log Print
