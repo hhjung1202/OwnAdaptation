@@ -67,7 +67,8 @@ class model_optim_state_info(object):
         self.optim_VAE_tgt = optim.Adam(self.VAE_tgt.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
 
     def learning_scheduler_init(self, args, load_epoch=0):
-        self.lr_VAE_tgt = optim.lr_scheduler.LambdaLR(self.optim_VAE_tgt, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        # self.lr_VAE_tgt = optim.lr_scheduler.LambdaLR(self.optim_VAE_tgt, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
+        self.lr_VAE_tgt = optim.lr_scheduler.StepLR(self.optim_VAE_tgt, step_size=30, gamma=0.1)
         
     def learning_step(self):
         self.lr_VAE_tgt.step()
@@ -83,7 +84,8 @@ class model_optim_state_info(object):
         self.optim_VAE_tgt.load_state_dict(checkpoint['VAE_tgt_optimizer'])
 
     def pretrain_learning_scheduler_init(self, args, load_epoch=0):
-        self.lr_VAE_src = optim.lr_scheduler.LambdaLR(self.optim_VAE_src, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step) # NEED TO EDIT!!!!!!
+        # self.lr_VAE_src = optim.lr_scheduler.LambdaLR(self.optim_VAE_src, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step) # NEED TO EDIT!!!!!!
+        self.lr_VAE_src = optim.lr_scheduler.StepLR(self.optim_VAE_src, step_size=30, gamma=0.1)
 
     def pretrain_learning_step(self):
         self.lr_VAE_src.step()
