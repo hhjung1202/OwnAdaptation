@@ -210,9 +210,8 @@ def make_sample_image(state_info, Src_sample, Src_label, Tgt_sample, Tgt_label, 
     ST = merge_images(Src_sample, _T)
 
 
-    T_, _, z = state_info.forward(Tgt_sample, test=True)
-    _S, _ = state_info.forward_z(z)
-    T_, _S = to_data(S_), to_data(_T)
+    T_, _, _S, _, z = state_info.forward(Tgt_sample, test=True)
+    T_, _S = to_data(T_), to_data(_S)
 
     TT = merge_images(Tgt_sample, T_)
     TS = merge_images(Tgt_sample, _S)
