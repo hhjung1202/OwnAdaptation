@@ -34,15 +34,15 @@ class model_optim_state_info(object):
 
     def forward(self, x, test=False):
         recon_x, means, log_var, z, cls_output = self.VAE_tgt(x)
-        recon_src, cls_src = self.VAE_src.extract(z)
+        recon_src, cls_src = self.VAE_src(None, z=z)
         if not test:
             return recon_x, means, log_var, z, cls_output, cls_src.detach()
         else:
             return recon_x, cls_output, recon_src, cls_src, z
 
     def forward_z(self, z):
-        recon_src, _ = self.VAE_src.extract(z)
-        recon_tgt, _ = self.VAE_tgt.extract(z)
+        recon_src, _ = self.VAE_src(None, z=z)
+        recon_tgt, _ = self.VAE_tgt(None, z=z)
         
         return recon_src, recon_tgt
 

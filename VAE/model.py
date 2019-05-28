@@ -12,7 +12,12 @@ class VAE(nn.Module):
         self.decoder = Decoder(out_dim=img_dim, latent_size=latent_size, dim=dim)
         self.inform = Inform(latent_size=latent_size, num_class=num_class)
 
-    def forward(self, x):
+    def forward(self, x, z=None):
+
+        if z is not None:
+            cls_output = self.inform(z)
+            recon_x = self.decoder(z)
+            return recon_x, cls_output
 
         batch_size = x.size(0)
 
@@ -27,12 +32,6 @@ class VAE(nn.Module):
         recon_x = self.decoder(z)
 
         return recon_x, means, log_var, z, cls_output
-
-    def extract(self, z):
-        cls_output = self.inform(z)
-        recon_x = self.decoder(z)
-        return recon_x, cls_output
-
 
 class Encoder(nn.Module):
     def __init__(self, in_dim=3, latent_size=100, dim=128):
