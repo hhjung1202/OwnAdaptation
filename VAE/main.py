@@ -142,6 +142,7 @@ def train(state_info, Target_train_loader, epoch): # all
         batch_size = x.size(0)
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         recon_x, means, log_var, z, cls_output, cls_src = state_info.forward(x)
+        print(cls_src)
         _, predicted = torch.max(cls_src.data, 1)
         print(predicted)
 
