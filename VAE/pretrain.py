@@ -24,7 +24,7 @@ def loss_fn(recon_x, x, means, log_var, cls_output, y):
     KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
     CE = criterion(cls_output, y)
 
-    return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
+    return (BCE + KLD) / x.size(0), BCE, KLD, CE
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
