@@ -178,7 +178,7 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
 
         batch_size = x.size(0)
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        _, cls_output, _ = state_info.pretrain_forward(x, test=True)
+        _, cls_output, _, cls_src, _ = state_info.forward(x, test=True)
 
         # mapping info of <y, cls_output> print
 
