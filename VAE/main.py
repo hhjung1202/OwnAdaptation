@@ -183,8 +183,9 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
 
         # mapping info of <y, cls_output> print
         cls_src = torch.max(cls_src.data, 1)
+        print('cls_src', cls_src)
         cls_src = to_var(cls_src, LongTensor)
-        
+
         #  Log Print
         total += float(cls_output.size(0))
         _, predicted = torch.max(cls_output.data, 1)
