@@ -1,7 +1,6 @@
 import gzip
 import os
 import pickle
-import cPickle
 import urllib
 import numpy as np
 import torch.utils.data as data
@@ -114,69 +113,35 @@ def cifar100_loader():
     return train_loader, test_loader
 
 
+def usps_loader(img_size, batchSize=128):
+    """Get USPS dataset loader."""
+    # image pre-processing
+    # transforms.Resize(img_size),
+    pre_process = transforms.Compose([transforms.ToTensor(),
+                                      transforms.Normalize(
+                                          mean=0.5,
+                                          std=0.5)])
 
-class USPS(data.Dataset):
-    # Num of Train = 7438, Num ot Test 1860
-    def __init__(self, root, num_training_samples, train=True, transform=None, seed=None):
-        self.filename = 'usps_28x28.pkl'
-        self.train = train
-        self.root = root
-        self.num_training_samples = num_training_samples
-        self.transform = transform
-        self.test_set_size = 0
-        # self.download()
-        self.train_data, self.train_labels = self.load_samples()
-        if seed is not None:
-            np.random.seed(seed)
-        if self.train:
-            total_num_samples = self.train_labels.shape[0]
-            indices = np.arange(total_num_samples)
-            np.random.shuffle(indices)
-            self.train_data = self.train_data[indices[0:self.num_training_samples], ::]
-            self.train_labels = self.train_labels[indices[0:self.num_training_samples]]
-        self.train_data *= 255.0
-        self.train_data = self.train_data.transpose((0, 2, 3, 1))  # convert to HWC
+    # dataset and data loader
+    train_dataset = datasets.USPS(root='/home/hhjung/hhjung/USPS/',
+                        train=True,
+                        transform=pre_process,
+                        download=True)
 
-    def __getitem__(self, index):
-        img, label = self.train_data[index, ::], self.train_labels[index]
-        if self.transform is not None:
-            img = self.transform(img)
-        label = torch.LongTensor([np.int64(label).item()])
-        return img, label
+    test_dataset = datasets.USPS(root='/home/hhjung/hhjung/USPS/',
+                        train=False,
+                        transform=pre_process,
+                        download=True)
 
-    def __len__(self):
-        if self.train:
-            return self.num_training_samples
-        else:
-            return self.test_set_size
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+                                               batch_size=batchSize,
+                                               shuffle=True)
 
-    def download(self):
-        filename = os.path.join(self.root, self.filename)
-        dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
-            os.mkdir(dirname)
-        if os.path.isfile(filename):
-            return
-        print("Download %s to %s" % (self.url, filename))
-        urllib.urlretrieve(self.url, filename)
-        print("[DONE]")
-        return
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
+                                              batch_size=batchSize,
+                                              shuffle=False)
 
-    def load_samples(self):
-        filename = os.path.join(self.root, self.filename)
-        f = gzip.open(filename, 'rb')
-        data_set = cPickle.load(f)
-        f.close()
-        if self.train:
-            images = data_set[0][0]
-            labels = data_set[0][1]
-        else:
-            images = data_set[1][0]
-            labels = data_set[1][1]
-            self.test_set_size = labels.shape[0]
-        return images, labels
-
-
+    return train_loader, test_loader, 1
 
 
 # class USPS(data.Dataset):
@@ -274,62 +239,3 @@ class USPS(data.Dataset):
 #             labels = data_set[1][1]
 #             self.dataset_size = labels.shape[0]
 #         return images, labels
-
-
-def usps_loader(img_size, batchSize=128):
-    """Get USPS dataset loader."""
-    # image pre-processing
-    # transforms.Resize(img_size),
-
-    pre_process = transforms.Compose([transforms.ToTensor(),
-                                      transforms.Normalize(
-                                          mean=0.5,
-                                          std=0.5)])
-    # dataset and data loader
-    train_dataset = USPS(root='/home/hhjung/hhjung/USPS/',
-                        num_training_samples=7438,
-                        train=True,
-                        transform=pre_process)
-
-    test_dataset = USPS(root='/home/hhjung/hhjung/USPS/',
-                        num_training_samples=1860,
-                        train=False,
-                        transform=pre_process)
-
-    train_loader = torch.utils.data.DataLoader(
-        dataset=train_dataset,
-        batch_size=batchSize,
-        shuffle=True)
-
-    test_loader = torch.utils.data.DataLoader(
-        dataset=test_dataset,
-        batch_size=batchSize,
-        shuffle=False)
-
-
-    # pre_process = transforms.Compose([transforms.ToTensor(),
-    #                                   transforms.Normalize(
-    #                                       mean=0.5,
-    #                                       std=0.5)])
-    # # dataset and data loader
-    # train_dataset = USPS(root='/home/hhjung/hhjung/USPS/',
-    #                     train=True,
-    #                     transform=pre_process,
-    #                     download=True)
-
-    # test_dataset = USPS(root='/home/hhjung/hhjung/USPS/',
-    #                     train=False,
-    #                     transform=pre_process,
-    #                     download=True)
-
-    # train_loader = torch.utils.data.DataLoader(
-    #     dataset=train_dataset,
-    #     batch_size=batchSize,
-    #     shuffle=True)
-
-    # test_loader = torch.utils.data.DataLoader(
-    #     dataset=test_dataset,
-    #     batch_size=batchSize,
-    #     shuffle=False)
-
-    return train_loader, test_loader, 1
