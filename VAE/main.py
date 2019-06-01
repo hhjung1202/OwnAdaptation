@@ -259,16 +259,24 @@ def to_var(x, dtype):
     return Variable(x.type(dtype))
 
 def extract_sample(Source_train_loader, Target_train_loader):
-    Src_sample_iter = iter(Source_train_loader)
-    Tgt_sample_iter = iter(Target_train_loader)
-
-    Src_sample = Src_sample_iter.next()
-    Src_sample, Src_label = to_var(Src_sample[0], FloatTensor), Src_sample[1]
-
-    Tgt_sample = Tgt_sample_iter.next()
-    Tgt_sample, Tgt_label = to_var(Tgt_sample[0], FloatTensor), Tgt_sample[1]
+    data_zip = enumerate(zip(Source_train_loader, Target_train_loader))
+    for step, ((Src_sample, Src_label), (Tgt_sample, Tgt_label)) in data_zip:
+        Src_sample, Src_label = to_var(Src_sample, FloatTensor), to_var(Src_label, LongTensor)
+        Tgt_sample, Tgt_label = to_var(Tgt_sample, FloatTensor), to_var(Tgt_label, LongTensor)
 
     return Src_sample, Src_label, Tgt_sample, Tgt_label
+
+# def extract_sample(Source_train_loader, Target_train_loader):
+#     Src_sample_iter = iter(Source_train_loader)
+#     Tgt_sample_iter = iter(Target_train_loader)
+
+#     Src_sample = Src_sample_iter.next()
+#     Src_sample, Src_label = to_var(Src_sample[0], FloatTensor), Src_sample[1]
+
+#     Tgt_sample = Tgt_sample_iter.next()
+#     Tgt_sample, Tgt_label = to_var(Tgt_sample[0], FloatTensor), Tgt_sample[1]
+
+#     return Src_sample, Src_label, Tgt_sample, Tgt_label
 
 if __name__=='__main__':
     main()
