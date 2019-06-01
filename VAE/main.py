@@ -87,6 +87,7 @@ def main():
 
     Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
     Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
+    print('Target_train_loader', Target_train_loader)
     Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
 
     state_info = utils.model_optim_state_info()

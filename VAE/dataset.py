@@ -215,8 +215,7 @@ def usps_loader(img_size, batchSize=128):
     """Get USPS dataset loader."""
     # image pre-processing
     # transforms.Resize(img_size),
-    pre_process = transforms.Compose([
-                                      transforms.ToTensor(),
+    pre_process = transforms.Compose([transforms.ToTensor(),
                                       transforms.Normalize(
                                           mean=0.5,
                                           std=0.5)])
@@ -240,6 +239,6 @@ def usps_loader(img_size, batchSize=128):
     test_loader = torch.utils.data.DataLoader(
         dataset=test_dataset,
         batch_size=batchSize,
-        shuffle=True)
+        shuffle=False)
 
     return train_loader, test_loader, 1
