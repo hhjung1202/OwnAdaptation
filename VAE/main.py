@@ -259,10 +259,16 @@ def to_var(x, dtype):
     return Variable(x.type(dtype))
 
 def extract_sample(Source_train_loader, Target_train_loader):
+
+    for it, (x, y) in enumerate(Target_train_loader):
+        print(x.size())
+        break
+
     data_zip = enumerate(zip(Source_train_loader, Target_train_loader))
     for step, ((Src_sample, Src_label), (Tgt_sample, Tgt_label)) in data_zip:
         Src_sample, Src_label = to_var(Src_sample, FloatTensor), to_var(Src_label, LongTensor)
         Tgt_sample, Tgt_label = to_var(Tgt_sample, FloatTensor), to_var(Tgt_label, LongTensor)
+        break
 
     return Src_sample, Src_label, Tgt_sample, Tgt_label
 
