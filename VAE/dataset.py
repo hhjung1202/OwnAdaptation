@@ -1,6 +1,7 @@
 import gzip
 import os
 import pickle
+import cPickle
 import urllib
 import numpy as np
 import torch.utils.data as data
