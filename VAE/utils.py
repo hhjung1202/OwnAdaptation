@@ -196,3 +196,12 @@ def print_log(text, filename="log.csv"):
     model_filename = os.path.join(default_model_dir, filename)
     with open(model_filename, "a") as myfile:
         myfile.write(text + "\n")
+
+def extract_mapping(x, y):
+    if not os.path.exists(default_model_dir):
+        os.makedirs(default_model_dir)
+    
+    model_filename = os.path.join(default_model_dir, csv_file_name)
+    for _, ((x_), (y_)) in enumerate(zip(x, y)):
+        with open(model_filename, 'a') as fout:
+            fout.write(x_ + "," + y_ + "\n")

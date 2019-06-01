@@ -15,7 +15,7 @@ import math
 
 parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Training')
 parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
-parser.add_argument('--td', default='svhn', type=str, help='target dataset')
+parser.add_argument('--td', default='usps', type=str, help='target dataset')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--epoch', default=20, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--decay-epoch', default=80, type=int, metavar='N', help='epoch from which to start lr decay')
@@ -73,9 +73,10 @@ criterion = nn.CrossEntropyLoss(reduction='sum')
 def loss_fn(recon_x, x, means, log_var, cls_output, y):
     BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
     KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
+
     CE = criterion(cls_output, y)
 
-    return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
+    return BCE + KLD + CE, BCE, KLD, CE
 
 def main():
     global args, best_prec_result
@@ -98,16 +99,16 @@ def main():
         print("USE", torch.cuda.device_count(), "GPUs!")
         cudnn.benchmark = True
 
-    pretrain.pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
+    # pretrain.pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
 
-    checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
-    if not checkpoint:
-        state_info.learning_scheduler_init(args)
-    else:
-        start_epoch = checkpoint['epoch'] + 1
-        best_prec_result = checkpoint['Best_Prec']
-        state_info.load_state_dict(checkpoint)
-        state_info.learning_scheduler_init(args, load_epoch=start_epoch)
+    # checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
+    # if not checkpoint:
+    #     state_info.learning_scheduler_init(args)
+    # else:
+    #     start_epoch = checkpoint['epoch'] + 1
+    #     best_prec_result = checkpoint['Best_Prec']
+    #     state_info.load_state_dict(checkpoint)
+    #     state_info.learning_scheduler_init(args, load_epoch=start_epoch)
 
     for epoch in range(start_epoch, args.epoch):
         
@@ -138,6 +139,8 @@ def train(state_info, Target_train_loader, epoch): # all
     total = torch.tensor(0, dtype=torch.float32)
 
     for it, (x, y) in enumerate(Target_train_loader):
+
+        print('USPS : ', x.size())
 
         batch_size = x.size(0)
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
@@ -243,6 +246,8 @@ def dataset_selector(data):
         return dataset.MNIST_loader(img_size=args.img_size)
     elif data == 'svhn':
         return dataset.SVHN_loader(img_size=args.img_size)
+    elif data == "usps":
+        return dataset.usps_loader(img_size=args.img_size)
 
 def to_data(x):
     """Converts variable to numpy."""
