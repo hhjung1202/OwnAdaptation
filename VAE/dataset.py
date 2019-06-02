@@ -4,7 +4,7 @@ import pickle
 import urllib
 import numpy as np
 import torch.utils.data as data
-
+from PIL import Image
 import torch
 from torchvision import datasets, transforms
 
@@ -167,6 +167,7 @@ class USPS(data.Dataset):
             tuple: (image, target) where target is index of the target class.
         """
         img, label = self.train_data[index, ::], self.train_labels[index]
+        img = Image.fromarray(img, mode='L')
         if self.transform is not None:
             img = self.transform(img)
         label = torch.LongTensor([np.int64(label).item()])
