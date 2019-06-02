@@ -167,10 +167,11 @@ class USPS(data.Dataset):
             tuple: (image, target) where target is index of the target class.
         """
         img, label = self.train_data[index, ::], self.train_labels[index]
-        print(img.shape)
         img = Image.fromarray(np.squeeze(img), mode='L')
         if self.transform is not None:
             img = self.transform(img)
+            print(img.shape)
+
         label = torch.LongTensor([np.int64(label).item()])
         # label = torch.FloatTensor([label.item()])
         return img, label
