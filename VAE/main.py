@@ -261,7 +261,7 @@ def to_var(x, dtype):
 def extract_sample(Source_train_loader, Target_train_loader):
 
     for it, (x, y) in enumerate(Target_train_loader):
-        print(x.size())
+        print('here',x.size())
         break
 
     data_zip = enumerate(zip(Source_train_loader, Target_train_loader))

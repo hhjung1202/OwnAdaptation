@@ -214,6 +214,7 @@ class USPS(data.Dataset):
 def usps_loader(img_size, batchSize=128):
     """Get USPS dataset loader."""
     # image pre-processing
+    print("USPS Loading")
     pre_process = transforms.Compose([transforms.ToTensor()])
                                       # transforms.Normalize(mean=0.5,std=0.5)])
 
