@@ -167,6 +167,7 @@ class USPS(data.Dataset):
             tuple: (image, target) where target is index of the target class.
         """
         img, label = self.train_data[index, ::], self.train_labels[index]
+        print(img.size())
         img = Image.fromarray(img, mode='L')
         if self.transform is not None:
             img = self.transform(img)
