@@ -1,12 +1,13 @@
 import gzip
 import os
-import pickle
-import urllib
 import numpy as np
-import torch.utils.data as data
+from PIL import Image
 
 import torch
+import torch.utils.data as data
 from torchvision import datasets, transforms
+from torchvision.datasets.utils import download_url
+from torchvision.datasets.vision import VisionDataset
 
 def SVHN_loader(img_size, batchSize=128):
     print("SVHN Data Loading ...")
@@ -114,102 +115,179 @@ def cifar100_loader():
 
 
 
-class USPS(data.Dataset):
-    """USPS Dataset.
+# class USPS(data.Dataset):
+#     """USPS Dataset.
+
+#     Args:
+#         root (string): Root directory of dataset where dataset file exist.
+#         train (bool, optional): If True, resample from dataset randomly.
+#         download (bool, optional): If true, downloads the dataset
+#             from the internet and puts it in root directory.
+#             If dataset is already downloaded, it is not downloaded again.
+#         transform (callable, optional): A function/transform that takes in
+#             an PIL image and returns a transformed version.
+#             E.g, ``transforms.RandomCrop``
+#     """
+
+#     url = "https://raw.githubusercontent.com/mingyuliutw/CoGAN/master/cogan_pytorch/data/uspssample/usps_28x28.pkl"
+
+#     def __init__(self, root, train=True, transform=None, download=False):
+#         """Init USPS dataset."""
+#         # init params
+#         self.root = os.path.expanduser(root)
+#         self.filename = "usps_28x28.pkl"
+#         self.train = train
+#         # Num of Train = 7438, Num ot Test 1860
+#         self.transform = transform
+#         self.dataset_size = None
+
+#         # download dataset.
+#         if download:
+#             self.download()
+#         if not self._check_exists():
+#             raise RuntimeError("Dataset not found." +
+#                                " You can use download=True to download it")
+
+#         self.train_data, self.train_labels = self.load_samples()
+#         if self.train:
+#             total_num_samples = self.train_labels.shape[0]
+#             indices = np.arange(total_num_samples)
+#             np.random.shuffle(indices)
+#             self.train_data = self.train_data[indices[0:self.dataset_size], ::]
+#             self.train_labels = self.train_labels[indices[0:self.dataset_size]]
+#         self.train_data *= 255.0
+#         self.train_data = self.train_data.transpose(
+#             (0, 2, 3, 1))  # convert to HWC
+
+#     def __getitem__(self, index):
+#         """Get images and target for data loader.
+
+#         Args:
+#             index (int): Index
+#         Returns:
+#             tuple: (image, target) where target is index of the target class.
+#         """
+#         img, label = self.train_data[index, ::], self.train_labels[index]
+#         if self.transform is not None:
+#             img = self.transform(img)
+#         label = torch.LongTensor([np.int64(label).item()])
+#         # label = torch.FloatTensor([label.item()])
+#         return img, label
+
+#     def __len__(self):
+#         """Return size of dataset."""
+#         return self.dataset_size
+
+#     def _check_exists(self):
+#         """Check if dataset is download and in right place."""
+#         return os.path.exists(os.path.join(self.root, self.filename))
+
+#     def download(self):
+#         """Download dataset."""
+#         filename = os.path.join(self.root, self.filename)
+#         dirname = os.path.dirname(filename)
+#         if not os.path.isdir(dirname):
+#             os.makedirs(dirname)
+#         if os.path.isfile(filename):
+#             return
+#         print("Download %s to %s" % (self.url, os.path.abspath(filename)))
+#         urllib.request.urlretrieve(self.url, filename)
+#         print("[DONE]")
+#         return
+
+#     def load_samples(self):
+#         """Load sample images from dataset."""
+#         filename = os.path.join(self.root, self.filename)
+#         f = gzip.open(filename, "rb")
+#         data_set = pickle.load(f, encoding="bytes")
+#         f.close()
+#         if self.train:
+#             images = data_set[0][0]
+#             labels = data_set[0][1]
+#             self.dataset_size = labels.shape[0]
+#         else:
+#             images = data_set[1][0]
+#             labels = data_set[1][1]
+#             self.dataset_size = labels.shape[0]
+#         return images, labels
+
+
+
+
+class USPS(VisionDataset):
+    """`USPS <https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass.html#usps>`_ Dataset.
+    The data-format is : [label [index:value ]*256 \n] * num_lines, where ``label`` lies in ``[1, 10]``.
+    The value for each pixel lies in ``[-1, 1]``. Here we transform the ``label`` into ``[0, 9]``
+    and make pixel values in ``[0, 255]``.
 
     Args:
-        root (string): Root directory of dataset where dataset file exist.
-        train (bool, optional): If True, resample from dataset randomly.
-        download (bool, optional): If true, downloads the dataset
-            from the internet and puts it in root directory.
-            If dataset is already downloaded, it is not downloaded again.
-        transform (callable, optional): A function/transform that takes in
-            an PIL image and returns a transformed version.
-            E.g, ``transforms.RandomCrop``
+        root (string): Root directory of dataset to store``USPS`` data files.
+        train (bool, optional): If True, creates dataset from ``usps.bz2``,
+            otherwise from ``usps.t.bz2``.
+        transform (callable, optional): A function/transform that  takes in an PIL image
+            and returns a transformed version. E.g, ``transforms.RandomCrop``
+        target_transform (callable, optional): A function/transform that takes in the
+            target and transforms it.
+        download (bool, optional): If true, downloads the dataset from the internet and
+            puts it in root directory. If dataset is already downloaded, it is not
+            downloaded again.
+
     """
+    split_list = {
+        'train': [
+            "https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2",
+            "usps.bz2", 'ec16c51db3855ca6c91edd34d0e9b197'
+        ],
+        'test': [
+            "https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2",
+            "usps.t.bz2", '8ea070ee2aca1ac39742fdd1ef5ed118'
+        ],
+    }
 
-    url = "https://raw.githubusercontent.com/mingyuliutw/CoGAN/master/cogan_pytorch/data/uspssample/usps_28x28.pkl"
+    def __init__(self, root, train=True, transform=None, target_transform=None, download=False):
+        super(USPS, self).__init__(root, transform=transform, target_transform=target_transform)
+        split = 'train' if train else 'test'
+        url, filename, checksum = self.split_list[split]
+        full_path = os.path.join(self.root, filename)
 
-    def __init__(self, root, train=True, transform=None, download=False):
-        """Init USPS dataset."""
-        # init params
-        self.root = os.path.expanduser(root)
-        self.filename = "usps_28x28.pkl"
-        self.train = train
-        # Num of Train = 7438, Num ot Test 1860
-        self.transform = transform
-        self.dataset_size = None
+        if download and not os.path.exists(full_path):
+            download_url(url, self.root, filename, md5=checksum)
 
-        # download dataset.
-        if download:
-            self.download()
-        if not self._check_exists():
-            raise RuntimeError("Dataset not found." +
-                               " You can use download=True to download it")
+        import bz2
+        with bz2.open(full_path) as fp:
+            raw_data = [l.decode().split() for l in fp.readlines()]
+            imgs = [[x.split(':')[-1] for x in data[1:]] for data in raw_data]
+            imgs = np.asarray(imgs, dtype=np.float32).reshape((-1, 16, 16))
+            imgs = ((imgs + 1) / 2 * 255).astype(dtype=np.uint8)
+            targets = [int(d[0]) - 1 for d in raw_data]
 
-        self.train_data, self.train_labels = self.load_samples()
-        if self.train:
-            total_num_samples = self.train_labels.shape[0]
-            indices = np.arange(total_num_samples)
-            np.random.shuffle(indices)
-            self.train_data = self.train_data[indices[0:self.dataset_size], ::]
-            self.train_labels = self.train_labels[indices[0:self.dataset_size]]
-        self.train_data *= 255.0
-        self.train_data = self.train_data.transpose(
-            (0, 2, 3, 1))  # convert to HWC
+        self.data = imgs
+        self.targets = targets
 
     def __getitem__(self, index):
-        """Get images and target for data loader.
-
+        """
         Args:
             index (int): Index
+
         Returns:
             tuple: (image, target) where target is index of the target class.
         """
-        img, label = self.train_data[index, ::], self.train_labels[index]
+        img, target = self.data[index], int(self.targets[index])
+
+        # doing this so that it is consistent with all other datasets
+        # to return a PIL Image
+        img = Image.fromarray(img, mode='L')
+
         if self.transform is not None:
             img = self.transform(img)
-        label = torch.LongTensor([np.int64(label).item()])
-        # label = torch.FloatTensor([label.item()])
-        return img, label
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
 
     def __len__(self):
-        """Return size of dataset."""
-        return self.dataset_size
-
-    def _check_exists(self):
-        """Check if dataset is download and in right place."""
-        return os.path.exists(os.path.join(self.root, self.filename))
-
-    def download(self):
-        """Download dataset."""
-        filename = os.path.join(self.root, self.filename)
-        dirname = os.path.dirname(filename)
-        if not os.path.isdir(dirname):
-            os.makedirs(dirname)
-        if os.path.isfile(filename):
-            return
-        print("Download %s to %s" % (self.url, os.path.abspath(filename)))
-        urllib.request.urlretrieve(self.url, filename)
-        print("[DONE]")
-        return
-
-    def load_samples(self):
-        """Load sample images from dataset."""
-        filename = os.path.join(self.root, self.filename)
-        f = gzip.open(filename, "rb")
-        data_set = pickle.load(f, encoding="bytes")
-        f.close()
-        if self.train:
-            images = data_set[0][0]
-            labels = data_set[0][1]
-            self.dataset_size = labels.shape[0]
-        else:
-            images = data_set[1][0]
-            labels = data_set[1][1]
-            self.dataset_size = labels.shape[0]
-        return images, labels
-
+        return len(self.data)
 
 def usps_loader(img_size, batchSize=128):
     """Get USPS dataset loader."""
