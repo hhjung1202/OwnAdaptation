@@ -216,7 +216,7 @@ def usps_loader(img_size, batchSize=128):
     # image pre-processing
     print("USPS Loading")
     pre_process = transforms.Compose([transforms.ToTensor(),
-                                      transforms.Normalize(mean=(0.5, 0.5, 0.5),std=(0.5, 0.5, 0.5))])
+                                      transforms.Normalize(mean=[0.5],std=[0.5])])
 
     # dataset and data loader
     train_dataset = USPS(root='/home/hhjung/hhjung/USPS/',
