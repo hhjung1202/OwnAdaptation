@@ -32,12 +32,12 @@ def MNIST_loader(img_size, batchSize=128):
 
     train_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=True,
                                         transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
-                                            , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
+                                            , transforms.Normalize(mean=(0.5), std=(0.5))]),
                                         download=True)
 
     test_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=False,
                                        transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
-                                            , transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))]),
+                                            , transforms.Normalize(mean=(0.5), std=(0.5))]),
                                        download=True)
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batchSize, shuffle=True)
