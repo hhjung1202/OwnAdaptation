@@ -266,9 +266,11 @@ def extract_sample(Source_train_loader, Target_train_loader):
 
     data_zip = enumerate(zip(Source_train_loader, Target_train_loader))
     for step, ((Src_sample, Src_label), (Tgt_sample, Tgt_label)) in data_zip:
+        if Src_sample.size(0) != Tgt_sample.size(0):
+            print(Src_sample.size(0))
+            break;
         Src_sample, Src_label = to_var(Src_sample, FloatTensor), to_var(Src_label, LongTensor)
         Tgt_sample, Tgt_label = to_var(Tgt_sample, FloatTensor), to_var(Tgt_label, LongTensor)
-        break
 
     return Src_sample, Src_label, Tgt_sample, Tgt_label
 
