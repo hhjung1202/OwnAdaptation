@@ -170,7 +170,6 @@ class USPS(data.Dataset):
         img = Image.fromarray(np.squeeze(img), mode='L')
         if self.transform is not None:
             img = self.transform(img)
-            print(img.shape)
 
         label = torch.LongTensor([np.int64(label).item()])
         # label = torch.FloatTensor([label.item()])

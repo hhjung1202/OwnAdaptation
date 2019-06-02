@@ -264,6 +264,10 @@ def extract_sample(Source_train_loader, Target_train_loader):
         print('here',x.size())
         break
 
+    for it, (x, y) in enumerate(Source_train_loader):
+        print('here2',x.size())
+        break
+
     data_zip = enumerate(zip(Source_train_loader, Target_train_loader))
     for step, ((Src_sample, Src_label), (Tgt_sample, Tgt_label)) in data_zip:
         if Src_sample.size(0) != Tgt_sample.size(0):
