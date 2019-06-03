@@ -19,6 +19,8 @@ import math
 
 def loss_fn(recover, x, mean, sigma, cls_output, y):
     
+    x = x.view(x.size(0), -1)
+
     criterion_MSE = torch.nn.MSELoss()
     criterion = torch.nn.CrossEntropyLoss()
     # .view(x.size(0), -1)

@@ -48,7 +48,8 @@ criterion_MSE = torch.nn.MSELoss()
 criterion = torch.nn.CrossEntropyLoss()
 
 def loss_fn(recover, x, mean, sigma, cls_output, y):
-    # .view(x.size(0), -1)
+
+    x = x.view(x.size(0), -1)
     MSE = criterion_MSE(recover, x)
 
     mean_sq = mean * mean
