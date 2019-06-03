@@ -15,6 +15,8 @@ class VAE(nn.Module):
 
     def forward(self, x, z=None):
 
+        print(x)
+
         x = x.view(x.size(0), -1)
 
         if z is not None:
