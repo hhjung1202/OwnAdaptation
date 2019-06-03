@@ -15,15 +15,12 @@ class VAE(nn.Module):
 
     def forward(self, x, z=None):
 
-        print(x)
-        print(x.size())
-
-        x = x.view(x.size(0), -1)
-
         if z is not None:
             cls_output = self.inform(z)
             recover = self.decoder(z)
             return recover, cls_output
+
+        x = x.view(x.size(0), -1)
 
         batch_size = x.size(0)
 
