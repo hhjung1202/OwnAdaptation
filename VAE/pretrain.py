@@ -15,9 +15,23 @@ import math
 # FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 # LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-
-
 def loss_fn(recover, x, mean, sigma, cls_output, y):
+
+    x = x.view(x.size(0), -1)
+    MSE = criterion_MSE(recover, x)
+    MSE = args.MSE * MSE
+
+    mean_sq = mean * mean
+    stddev_sq = sigma * sigma
+    KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
+    KLD = args.KLD * KLD
+
+    CE = criterion(cls_output, y)
+    CE = args.CE * CE
+
+    return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
+
+def loss_fn(args, recover, x, mean, sigma, cls_output, y):
     
     x = x.view(x.size(0), -1)
 
@@ -25,12 +39,15 @@ def loss_fn(recover, x, mean, sigma, cls_output, y):
     criterion = torch.nn.CrossEntropyLoss()
     # .view(x.size(0), -1)
     MSE = criterion_MSE(recover, x)
+    MSE = args.MSE * MSE
 
     mean_sq = mean * mean
     stddev_sq = sigma * sigma
     KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
+    KLD = args.KLD * KLD
 
     CE = criterion(cls_output, y)
+    CE = args.CE * CE
 
     return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
 
@@ -88,7 +105,7 @@ def train(args, state_info, train_loader, epoch): # all
 
         #  Train 
         state_info.optim_VAE_src.zero_grad()
-        loss, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, y)
+        loss, MSE, KLD, CE = loss_fn(args, recover, x, mean, sigma, cls_output, y)
         loss.backward()
         state_info.optim_VAE_src.step()
 
