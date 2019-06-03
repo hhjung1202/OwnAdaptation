@@ -53,7 +53,7 @@ class Encoder(nn.Module):
         mean = self.linear_mean(x)
         log_sigma = self.linear_log_sigma(x)
 
-        return means, log_vars
+        return mean, log_sigma
 
 class Decoder(nn.Module):
     def __init__(self, D_in=100, H=100, D_out=784, latent_size=40):
