@@ -153,8 +153,8 @@ def merge_images(sources, targets, row=10):
         j = idx % row
         if i is row:
             break
-        merged[:, i*h:(i+1)*h, (j*2)*h:(j*2+1)*h] = s
-        merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
+        merged[:, i*h:(i+1)*h, (j*2)*h:(j*2+1)*h] = s.cpu()
+        merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t.cpu()
 
     return torch.from_numpy(merged)
 
