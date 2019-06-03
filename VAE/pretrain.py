@@ -15,16 +15,22 @@ import math
 # FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 # LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-def loss_fn(recon_x, x, means, log_var, cls_output, y):
-    
-    criterion_BCE = torch.nn.BCELoss(reduction='sum')
-    criterion = nn.CrossEntropyLoss(reduction='sum')
 
-    BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
-    KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
+
+def loss_fn(recover, x, mean, sigma, cls_output, y):
+    
+    criterion_MSE = torch.nn.MSELoss()
+    criterion = torch.nn.CrossEntropyLoss()
+    # .view(x.size(0), -1)
+    MSE = criterion_MSE(recover, x)
+
+    mean_sq = mean * mean
+    stddev_sq = sigma * sigma
+    KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
+
     CE = criterion(cls_output, y)
 
-    return (BCE + KLD + CE) / x.size(0), BCE, KLD, CE
+    return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
@@ -47,7 +53,7 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
         state_info.pretrain_load_state_dict(checkpoint)
         state_info.pretrain_learning_scheduler_init(args, load_epoch=start_epoch)
 
-    for epoch in range(start_epoch, args.epoch):
+    for epoch in range(start_epoch, args.Pepoch):
         
         train(args, state_info, train_loader, epoch)
         prec_result = test(args, state_info, test_loader, Src_sample, epoch)
@@ -67,7 +73,7 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
 def train(args, state_info, train_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE, Acc')
+    utils.print_log('Type, Epoch, Batch, loss, MSE, KLD, CE, Acc')
     state_info.pretrain_set_train_mode()
     correct = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
@@ -76,11 +82,11 @@ def train(args, state_info, train_loader, epoch): # all
 
         batch_size = x.size(0)
         x, y = to_var(x, torch.cuda.FloatTensor), to_var(y, torch.cuda.LongTensor)
-        recon_x, means, log_var, z, cls_output = state_info.pretrain_forward(x)
+        recover, mean, sigma, z, cls_output = state_info.pretrain_forward(x)
 
         #  Train 
         state_info.optim_VAE_src.zero_grad()
-        loss, BCE, KLD, CE = loss_fn(recon_x, x, means, log_var, cls_output, y)
+        loss, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, y)
         loss.backward()
         state_info.optim_VAE_src.step()
 
@@ -90,11 +96,11 @@ def train(args, state_info, train_loader, epoch): # all
         correct += float(predicted.eq(y.data).cpu().sum())
         
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
-                  .format(epoch, it, loss.item(), BCE.item(), KLD.item(), CE.item(), 100.*correct / total))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.2f}'
+                  .format(epoch, it, loss.item(), MSE, KLD, CE, 100.*correct / total))
 
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
-                  .format(epoch, it, loss.item(), BCE.item(), KLD.item(), CE.item(), 100.*correct / total))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.2f}'
+                  .format(epoch, it, loss, MSE, KLD, CE, 100.*correct / total))
 
     utils.print_log('')
 
@@ -130,10 +136,10 @@ def make_sample_image(state_info, Src_sample, epoch):
 
     img_path = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Pretrain'))
 
-    recon_x, _, _ = state_info.pretrain_forward(Src_sample, test=True)
-    recon_x = to_data(recon_x)
+    recover, _, _ = state_info.pretrain_forward(Src_sample, test=True)
+    recover = to_data(recover)
 
-    concat = merge_images(Src_sample, recon_x)
+    concat = merge_images(Src_sample, recover)
 
     save_image(concat.data, os.path.join(img_path, '%d.png' % epoch), normalize=True)
 

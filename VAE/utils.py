@@ -21,30 +21,30 @@ class model_optim_state_info(object):
     def __init__(self):
         pass
 
-    def model_init(self, src_ch=3, tar_ch=1, latent_size=100, num_class=10, dim=128):
-        self.VAE_src = VAE(img_dim=src_ch, latent_size=latent_size, num_class=num_class, dim=dim) # input : [z, y]
-        self.VAE_tgt = VAE(img_dim=tar_ch, latent_size=latent_size, num_class=num_class, dim=dim) # input : [z, y]
+    def model_init(self, Img_S=784, Img_T=784, H=100, D_out=100, latent_size=40, num_class=10):
+        self.VAE_src = VAE(img_D=Img_S, H=H, D_out=D_out, latent_size=latent_size, num_class=num_class)
+        self.VAE_tgt = VAE(img_D=Img_T, H=H, D_out=D_out, latent_size=latent_size, num_class=num_class)
 
     def pretrain_forward(self, x, test=False):
-        recon_x, means, log_var, z, cls_output = self.VAE_src(x)
+        recover, mean, sigma, z, cls_output = self.VAE_src(x)
         if not test:
-            return recon_x, means, log_var, z, cls_output
+            return recover, mean, sigma, z, cls_output
         else:
-            return recon_x, cls_output, z
+            return recover, cls_output, z
 
     def forward(self, x, test=False):
-        recon_x, means, log_var, z, cls_output = self.VAE_tgt(x)
-        recon_src, cls_src = self.VAE_src(None, z=z)
+        recover, mean, sigma, z, cls_output = self.VAE_tgt(x)
+        recover_src, cls_src = self.VAE_src(None, z=z)
         if not test:
-            return recon_x, means, log_var, z, cls_output, cls_src.detach()
+            return recover, mean, sigma, z, cls_output, cls_src.detach()
         else:
-            return recon_x, cls_output, recon_src, cls_src, z
+            return cls_output, cls_src, recover, recover_src
 
     def forward_z(self, z):
-        recon_src, _ = self.VAE_src(None, z=z)
-        recon_tgt, _ = self.VAE_tgt(None, z=z)
+        recover_src, _ = self.VAE_src(None, z=z)
+        recover_tgt, _ = self.VAE_tgt(None, z=z)
         
-        return recon_src, recon_tgt
+        return recover_src, recover_tgt
 
     def model_cuda_init(self):
         if torch.cuda.is_available():

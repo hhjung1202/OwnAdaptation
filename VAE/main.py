@@ -17,43 +17,20 @@ parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Tr
 parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
 parser.add_argument('--td', default='usps', type=str, help='target dataset')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
-parser.add_argument('--epoch', default=20, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--decay-epoch', default=80, type=int, metavar='N', help='epoch from which to start lr decay')
-# parser.add_argument('--Pepoch', default=20, type=int, metavar='N', help='Pretrain model number of total epoch to run')
-# parser.add_argument('--Pdecay-epoch', default=80, type=int, metavar='N', help='Pretrain model lr decay')
+parser.add_argument('--epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--decay-epoch', default=30, type=int, metavar='N', help='epoch from which to start lr decay')
+parser.add_argument('--Pepoch', default=20, type=int, metavar='N', help='Pretrain model number of total epoch to run')
 parser.add_argument('-b', '--batch-size', default=64, type=int, metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=0.0002, type=float, metavar='LR', help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=0.0001, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-size', type=int, default=100, help='dimension of latent z')
-parser.add_argument('--dim', type=int, default=128, help='dimension of the model channel')
-parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
-parser.add_argument('--max-buffer', type=int, default=8196, help='Fake GAN Buffer Image')
+parser.add_argument('--latent-size', type=int, default=40, help='dimension of latent z')
+parser.add_argument('--img-size', type=int, default=28, help='input image width, height size')
 
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
-
-parser.add_argument('--cycle', type=float, default=1.0, help='Cycle Consistency Parameter')
-parser.add_argument('--identity', type=float, default=1.0, help='Identity Consistency Parameter')
-parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
-parser.add_argument('--gen', type=float, default=1.0, help='Target Generator loss weight')
-parser.add_argument('--gen2', type=float, default=1.0, help='Source Generator loss weight')
-parser.add_argument('--dis', type=float, default=1.0, help='Target Discriminator loss weight')
-parser.add_argument('--dis2', type=float, default=1.0, help='Source Discriminator loss weight')
-parser.add_argument('--recon', type=float, default=1.0, help='Discriminator loss weight')
-parser.add_argument('--recon2', type=float, default=1.0, help='Discriminator loss weight')
-parser.add_argument('--feature', type=float, default=1e-4, help='Feature loss weight')
-
-parser.add_argument('--print-freq', '-p', default=10, type=int,
-                    metavar='N', help='print frequency (default: 10)')
-parser.add_argument('--resume', default='', type=str, metavar='PATH',
-                    help='path to latest checkpoint (default: none)')
-parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
-                    help='evaluate model on validation set')
-parser.add_argument('--pretrained', dest='pretrained', action='store_true',
-                    help='use pre-trained model')
 
 source_prediction_max_result = []
 target_prediction_max_result = []
@@ -67,16 +44,23 @@ cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-criterion_BCE = torch.nn.BCELoss(reduction='sum')
-criterion = nn.CrossEntropyLoss(reduction='sum')
+criterion_MSE = torch.nn.MSELoss()
+criterion = torch.nn.CrossEntropyLoss()
 
-def loss_fn(recon_x, x, means, log_var, cls_output, y):
-    BCE = criterion_BCE(recon_x.view(x.size(0), -1), x.view(x.size(0), -1))
-    KLD = -0.5 * torch.sum(1 + log_var - means.pow(2) - log_var.exp())
+def loss_fn(recover, x, mean, sigma, cls_output, y):
+    # .view(x.size(0), -1)
+    MSE = criterion_MSE(recover, x)
+
+    mean_sq = mean * mean
+    stddev_sq = sigma * sigma
+    KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
 
     CE = criterion(cls_output, y)
 
-    return BCE + KLD + CE, BCE, KLD, CE
+    return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
+
+def Cdim(ch, wh):
+    return ch*wh*wh
 
 def main():
     global args, best_prec_result
@@ -85,12 +69,12 @@ def main():
     utils.default_model_dir = args.dir
     start_time = time.time()
 
-    Source_train_loader, Source_test_loader, src_ch = dataset_selector(args.sd)
-    Target_train_loader, Target_test_loader, tar_ch = dataset_selector(args.td)
-    Src_sample, Src_label, Tgt_sample, Tgt_label = extract_sample(Source_train_loader, Target_train_loader)
+    Source_train_loader, Source_test_loader, src_ch, src_wh = dataset_selector(args.sd)
+    Target_train_loader, Target_test_loader, tar_ch, tar_wh = dataset_selector(args.td)
+    Src_sample, Tgt_sample = extract_sample(Source_train_loader, Target_train_loader)
 
     state_info = utils.model_optim_state_info()
-    state_info.model_init(src_ch=src_ch, tar_ch=tar_ch, latent_size=args.latent_size, num_class=10, dim=args.dim)
+    state_info.model_init(Img_S=Cdim(src_ch, src_wh), Img_T=Cdim(tar_ch, tar_wh), H=100, D_out=100, latent_size=args.latent_size, num_class=10)
     state_info.model_cuda_init()
     state_info.weight_init()
     state_info.optimizer_init(lr=args.lr, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay)
@@ -99,21 +83,21 @@ def main():
         print("USE", torch.cuda.device_count(), "GPUs!")
         cudnn.benchmark = True
 
-    # pretrain.pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
+    pretrain.pretrain(args, state_info, Source_train_loader, Source_test_loader, Src_sample)
 
-    # checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
-    # if not checkpoint:
-    #     state_info.learning_scheduler_init(args)
-    # else:
-    #     start_epoch = checkpoint['epoch'] + 1
-    #     best_prec_result = checkpoint['Best_Prec']
-    #     state_info.load_state_dict(checkpoint)
-    #     state_info.learning_scheduler_init(args, load_epoch=start_epoch)
+    checkpoint = utils.load_checkpoint(utils.default_model_dir, is_last=True, is_source=False)    
+    if not checkpoint:
+        state_info.learning_scheduler_init(args)
+    else:
+        start_epoch = checkpoint['epoch'] + 1
+        best_prec_result = checkpoint['Best_Prec']
+        state_info.load_state_dict(checkpoint)
+        state_info.learning_scheduler_init(args, load_epoch=start_epoch)
 
     for epoch in range(start_epoch, args.epoch):
         
         train(state_info, Target_train_loader, epoch)
-        test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch)
+        test(state_info, Target_test_loader, Src_sample, Tgt_sample, epoch)
 
         # if prec_result > best_prec_result:
         #     best_prec_result = prec_result
@@ -133,25 +117,23 @@ def main():
 
 def train(state_info, Target_train_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE')
+    utils.print_log('Type, Epoch, Batch, loss, MSE, KLD, CE')
     state_info.set_train_mode()
     correct = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
 
     for it, (x, y) in enumerate(Target_train_loader):
 
-        print('USPS : ', x.size())
-
         batch_size = x.size(0)
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        recon_x, means, log_var, z, cls_output, cls_src = state_info.forward(x)
+        recover, mean, sigma, z, cls_output, cls_src = state_info.forward(x)
         
         _, cls_src = torch.max(cls_src.data, 1)
         cls_src = to_var(cls_src, LongTensor)
 
         #  Train 
         state_info.optim_VAE_tgt.zero_grad()
-        loss, BCE, KLD, CE = loss_fn(recon_x, x, means, log_var, cls_output, cls_src)
+        loss, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, cls_src)
         loss.backward()
         state_info.optim_VAE_tgt.step()
 
@@ -164,14 +146,14 @@ def train(state_info, Target_train_loader, epoch): # all
         correct += float(predicted.eq(cls_src.data).cpu().sum())
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
-                  .format(epoch, it, loss.item(), BCE.item(), KLD.item(), CE.item(), 100.*correct / total))
-            print('Train, {}, {}, {:.4f}, {:.4f}, {:.4f}, {:.4f}, {:.2f}'
-                  .format(epoch, it, loss.item(), BCE.item(), KLD.item(), CE.item(), 100.*correct / total))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'
+                  .format(epoch, it, loss.item(), MSE, KLD, CE, 100.*correct / total))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'
+                  .format(epoch, it, loss.item(), MSE, KLD, CE, 100.*correct / total))
 
     utils.print_log('')
 
-def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch):
+def test(state_info, Target_test_loader, Src_sample, Tgt_sample, epoch):
 
     utils.print_log('Type, Epoch, Batch, Acc')
     state_info.set_test_mode()
@@ -182,7 +164,7 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
 
         batch_size = x.size(0)
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        _, cls_output, _, cls_src, _ = state_info.forward(x, test=True)
+        cls_output, cls_src, _, _ = state_info.forward(x, test=True)
 
         # mapping info of <y, cls_output> print
         cls_src = torch.max(cls_src.data, 1)[1]
@@ -197,13 +179,13 @@ def test(state_info, Target_test_loader, Src_sample, Src_label, Tgt_sample, Tgt_
             utils.print_log('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct / total))
             print('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct / total))
     
-    make_sample_image(state_info, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch)
+    make_sample_image(state_info, Src_sample, Tgt_sample, epoch)
     utils.print_log('')
 
-def make_sample_image(state_info, Src_sample, Src_label, Tgt_sample, Tgt_label, epoch):
+def make_sample_image(state_info, Src_sample, Tgt_sample, epoch):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
 
-    img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/SS'))
+    # img_path1 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/SS'))
     img_path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/ST'))
     img_path3 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TS'))
     img_path4 = utils.make_directory(os.path.join(utils.default_model_dir, 'images/TT'))
@@ -212,17 +194,16 @@ def make_sample_image(state_info, Src_sample, Src_label, Tgt_sample, Tgt_label, 
     _, _T = state_info.forward_z(z)
     S_, _T = to_data(S_), to_data(_T)
 
-    SS = merge_images(Src_sample, S_)
+    # SS = merge_images(Src_sample, S_)
     ST = merge_images(Src_sample, _T)
 
-
-    T_, _, _S, _, z = state_info.forward(Tgt_sample, test=True)
+    _, _, T_, _S = state_info.forward(Tgt_sample, test=True)
     T_, _S = to_data(T_), to_data(_S)
 
     TT = merge_images(Tgt_sample, T_)
     TS = merge_images(Tgt_sample, _S)
 
-    save_image(SS.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
+    # save_image(SS.data, os.path.join(img_path1, '%d.png' % epoch), normalize=True)
     save_image(ST.data, os.path.join(img_path2, '%d.png' % epoch), normalize=True)
     save_image(TS.data, os.path.join(img_path3, '%d.png' % epoch), normalize=True)
     save_image(TT.data, os.path.join(img_path4, '%d.png' % epoch), normalize=True)
@@ -260,23 +241,13 @@ def to_var(x, dtype):
 
 def extract_sample(Source_train_loader, Target_train_loader):
 
-    for it, (x, y) in enumerate(Target_train_loader):
-        print('here',x.size())
-        break
-
-    for it, (x, y) in enumerate(Source_train_loader):
-        print('here2',x.size())
-        break
-
     data_zip = enumerate(zip(Source_train_loader, Target_train_loader))
-    for step, ((Src_sample, Src_label), (Tgt_sample, Tgt_label)) in data_zip:
-        if Src_sample.size(0) != Tgt_sample.size(0):
-            print(Src_sample.size(0))
-            break;
-        Src_sample, Src_label = to_var(Src_sample, FloatTensor), to_var(Src_label, LongTensor)
-        Tgt_sample, Tgt_label = to_var(Tgt_sample, FloatTensor), to_var(Tgt_label, LongTensor)
+    for step, ((Src_sample, _), (Tgt_sample, _)) in data_zip:
+        Src_sample = to_var(Src_sample, FloatTensor)
+        Tgt_sample = to_var(Tgt_sample, FloatTensor)
+        break;
 
-    return Src_sample, Src_label, Tgt_sample, Tgt_label
+    return Src_sample, Tgt_sample
 
 # def extract_sample(Source_train_loader, Target_train_loader):
 #     Src_sample_iter = iter(Source_train_loader)
