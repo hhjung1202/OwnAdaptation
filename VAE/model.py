@@ -15,6 +15,8 @@ class VAE(nn.Module):
 
     def forward(self, x, z=None):
 
+        x = x.view(x.size(0), -1)
+
         if z is not None:
             cls_output = self.inform(z)
             recover = self.decoder(z)
@@ -45,7 +47,6 @@ class Encoder(nn.Module):
         self.linear_log_sigma = nn.Linear(D_out, latent_size)
 
     def forward(self, x):
-        x = x.view(x.size(0), -1)
 
         x = self.linear1(x)
         x = self.linear2(x)
