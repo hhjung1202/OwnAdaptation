@@ -147,7 +147,7 @@ def make_sample_image(state_info, Src_sample, epoch):
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
-    merged = np.zeros([3, row*h, row*w*2])
+    merged = np.zeros([1, row*h, row*w*2])
     for idx, (s, t) in enumerate(zip(sources, targets)):
         i = idx // row
         j = idx % row

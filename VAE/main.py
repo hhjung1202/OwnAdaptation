@@ -29,6 +29,10 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 parser.add_argument('--latent-size', type=int, default=40, help='dimension of latent z')
 parser.add_argument('--img-size', type=int, default=28, help='input image width, height size')
 
+parser.add_argument('--MSE', type=float, default=1.0, help='MSE loss parameter')
+parser.add_argument('--KLD', type=float, default=1.0, help='KLD loss parameter')
+parser.add_argument('--CE', type=float, default=1.0, help='CE loss parameter')
+
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
@@ -51,12 +55,15 @@ def loss_fn(recover, x, mean, sigma, cls_output, y):
 
     x = x.view(x.size(0), -1)
     MSE = criterion_MSE(recover, x)
+    MSE = args.MSE * MSE
 
     mean_sq = mean * mean
     stddev_sq = sigma * sigma
     KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
+    KLD = args.KLD * KLD
 
     CE = criterion(cls_output, y)
+    CE = args.CE * CE
 
     return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
 
@@ -211,7 +218,7 @@ def make_sample_image(state_info, Src_sample, Tgt_sample, epoch):
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
-    merged = np.zeros([3, row*h, row*w*2])
+    merged = np.zeros([1, row*h, row*w*2])
     for idx, (s, t) in enumerate(zip(sources, targets)):
         i = idx // row
         j = idx % row
