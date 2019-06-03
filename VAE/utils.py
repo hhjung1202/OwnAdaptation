@@ -24,9 +24,13 @@ class model_optim_state_info(object):
     def model_init(self, Img_S=784, Img_T=784, H=100, D_out=100, latent_size=40, num_class=10):
         self.VAE_src = VAE(img_D=Img_S, H=H, D_out=D_out, latent_size=latent_size, num_class=num_class)
         self.VAE_tgt = VAE(img_D=Img_T, H=H, D_out=D_out, latent_size=latent_size, num_class=num_class)
+        self.lenS = int(math.sqrt(Img_S))
+        self.lenT = int(math.sqrt(Img_T))
 
     def pretrain_forward(self, x, test=False):
         recover, mean, sigma, z, cls_output = self.VAE_src(x)
+        recover = recover.view(recover.size(0), -1, self.lenS, self.lenS)
+
         if not test:
             return recover, mean, sigma, z, cls_output
         else:
@@ -35,6 +39,10 @@ class model_optim_state_info(object):
     def forward(self, x, test=False):
         recover, mean, sigma, z, cls_output = self.VAE_tgt(x)
         recover_src, cls_src = self.VAE_src(None, z=z)
+
+        recover = recover.view(recover.size(0), -1, self.lenT, self.lenT)
+        recover_src = recover_src.view(recover_src.size(0), -1, self.lenS, self.lenS)
+
         if not test:
             return recover, mean, sigma, z, cls_output, cls_src.detach()
         else:
@@ -43,6 +51,9 @@ class model_optim_state_info(object):
     def forward_z(self, z):
         recover_src, _ = self.VAE_src(None, z=z)
         recover_tgt, _ = self.VAE_tgt(None, z=z)
+
+        recover_tgt = recover_tgt.view(recover_tgt.size(0), -1, self.lenT, self.lenT)
+        recover_src = recover_src.view(recover_src.size(0), -1, self.lenS, self.lenS)
         
         return recover_src, recover_tgt
 

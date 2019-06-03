@@ -53,6 +53,7 @@ criterion = torch.nn.CrossEntropyLoss()
 
 def loss_fn(recover, x, mean, sigma, cls_output, y):
 
+    recover = recover.view(recover.size(0), -1)
     x = x.view(x.size(0), -1)
     MSE = criterion_MSE(recover, x)
     MSE = args.MSE * MSE
@@ -218,7 +219,7 @@ def make_sample_image(state_info, Src_sample, Tgt_sample, epoch):
 
 def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
-    merged = np.zeros([1, row*h, row*w*2])
+    merged = np.zeros([3, row*h, row*w*2])
     for idx, (s, t) in enumerate(zip(sources, targets)):
         i = idx // row
         j = idx % row
@@ -228,7 +229,6 @@ def merge_images(sources, targets, row=10):
         merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
 
     return torch.from_numpy(merged)
-
 
 def dataset_selector(data):
     if data == 'mnist':
