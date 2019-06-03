@@ -193,13 +193,13 @@ def make_sample_image(state_info, Src_sample, Tgt_sample, epoch):
 
     S_, _, z = state_info.pretrain_forward(Src_sample, test=True)
     _, _T = state_info.forward_z(z)
-    S_, _T = to_data(S_), to_data(_T)
+    Src_sample, S_, _T = to_data(Src_sample), to_data(S_), to_data(_T)
 
     # SS = merge_images(Src_sample, S_)
     ST = merge_images(Src_sample, _T)
 
     _, _, T_, _S = state_info.forward(Tgt_sample, test=True)
-    T_, _S = to_data(T_), to_data(_S)
+    Tgt_sample, T_, _S = to_data(Tgt_sample), to_data(T_), to_data(_S)
 
     TT = merge_images(Tgt_sample, T_)
     TS = merge_images(Tgt_sample, _S)
@@ -217,8 +217,8 @@ def merge_images(sources, targets, row=10):
         j = idx % row
         if i is row:
             break
-        merged[:, i*h:(i+1)*h, (j*2)*h:(j*2+1)*h] = s.cpu()
-        merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t.cpu()
+        merged[:, i*h:(i+1)*h, (j*2)*h:(j*2+1)*h] = s
+        merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
 
     return torch.from_numpy(merged)
 

@@ -139,7 +139,7 @@ def make_sample_image(state_info, Src_sample, epoch):
     img_path = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Pretrain'))
 
     recover, _, _ = state_info.pretrain_forward(Src_sample, test=True)
-    recover = to_data(recover)
+    Src_sample, recover = to_data(Src_sample), to_data(recover)
 
     concat = merge_images(Src_sample, recover)
 
@@ -149,14 +149,12 @@ def merge_images(sources, targets, row=10):
     _, _, h, w = sources.shape
     merged = np.zeros([3, row*h, row*w*2])
     for idx, (s, t) in enumerate(zip(sources, targets)):
-        print(s)
-        print(t)
         i = idx // row
         j = idx % row
         if i is row:
             break
-        merged[:, i*h:(i+1)*h, (j*2)*h:(j*2+1)*h] = s.cpu()
-        merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t.cpu()
+        merged[:, i*h:(i+1)*h, (j*2)*h:(j*2+1)*h] = s
+        merged[:, i*h:(i+1)*h, (j*2+1)*h:(j*2+2)*h] = t
 
     return torch.from_numpy(merged)
 
