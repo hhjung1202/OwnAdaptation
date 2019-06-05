@@ -20,7 +20,7 @@ def loss_fn(args, recover, x, mean, sigma, cls_output, y):
     recover = recover.view(recover.size(0), -1)
     x = x.view(x.size(0), -1)
 
-    criterion_MSE = torch.nn.BCELoss()
+    criterion_MSE = torch.nn.MSELoss()
     criterion = torch.nn.CrossEntropyLoss()
     # .view(x.size(0), -1)
     MSE = criterion_MSE(recover, x)

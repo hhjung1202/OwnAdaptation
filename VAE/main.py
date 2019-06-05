@@ -48,7 +48,7 @@ cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-criterion_MSE = torch.nn.BCELoss()
+criterion_MSE = torch.nn.MSELoss()
 criterion = torch.nn.CrossEntropyLoss()
 
 def loss_fn(recover, x, mean, sigma, cls_output, y):
