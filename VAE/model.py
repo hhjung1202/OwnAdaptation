@@ -64,11 +64,13 @@ class Decoder(nn.Module):
         self.linear2 = torch.nn.Linear(D_in, H)
         self.linear3 = torch.nn.Linear(H, D_out)
 
+        self.sigmoid = nn.Sigmoid()
+
     def forward(self, x):
 
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
-        return F.relu(self.linear3(x))
+        return self.sigmoid(self.linear3(x))
 
 class Inform(nn.Module):
     def __init__(self, latent_size=40, num_class=10):
