@@ -142,10 +142,10 @@ def train(state_info, Target_train_loader, epoch): # all
 
         #  Train 
         state_info.optim_VAE_tgt.zero_grad()
-        loss1, loss2, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, cls_src)
+        loss1, loss, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, cls_src)
 
         loss1.backward(retain_graph=True)
-        loss2.backward(retain_graph=True)
+        loss.backward(retain_graph=True)
         state_info.optim_VAE_tgt.step()
 
 

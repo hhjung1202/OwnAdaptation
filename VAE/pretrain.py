@@ -90,9 +90,9 @@ def train(args, state_info, train_loader, epoch): # all
 
         #  Train 
         state_info.optim_VAE_src.zero_grad()
-        loss1, loss2, MSE, KLD, CE = loss_fn(args, recover, x, mean, sigma, cls_output, y)
+        loss1, loss, MSE, KLD, CE = loss_fn(args, recover, x, mean, sigma, cls_output, y)
         loss1.backward(retain_graph=True)
-        loss2.backward(retain_graph=True)
+        loss.backward(retain_graph=True)
         state_info.optim_VAE_src.step()
 
         #  Log Print
