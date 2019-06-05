@@ -31,7 +31,8 @@ def loss_fn(args, recover, x, mean, sigma, cls_output, y):
     KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
     KLD = args.KLD * KLD
 
-    print(cls_output, y)
+    if y.size(-1) == 1:
+        y=y.view(-1)
 
     CE = criterion(cls_output, y)
     CE = args.CE * CE
