@@ -70,7 +70,7 @@ class Decoder(nn.Module):
 
         x = F.relu(self.linear1(x))
         x = F.relu(self.linear2(x))
-        return F.relu(self.linear3(x))
+        return self.sigmoid(self.linear3(x))
 
 class Inform(nn.Module):
     def __init__(self, latent_size=40, num_class=10):

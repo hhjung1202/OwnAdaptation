@@ -48,7 +48,7 @@ cuda = True if torch.cuda.is_available() else False
 FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-criterion_MSE = torch.nn.MSELoss()
+criterion_MSE = torch.nn.BCELoss()
 criterion = torch.nn.CrossEntropyLoss()
 
 def loss_fn(recover, x, mean, sigma, cls_output, y):
@@ -66,7 +66,7 @@ def loss_fn(recover, x, mean, sigma, cls_output, y):
     CE = criterion(cls_output, y)
     CE = args.CE * CE
 
-    return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
+    return MSE, KLD + CE, MSE.item(), KLD.item(), CE.item()
 
 def Cdim(ch, wh):
     return ch*wh*wh
@@ -142,9 +142,13 @@ def train(state_info, Target_train_loader, epoch): # all
 
         #  Train 
         state_info.optim_VAE_tgt.zero_grad()
-        loss, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, cls_src)
-        loss.backward()
+        loss1, loss2, MSE, KLD, CE = loss_fn(recover, x, mean, sigma, cls_output, cls_src)
+
+        loss1.backward()
+        loss2.backward()
         state_info.optim_VAE_tgt.step()
+
+
 
         # mapping info of <y, cls_output> print
         

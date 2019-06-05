@@ -20,7 +20,7 @@ def loss_fn(args, recover, x, mean, sigma, cls_output, y):
     recover = recover.view(recover.size(0), -1)
     x = x.view(x.size(0), -1)
 
-    criterion_MSE = torch.nn.MSELoss()
+    criterion_MSE = torch.nn.BCELoss()
     criterion = torch.nn.CrossEntropyLoss()
     # .view(x.size(0), -1)
     MSE = criterion_MSE(recover, x)
@@ -34,7 +34,7 @@ def loss_fn(args, recover, x, mean, sigma, cls_output, y):
     CE = criterion(cls_output, y)
     CE = args.CE * CE
 
-    return MSE + KLD + CE, MSE.item(), KLD.item(), CE.item()
+    return MSE, KLD + CE, MSE.item(), KLD.item(), CE.item()
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
@@ -90,8 +90,9 @@ def train(args, state_info, train_loader, epoch): # all
 
         #  Train 
         state_info.optim_VAE_src.zero_grad()
-        loss, MSE, KLD, CE = loss_fn(args, recover, x, mean, sigma, cls_output, y)
-        loss.backward()
+        loss1, loss2, MSE, KLD, CE = loss_fn(args, recover, x, mean, sigma, cls_output, y)
+        loss1.backward()
+        loss2.backward()
         state_info.optim_VAE_src.step()
 
         #  Log Print
