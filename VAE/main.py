@@ -55,7 +55,7 @@ criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = torch.nn.CrossEntropyLoss()
 
 def loss_function(x_hat, x, mu, log_var, cls, y):
-    BCE = criterion_BCE(x_hat, x.view(x.size(0), -1), reduction='sum')
+    BCE = criterion_BCE(x_hat, x.view(x.size(0), -1))
     KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
     CE = args.CE * criterion(cls, y)
     return BCE + KLD + CE, BCE.item(), KLD.item(), CE.item()
