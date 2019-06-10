@@ -126,8 +126,8 @@ def train(state_info, Target_train_loader, epoch): # all
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         x_hat_t, mu, log_var, z, clsT, clsS = state_info.forward(x)
         
-        _, cls_src = torch.max(cls_src.data, 1)
-        cls_src = to_var(cls_src, LongTensor)
+        _, clsS = torch.max(clsS.data, 1)
+        clsS = to_var(clsS, LongTensor)
 
         #  Train 
         state_info.optim_VAE_tgt.zero_grad()
