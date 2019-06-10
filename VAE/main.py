@@ -172,7 +172,7 @@ def test(state_info, Target_test_loader, Src_sample, Tgt_sample, epoch):
         _, clsT = torch.max(clsT.data, 1)
         
         utils.print_mapping(clsT, clsS, y, epoch)
-        correct += float(predicted.eq(clsS.data).cpu().sum())
+        correct += float(clsT.eq(clsS.data).cpu().sum())
         
         if it % 10 == 0:
             utils.print_log('Test, {}, {}, {:.2f}'.format(epoch, it, 100.*correct / total))
