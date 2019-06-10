@@ -15,29 +15,19 @@ import math
 # FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 # LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-def loss_fn(args, recover, x, mean, sigma, cls_output, y):
-    
-    recover = recover.view(recover.size(0), -1)
-    x = x.view(x.size(0), -1)
+def loss_function(args, x_hat, x, mu, log_var, cls, y):
 
-    criterion_MSE = torch.nn.BCELoss()
+    criterion_BCE = torch.nn.BCELoss(reduction='sum')
     criterion = torch.nn.CrossEntropyLoss()
-    # .view(x.size(0), -1)
-    MSE = criterion_MSE(recover, x)
-    MSE = args.MSE * MSE
 
-    mean_sq = mean * mean
-    stddev_sq = sigma * sigma
-    KLD = 0.5 * torch.mean(mean_sq + stddev_sq - torch.log(stddev_sq) - 1)
-    KLD = args.KLD * KLD
+    BCE = criterion_BCE(x_hat, x.view(x.size(0), -1))
+    KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
 
     if y.size(-1) == 1:
         y=y.view(-1)
 
-    CE = criterion(cls_output, y)
-    CE = args.CE * CE
-
-    return MSE, KLD + CE, MSE.item(), KLD.item(), CE.item()
+    CE = args.CE * criterion(cls, y)
+    return BCE + KLD + CE, BCE.item(), KLD.item(), CE.item()
 
 def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
@@ -80,35 +70,33 @@ def pretrain(args, state_info, train_loader, test_loader, Src_sample):
 
 def train(args, state_info, train_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, loss, MSE, KLD, CE, Acc')
+    utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE, Acc')
     state_info.pretrain_set_train_mode()
     correct = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
 
     for it, (x, y) in enumerate(train_loader):
 
-        batch_size = x.size(0)
         x, y = to_var(x, torch.cuda.FloatTensor), to_var(y, torch.cuda.LongTensor)
-        recover, mean, sigma, z, cls_output = state_info.pretrain_forward(x)
+        x_hat, mu, log_var, z, cls = state_info.pretrain_forward(x)
 
         #  Train 
         state_info.optim_VAE_src.zero_grad()
-        loss1, loss, MSE, KLD, CE = loss_fn(args, recover, x, mean, sigma, cls_output, y)
-        loss1.backward(retain_graph=True)
+        loss, BCE, KLD, CE = loss_function(args, x_hat, x, mu, log_var, cls, y)
         loss.backward(retain_graph=True)
         state_info.optim_VAE_src.step()
 
         #  Log Print
-        total += float(cls_output.size(0))
-        _, predicted = torch.max(cls_output.data, 1)
+        total += float(cls.size(0))
+        _, predicted = torch.max(cls.data, 1)
         correct += float(predicted.eq(y.data).cpu().sum())
         
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.2f}'
-                  .format(epoch, it, loss.item(), MSE, KLD, CE, 100.*correct / total))
+                  .format(epoch, it, loss.item(), BCE, KLD, CE, 100.*correct / total))
 
             print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.2f}'
-                  .format(epoch, it, loss, MSE, KLD, CE, 100.*correct / total))
+                  .format(epoch, it, loss.item(), BCE, KLD, CE, 100.*correct / total))
 
     utils.print_log('')
 
@@ -121,13 +109,12 @@ def test(args, state_info, test_loader, Src_sample, epoch):
 
     for it, (x, y) in enumerate(test_loader):
 
-        batch_size = x.size(0)
         x, y = to_var(x, torch.cuda.FloatTensor), to_var(y, torch.cuda.LongTensor)
-        _, cls_output, _ = state_info.pretrain_forward(x, test=True)
+        _, cls, _ = state_info.pretrain_forward(x, test=True)
 
         #  Log Print
-        total += float(cls_output.size(0))
-        _, predicted = torch.max(cls_output.data, 1)
+        total += float(cls.size(0))
+        _, predicted = torch.max(cls.data, 1)
         correct += float(predicted.eq(y.data).cpu().sum())
         
         if it % 10 == 0:
@@ -144,10 +131,10 @@ def make_sample_image(state_info, Src_sample, epoch):
 
     img_path = utils.make_directory(os.path.join(utils.default_model_dir, 'images/Pretrain'))
 
-    recover, _, _ = state_info.pretrain_forward(Src_sample, test=True)
-    Src_sample, recover = to_data(Src_sample), to_data(recover)
+    x_hat, _, _ = state_info.pretrain_forward(Src_sample, test=True)
+    Src_sample, x_hat = to_data(Src_sample), to_data(x_hat)
 
-    concat = merge_images(Src_sample, recover)
+    concat = merge_images(Src_sample, x_hat)
 
     save_image(concat.data, os.path.join(img_path, '%d.png' % epoch), normalize=True)
 

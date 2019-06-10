@@ -31,14 +31,12 @@ def MNIST_loader(img_size, batchSize=128):
     print("MNIST Data Loading ...")
 
     train_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=True,
-                                        transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
-                                            , transforms.Normalize(mean=[0.5], std=[0.5])]),
+                                        transform=transforms.ToTensor(),
                                         download=True)
 
     test_dataset = datasets.MNIST(root='/home/hhjung/hhjung/MNIST/', train=False,
-                                       transform=transforms.Compose([transforms.Resize(img_size), transforms.ToTensor()
-                                            , transforms.Normalize(mean=[0.5], std=[0.5])]),
-                                       download=True)
+                                        transform=transforms.ToTensor(),
+                                        download=True)
 
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batchSize, shuffle=True)
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batchSize, shuffle=False)
@@ -217,9 +215,10 @@ def usps_loader(img_size, batchSize=128):
     """Get USPS dataset loader."""
     # image pre-processing
     print("USPS Loading")
-    pre_process = transforms.Compose([transforms.Resize(img_size),
-                                      transforms.ToTensor(),
-                                      transforms.Normalize(mean=[0.5],std=[0.5])])
+    pre_process = transforms.ToTensor()
+    # transforms.Compose([transforms.Resize(img_size),
+    # transforms.ToTensor(),
+    # transforms.Normalize(mean=[0.5],std=[0.5])])
 
     # dataset and data loader
     train_dataset = USPS(root='/home/hhjung/hhjung/USPS/',

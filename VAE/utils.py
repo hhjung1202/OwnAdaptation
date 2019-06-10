@@ -16,46 +16,48 @@ c = None
 str_w = ''
 csv_file_name = 'weight.csv'
 
+def get_size(img=[1,28]):
+    return img[0]*img[1]*img[1]
 
 class model_optim_state_info(object):
     def __init__(self):
         pass
 
-    def model_init(self, Img_S=784, Img_T=784, H=100, D_out=100, latent_size=40, num_class=10):
-        self.VAE_src = VAE(img_D=Img_S, H=H, D_out=D_out, latent_size=latent_size, num_class=num_class)
-        self.VAE_tgt = VAE(img_D=Img_T, H=H, D_out=D_out, latent_size=latent_size, num_class=num_class)
-        self.lenS = int(math.sqrt(Img_S))
-        self.lenT = int(math.sqrt(Img_T))
+    def model_init(self, Img_S=[1, 28], Img_T=[1, 28], H=400, latent_size=20, num_class=10):
+        self.VAE_src = VAE(img_D=get_size(Img_S), H=H, latent_size=latent_size, num_class=num_class)
+        self.VAE_tgt = VAE(img_D=get_size(Img_T), H=H, latent_size=latent_size, num_class=num_class)
+        self.lenS = Img_S[1]
+        self.lenT = Img_T[1]
 
     def pretrain_forward(self, x, test=False):
-        recover, mean, sigma, z, cls_output = self.VAE_src(x)
-        recover = recover.view(recover.size(0), -1, self.lenS, self.lenS)
+        x_hat, mu, log_var, z, cls = self.VAE_src(x)
+        x_hat = x_hat.view(recover.size(0), -1, self.lenS, self.lenS)
 
         if not test:
-            return recover, mean, sigma, z, cls_output
+            return x_hat, mu, log_var, z, cls
         else:
-            return recover, cls_output, z
+            return x_hat, cls, z
 
     def forward(self, x, test=False):
-        recover, mean, sigma, z, cls_output = self.VAE_tgt(x)
-        recover_src, cls_src = self.VAE_src(None, z=z)
+        x_hat_t, mu, log_var, z, clsT = self.VAE_tgt(x)
+        x_hat_s, clsS = self.VAE_src(None, z=z)
 
-        recover = recover.view(recover.size(0), -1, self.lenT, self.lenT)
-        recover_src = recover_src.view(recover_src.size(0), -1, self.lenS, self.lenS)
+        x_hat_t = x_hat_t.view(x_hat_t.size(0), -1, self.lenT, self.lenT)
+        x_hat_s = x_hat_s.view(x_hat_s.size(0), -1, self.lenS, self.lenS)
 
         if not test:
-            return recover, mean, sigma, z, cls_output, cls_src.detach()
+            return x_hat_t, mu, log_var, z, clsT, clsS.detach()
         else:
-            return cls_output, cls_src, recover, recover_src
+            return clsT, clsS, x_hat_t, x_hat_s # edit
 
     def forward_z(self, z):
-        recover_src, _ = self.VAE_src(None, z=z)
-        recover_tgt, _ = self.VAE_tgt(None, z=z)
+        x_hat_s, clsS = self.VAE_src(None, z=z)
+        x_hat_t, clsT = self.VAE_tgt(None, z=z)
 
-        recover_tgt = recover_tgt.view(recover_tgt.size(0), -1, self.lenT, self.lenT)
-        recover_src = recover_src.view(recover_src.size(0), -1, self.lenS, self.lenS)
+        x_hat_t = x_hat_t.view(x_hat_t.size(0), -1, self.lenT, self.lenT)
+        x_hat_s = x_hat_s.view(x_hat_s.size(0), -1, self.lenS, self.lenS)
         
-        return recover_src, recover_tgt
+        return x_hat_s, x_hat_t
 
     def model_cuda_init(self):
         if torch.cuda.is_available():
@@ -73,9 +75,9 @@ class model_optim_state_info(object):
             torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
             torch.nn.init.constant_(m.bias.data, 0.0)
 
-    def optimizer_init(self, lr, b1, b2, weight_decay):
-        self.optim_VAE_src = optim.Adam(self.VAE_src.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
-        self.optim_VAE_tgt = optim.Adam(self.VAE_tgt.parameters(), lr=lr, betas=(b1, b2), weight_decay=weight_decay)
+    def optimizer_init(self, args):
+        self.optim_VAE_src = optim.Adam(self.VAE_src.parameters(), lr=args.lr)
+        self.optim_VAE_tgt = optim.Adam(self.VAE_tgt.parameters(), lr=args.lr) #, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay
 
     def learning_scheduler_init(self, args, load_epoch=0):
         # self.lr_VAE_tgt = optim.lr_scheduler.LambdaLR(self.optim_VAE_tgt, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
