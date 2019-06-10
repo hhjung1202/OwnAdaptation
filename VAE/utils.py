@@ -213,7 +213,7 @@ def print_log(text, filename="log.csv"):
 def print_mapping(clsT, clsS, y, epoch, filename="mapping"):
     if not os.path.exists(default_model_dir):
         os.makedirs(default_model_dir)
-    model_filename = os.path.join(default_model_dir, filename + epoch + ".csv")
+    model_filename = os.path.join(default_model_dir, "{}{}.csv".format(filename,epoch,z))
     for _, (x, y, z) in enumerate(zip(clsT, clsS, y)):
         with open(model_filename, 'a') as fout:
             fout.write("{}, {}, {}\n".format(x,y,z))
