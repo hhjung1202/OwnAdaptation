@@ -163,14 +163,15 @@ def test(state_info, Target_test_loader, Src_sample, Tgt_sample, epoch):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         clsT, clsS, _, _ = state_info.forward(x, test=True)
 
-        utils.print_mapping(clsT, clsS, y, epoch)
         # mapping info of <y, cls_output> print
         clsS = torch.max(clsS.data, 1)[1]
         clsS = to_var(clsS, LongTensor)
 
         #  Log Print
         total += float(clsT.size(0))
-        _, predicted = torch.max(clsT.data, 1)
+        _, clsT = torch.max(clsT.data, 1)
+        
+        utils.print_mapping(clsT, clsS, y, epoch)
         correct += float(predicted.eq(clsS.data).cpu().sum())
         
         if it % 10 == 0:

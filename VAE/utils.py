@@ -216,7 +216,7 @@ def print_mapping(clsT, clsS, y, epoch, filename="mapping"):
     model_filename = os.path.join(default_model_dir, "{}{}.csv".format(filename,epoch))
     for _, (x, y, z) in enumerate(zip(clsT, clsS, y)):
         with open(model_filename, 'a') as fout:
-            fout.write("{}, {}, {}\n".format(x,y,z))
+            fout.write("{}, {}, {}\n".format(x.item(),y.item(),z.item()))
 
 def extract_mapping(x, y):
     if not os.path.exists(default_model_dir):
