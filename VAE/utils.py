@@ -31,7 +31,7 @@ class model_optim_state_info(object):
 
     def pretrain_forward(self, x, test=False):
         x_hat, mu, log_var, z, cls = self.VAE_src(x)
-        x_hat = x_hat.view(recover.size(0), -1, self.lenS, self.lenS)
+        x_hat = x_hat.view(x_hat.size(0), -1, self.lenS, self.lenS)
 
         if not test:
             return x_hat, mu, log_var, z, cls
