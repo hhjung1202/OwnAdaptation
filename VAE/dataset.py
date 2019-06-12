@@ -385,7 +385,7 @@ def MNIST_M_loader(img_size, batchSize=128):
     print("MNIST-M Data Loading ...")
     os.makedirs("/home/hhjung/hhjung/MNIST_M/", exist_ok=True)
 
-    train_dataset = torch.utils.data.DataLoader(
+    train_loader = torch.utils.data.DataLoader(
         MNISTM(
             root='/home/hhjung/hhjung/MNIST_M/',
             train=True,
@@ -402,7 +402,7 @@ def MNIST_M_loader(img_size, batchSize=128):
         shuffle=True,
     )
 
-    test_dataset = torch.utils.data.DataLoader(
+    test_loader = torch.utils.data.DataLoader(
         MNISTM(
             root='/home/hhjung/hhjung/MNIST_M/',
             train=False,
