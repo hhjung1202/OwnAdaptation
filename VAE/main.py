@@ -224,7 +224,7 @@ def dataset_selector(data):
     if data == 'mnist':
         return dataset.MNIST_loader(img_size=args.img_size)
     elif data == 'svhn':
-        return dataset.SVHN_loader(img_size=args.img_size)
+        return dataset.SVHN_loader(img_size=32)
     elif data == "usps":
         return dataset.usps_loader(img_size=args.img_size)
     elif data == "mnistm":
