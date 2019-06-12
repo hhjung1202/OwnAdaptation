@@ -227,6 +227,8 @@ def dataset_selector(data):
         return dataset.SVHN_loader(img_size=args.img_size)
     elif data == "usps":
         return dataset.usps_loader(img_size=args.img_size)
+    elif data == "mnistm":
+        return dataset.MNIST_M_loader(img_size=args.img_size)
 
 def to_data(x):
     """Converts variable to numpy."""
