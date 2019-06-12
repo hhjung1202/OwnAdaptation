@@ -1,5 +1,6 @@
 import gzip
 import os
+import errno
 import pickle
 import urllib
 import numpy as np
@@ -251,17 +252,6 @@ https://github.com/pytorch/vision/blob/master/torchvision/datasets/mnist.py
 
 CREDIT: https://github.com/corenel
 """
-
-from __future__ import print_function
-
-import errno
-import os
-
-import torch
-import torch.utils.data as data
-from PIL import Image
-
-
 class MNISTM(data.Dataset):
     """`MNIST-M Dataset."""
 
