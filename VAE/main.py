@@ -27,7 +27,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='mo
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-size', type=int, default=20, help='dimension of latent z')
+parser.add_argument('--latent-size', type=int, default=100, help='dimension of latent z')
 parser.add_argument('--h', type=int, default=400, help='dimension of hidden layer')
 parser.add_argument('--img-size', type=int, default=28, help='input image width, height size')
 

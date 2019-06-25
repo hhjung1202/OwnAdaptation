@@ -65,6 +65,7 @@ class Decoder(nn.Module):
 class Inform(nn.Module):
     def __init__(self, latent_size=20, num_class=10):
         super(Inform, self).__init__()
+        self.fc1 = nn.Linear(latent_size, latent_size)
         self.fc1 = nn.Linear(latent_size, num_class)
     def forward(self, x):
         x = self.fc1(x)

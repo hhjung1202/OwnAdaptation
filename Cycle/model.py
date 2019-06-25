@@ -38,9 +38,12 @@ class Generator(nn.Module):
         in_features = dim
         out_features = dim*2
         for _ in range(2):
-            model += [  nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
+            conv_t = nn.Conv2d(in_features, out_features, 3, stride=2, padding=1)
+            model += [  conv_t,
                         nn.BatchNorm2d(out_features),
                         nn.ReLU(inplace=True) ]
+
+            print(con_t.weight.size())
             in_features = out_features
             out_features = in_features*2
 
@@ -51,9 +54,12 @@ class Generator(nn.Module):
         # Upsampling
         out_features = in_features//2
         for _ in range(2):
-            model += [  nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1),
+            cont_de = nn.ConvTranspose2d(in_features, out_features, 3, stride=2, padding=1, output_padding=1)
+            model += [  cont_de,
                         nn.BatchNorm2d(out_features),
                         nn.ReLU(inplace=True) ]
+                        
+            print(cont_de.weight.size())
             in_features = out_features
             out_features = in_features//2
 
