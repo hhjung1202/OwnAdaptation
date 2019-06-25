@@ -43,7 +43,7 @@ class Generator(nn.Module):
                         nn.BatchNorm2d(out_features),
                         nn.ReLU(inplace=True) ]
 
-            print(con_t.weight.size())
+            print(conv_t.weight.size())
             in_features = out_features
             out_features = in_features*2
 
