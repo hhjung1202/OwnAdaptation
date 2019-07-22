@@ -50,7 +50,7 @@ class CelebA(data.Dataset):
         image = Image.open(os.path.join(self.image_dir, filename))
         w, h = image.size
         cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
-        print(self.transform(cropImage))
+        print(self.transform(cropImage).size())
         return self.transform(cropImage), torch.FloatTensor(int(label))
 
     def __len__(self):
