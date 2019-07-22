@@ -98,7 +98,7 @@ def main():
 
 def train(state_info, train_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, loss, Percent')
+    utils.print_log('Type, Epoch, Batch, loss, total_loss, Percent')
     state_info.set_train_mode()
     correct = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
@@ -109,8 +109,6 @@ def train(state_info, train_loader, epoch): # all
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         output = state_info.forward(x)
 
-        print(output)       
-        print(y)
         #  Train 
         state_info.optimizer.zero_grad()
         loss = criterion(output, y)
@@ -133,12 +131,12 @@ def train(state_info, train_loader, epoch): # all
 
 def test(state_info, test_loader, epoch):
 
-    utils.print_log('Type, Epoch, Batch, Acc')
+    utils.print_log('Type, Epoch, Acc')
     state_info.set_test_mode()
     correct = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
 
-    for it, (x, y) in enumerate(test_loader):
+    for it, [x, y] in enumerate(test_loader):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         output = state_info.forward(x)
