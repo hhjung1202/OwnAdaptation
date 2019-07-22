@@ -47,11 +47,10 @@ class CelebA(data.Dataset):
         """Return one image and its corresponding attribute label."""
         dataset = self.train_dataset if self.mode == 'train' else self.test_dataset
         filename, label = dataset[index]
-        print(filename, label)
         image = Image.open(os.path.join(self.image_dir, filename))
         w, h = image.size
         cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
-        return self.transform(cropImage), torch.FloatTensor(label)
+        return self.transform(cropImage), torch.FloatTensor(int(label))
 
     def __len__(self):
         """Return the number of images."""
