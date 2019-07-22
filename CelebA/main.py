@@ -105,7 +105,6 @@ def train(state_info, train_loader, epoch): # all
     train_loss = 0
 
     for it, [x, y] in enumerate(train_loader):
-        print(x, y)
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         output = state_info.forward(x)

@@ -14,8 +14,8 @@ class Classifier(nn.Module):
 
         self.model = nn.Sequential(
             *block(input_ch, dim, stride=1),                                # 20, 16, 16
-            *block(dim, 2*dim, stride=2),                                   # 40, 8, 8
-            *block(2*dim, 3*dim, stride=2),                                 # 60, 4, 4
+            *block(dim, 2*dim, stride=1),                                   # 40, 8, 8
+            *block(2*dim, 3*dim, stride=1),                                 # 60, 4, 4
             nn.Conv2d(3*dim, 4*dim, kernel_size=3, stride=1, padding=1),    # 80, 4, 4
         )
 
