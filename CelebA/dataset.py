@@ -49,7 +49,7 @@ class CelebA(data.Dataset):
         filename, label = dataset[index]
         image = Image.open(os.path.join(self.image_dir, filename))
         w, h = image.size
-        cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
+        cropImage = torch.Tensor(image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90)))
         print(self.transform(cropImage))
         return self.transform(cropImage), torch.FloatTensor(int(label))
 
