@@ -85,4 +85,4 @@ def CelebA_loader(image_size=32, batch_size=16, num_workers=1):
                                   shuffle=(False),
                                   num_workers=num_workers)
 
-    return data_loader
+    return train_loader, test_loader
