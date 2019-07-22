@@ -104,6 +104,9 @@ def train(state_info, train_loader, epoch): # all
     total = torch.tensor(0, dtype=torch.float32)
     train_loss = 0
 
+    for i in train_loader:
+        print(i.size)
+
     for it, [x,y] in enumerate(train_loader):
         print(x,y)
         break;
