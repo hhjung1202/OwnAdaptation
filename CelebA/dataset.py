@@ -51,7 +51,7 @@ class CelebA(data.Dataset):
         # image = image.convert('RGB')
         w, h = image.size
         cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
-        return self.transform(image), torch.FloatTensor(int(label))
+        return self.transform(image), int(label)
 
     def __len__(self):
         """Return the number of images."""
