@@ -108,7 +108,9 @@ def train(state_info, train_loader, epoch): # all
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         output = state_info.forward(x)
-        
+
+        print(output)       
+        print(y)
         #  Train 
         state_info.optimizer.zero_grad()
         loss = criterion(output, y)
