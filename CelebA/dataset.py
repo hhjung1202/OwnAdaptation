@@ -48,7 +48,7 @@ class CelebA(data.Dataset):
         dataset = self.train_dataset if self.mode == 'train' else self.test_dataset
         filename, label = dataset[index]
         image = Image.open(os.path.join(self.image_dir, filename))
-        image = image.convert('RGB')
+        # image = image.convert('RGB')
         w, h = image.size
         cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
         return self.transform(cropImage), torch.FloatTensor(int(label))
