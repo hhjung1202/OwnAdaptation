@@ -8,7 +8,6 @@ import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
-import pretrain
 import dataset
 import math
 
