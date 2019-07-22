@@ -49,8 +49,8 @@ class CelebA(data.Dataset):
         filename, label = dataset[index]
         image = Image.open(os.path.join(self.image_dir, filename))
         # image = image.convert('RGB')
-        # w, h = image.size
-        # cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
+        w, h = image.size
+        cropImage = image.crop((w/2-65, h/2 - 40, w/2 + 65 , h/2 + 90))
         return self.transform(image), torch.FloatTensor(int(label))
 
     def __len__(self):
@@ -58,7 +58,7 @@ class CelebA(data.Dataset):
         return self.num_images
 
 
-def CelebA_loader(image_size=32, batch_size=16, num_workers=1):
+def CelebA_loader(image_size=32, batch_size=16, num_workers=4):
     """Build and return a data loader."""
     transform = []
     transform.append(T.Grayscale(1))

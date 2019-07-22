@@ -167,7 +167,7 @@ def dataset_selector(data):
     elif data == "cifar10":
         return dataset.cifar10_loader(args)
     elif data == "CelebA":
-        return dataset.CelebA_loader(image_size=args.img_size, batch_size=args.batch_size, num_workers=1)
+        return dataset.CelebA_loader(image_size=args.img_size, batch_size=args.batch_size)
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))
