@@ -9,6 +9,7 @@ class Classifier(nn.Module):
 
         def block(in_ch, out_ch, stride=1):
             layers = [  nn.Conv2d(in_ch, out_ch, kernel_size=3, stride=stride, padding=1),
+                        nn.ReLU(True),
                         nn.MaxPool2d(kernel_size=2), ]
             return layers
 
