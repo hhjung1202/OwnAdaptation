@@ -18,6 +18,7 @@ class Classifier(nn.Module):
             *block(dim, 2*dim, stride=1),                                   # 40, 8, 8
             *block(2*dim, 3*dim, stride=1),                                 # 60, 4, 4
             nn.Conv2d(3*dim, 4*dim, kernel_size=3, stride=1, padding=1),    # 80, 4, 4
+            nn.ReLU(True),
         )
 
         self.avgpool = nn.AvgPool2d(kernel_size=4, stride=1)
