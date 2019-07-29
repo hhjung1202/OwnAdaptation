@@ -24,6 +24,7 @@ class Classifier(nn.Module):
         self.fc = nn.Linear(4*dim, num_classes)
 
     def forward(self, x):
+        print(x.data)
         x = self.model(x)
         x = self.avgpool(x)
         x = x.view(x.size(0), -1)
