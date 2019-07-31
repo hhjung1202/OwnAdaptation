@@ -6,6 +6,13 @@ import torch
 import os
 import random
 
+def print_log(text, filename="log.csv"):
+    if not os.path.exists(default_model_dir):
+        os.makedirs(default_model_dir)
+    model_filename = os.path.join(default_model_dir, filename)
+    with open(model_filename, "a") as myfile:
+        myfile.write(text + "\n")
+
 class CelebA(data.Dataset):
     """Dataset class for the CelebA dataset."""
 
@@ -38,8 +45,10 @@ class CelebA(data.Dataset):
 
             if i <= 2000:
                 self.test_dataset.append([filename, id_])
+                print_log("{}, {}".format(filename, id_), filename="test_id.csv")
             else:
                 self.train_dataset.append([filename, id_])
+                print_log("{}, {}".format(filename, id_), filename="train_id.csv")
 
         print('Finished preprocessing the CelebA dataset...')
 
