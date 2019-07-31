@@ -27,8 +27,6 @@ class CelebA(data.Dataset):
     def preprocess(self):
         """Preprocess the CelebA attribute file."""
         lines = [line.rstrip() for line in open(self.label_path, 'r')]
-        # self.train_dataset = []
-        # self.test_dataset = []
         random.seed(1234)
         random.shuffle(lines)
         for i, line in enumerate(lines):
@@ -46,8 +44,6 @@ class CelebA(data.Dataset):
     def __getitem__(self, index):
         """Return one image and its corresponding attribute label."""
         dataset = self.train_dataset if self.mode == 'train' else self.test_dataset
-        print(len(self.train_dataset))
-        print(len(self.test_dataset))
         filename, label = dataset[index]
         image = Image.open(os.path.join(self.image_dir, filename))
         # image = image.convert('RGB')
@@ -77,7 +73,7 @@ def CelebA_loader(image_size=32, batch_size=16, num_workers=4):
                     , "/database/data/celeba/largest_identity_CelebA_4000.txt"
                     , transform
                     , 'test')
-    
+
     train_loader = data.DataLoader(dataset=train_dataset,
                                   batch_size=batch_size,
                                   shuffle=(True),
