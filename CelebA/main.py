@@ -50,9 +50,6 @@ def main():
 
     train_loader, test_loader = dataset_selector(args.sd)
     
-    print("done")
-    return
-
     state_info = utils.model_optim_state_info()
     state_info.model_init(args=args, num_class=4000)
     state_info.model_cuda_init()

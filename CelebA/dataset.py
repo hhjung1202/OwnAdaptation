@@ -6,11 +6,6 @@ import torch
 import os
 import random
 
-def print_log(text, filename="log.csv"):
-    model_filename = os.path.join("./", filename)
-    with open(model_filename, "a") as myfile:
-        myfile.write(text + "\n")
-
 class CelebA(data.Dataset):
     """Dataset class for the CelebA dataset."""
 
@@ -32,6 +27,8 @@ class CelebA(data.Dataset):
     def preprocess(self):
         """Preprocess the CelebA attribute file."""
         lines = [line.rstrip() for line in open(self.label_path, 'r')]
+        self.train_dataset = []
+        self.test_dataset = []
         random.seed(1234)
         random.shuffle(lines)
         for i, line in enumerate(lines):
@@ -41,12 +38,10 @@ class CelebA(data.Dataset):
 
             self.train_dataset.append([filename, id_])
 
-            if i <= 2000:
+            if i < 2000:
                 self.test_dataset.append([filename, id_])
-                print_log("{}, {}".format(filename, id_), filename="test_id.csv")
             else:
                 self.train_dataset.append([filename, id_])
-                print_log("{}, {}".format(filename, id_), filename="train_id.csv")
 
         print('Finished preprocessing the CelebA dataset...')
 
