@@ -7,9 +7,7 @@ import os
 import random
 
 def print_log(text, filename="log.csv"):
-    if not os.path.exists(default_model_dir):
-        os.makedirs(default_model_dir)
-    model_filename = os.path.join(default_model_dir, filename)
+    model_filename = os.path.join("./", filename)
     with open(model_filename, "a") as myfile:
         myfile.write(text + "\n")
 
