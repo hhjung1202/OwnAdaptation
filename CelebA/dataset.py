@@ -48,7 +48,8 @@ class CelebA(data.Dataset):
     def __getitem__(self, index):
         """Return one image and its corresponding attribute label."""
         dataset = self.train_dataset if self.mode == 'train' else self.test_dataset
-        print(len(dataset))
+        print(len(self.train_dataset))
+        print(len(self.test_dataset))
         filename, label = dataset[index]
         image = Image.open(os.path.join(self.image_dir, filename))
         # image = image.convert('RGB')
@@ -74,16 +75,16 @@ def CelebA_loader(image_size=32, batch_size=16, num_workers=4):
                     , transform
                     , 'train')
 
-    test_dataset = CelebA( "/database/data/celeba/images"
-                    , "/database/data/celeba/largest_identity_CelebA_4000.txt"
-                    , transform
-                    , 'test')
-
     train_loader = data.DataLoader(dataset=train_dataset,
                                   batch_size=batch_size,
                                   shuffle=(True),
                                   num_workers=num_workers)
 
+    test_dataset = CelebA( "/database/data/celeba/images"
+                    , "/database/data/celeba/largest_identity_CelebA_4000.txt"
+                    , transform
+                    , 'test')
+    
     test_loader = data.DataLoader(dataset=test_dataset,
                                   batch_size=batch_size,
                                   shuffle=(False),
