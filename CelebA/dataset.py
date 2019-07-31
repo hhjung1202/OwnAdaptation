@@ -27,16 +27,14 @@ class CelebA(data.Dataset):
     def preprocess(self):
         """Preprocess the CelebA attribute file."""
         lines = [line.rstrip() for line in open(self.label_path, 'r')]
-        self.train_dataset = []
-        self.test_dataset = []
+        # self.train_dataset = []
+        # self.test_dataset = []
         random.seed(1234)
         random.shuffle(lines)
         for i, line in enumerate(lines):
             split = line.split()
             filename = split[0]
             id_ = split[1]
-
-            self.train_dataset.append([filename, id_])
 
             if i < 2000:
                 self.test_dataset.append([filename, id_])
@@ -74,17 +72,17 @@ def CelebA_loader(image_size=32, batch_size=16, num_workers=4):
                     , "/database/data/celeba/largest_identity_CelebA_4000.txt"
                     , transform
                     , 'train')
-
-    train_loader = data.DataLoader(dataset=train_dataset,
-                                  batch_size=batch_size,
-                                  shuffle=(True),
-                                  num_workers=num_workers)
-
+    
     test_dataset = CelebA( "/database/data/celeba/images"
                     , "/database/data/celeba/largest_identity_CelebA_4000.txt"
                     , transform
                     , 'test')
     
+    train_loader = data.DataLoader(dataset=train_dataset,
+                                  batch_size=batch_size,
+                                  shuffle=(True),
+                                  num_workers=num_workers)
+
     test_loader = data.DataLoader(dataset=test_dataset,
                                   batch_size=batch_size,
                                   shuffle=(False),
