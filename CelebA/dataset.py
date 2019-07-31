@@ -48,6 +48,7 @@ class CelebA(data.Dataset):
     def __getitem__(self, index):
         """Return one image and its corresponding attribute label."""
         dataset = self.train_dataset if self.mode == 'train' else self.test_dataset
+        print(len(dataset))
         filename, label = dataset[index]
         image = Image.open(os.path.join(self.image_dir, filename))
         # image = image.convert('RGB')
