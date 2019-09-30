@@ -141,15 +141,15 @@ def MNIST_loader(args):
                                         noise_rate=args.noise_rate, sample_size=args.sample_size, seed=args.seed, 
                                         Task=Task[4])
 
-    test_dataset = MNIST(root=root, train=False, transform=transform, download=True)
+    Test_dataset = MNIST(root=root, train=False, transform=transform, download=True)
 
     True_loader = torch.utils.data.DataLoader(dataset=True_dataset, batch_size=args.batchSize, shuffle=True)
     Fake_loader = torch.utils.data.DataLoader(dataset=Fake_dataset, batch_size=args.batchSize, shuffle=True)
     Noise_loader = torch.utils.data.DataLoader(dataset=Noise_dataset, batch_size=args.batchSize, shuffle=True)
     Noise_Test_loader = torch.utils.data.DataLoader(dataset=Noise_Test_dataset, batch_size=args.batchSize, shuffle=False)
     All_loader = torch.utils.data.DataLoader(dataset=All_dataset, batch_size=args.batchSize, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=args.batchSize, shuffle=False)
-    return True_loader, Fake_loader, Noise_loader, Noise_Test_loader, All_loader, test_loader
+    Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batchSize, shuffle=False)
+    return True_loader, Fake_loader, Noise_loader, Noise_Test_loader, All_loader, Test_loader, 1, 10
 
 if __name__=='__main__':
     class e():
