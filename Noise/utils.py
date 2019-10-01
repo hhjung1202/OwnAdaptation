@@ -23,15 +23,18 @@ class model_optim_state_info(object):
         self.disc = Discriminator(chIn=args.chIn, clsN=args.clsN) # input : [z, y] def __init__(self, chIn=1, clsN=10):
         self.noise = Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
         
-    def forward_disc(self, real, Ry, fake, Fy):
-        Ry_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, Ry.view(-1, 1), 1).cuda()
-        Fy_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, Fy.view(-1, 1), 1).cuda()
+    def forward_disc(self, image, label):
+        label_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, label.view(-1, 1), 1).cuda()
+        out = self.disc(image, label)
+        return out
 
-        Rout = self.disc(real, Ry_one)
-        Fout = self.disc(fake, Fy_one)
+    def forward_Noise(self, image, gamma):
+        out = self.noise(image, gamma)
+        return out
 
-        return Rout, Fout
-
+    def forward_Base(self, image):
+        out = self.base(image)
+        return out
 
     def model_cuda_init(self):
         if torch.cuda.is_available():
@@ -68,21 +71,6 @@ class model_optim_state_info(object):
         self.lr_Base = optim.lr_scheduler.MultiStepLR(self.optim_Base, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
         self.lr_Disc = optim.lr_scheduler.MultiStepLR(self.optim_Disc, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
         self.lr_Noise = optim.lr_scheduler.MultiStepLR(self.optim_Noise, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
-
-    def learning_step(self):
-        self.lr_Base.step()
-        self.lr_Disc.step()
-        self.lr_Noise.step()
-
-    def set_train_mode(self):
-        self.base.train()
-        self.disc.train()
-        self.noise.train()
-
-    def set_test_mode(self):
-        self.base.eval()
-        self.disc.eval()
-        self.noise.eval()
 
     def load_state_dict(self, checkpoint):
         self.base.load_state_dict(checkpoint['a'])
