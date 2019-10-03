@@ -82,7 +82,7 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             loss_Disc.backward()
             state_info.optim_Disc.step()
 
-            resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor)
+            resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor).view(-1,1)
             print('r1',resultR)
             predR = torch.round(Rout).cpu().type(torch.ByteTensor)
             print('r2',predR)
