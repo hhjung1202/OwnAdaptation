@@ -67,14 +67,15 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
         state_info.disc.train()
         for it, ((real, Ry, label_Ry), (fake, Fy, label_Fy)) in enumerate(zip(True_loader, Fake_loader)):
 
-            batch_size = real.size(0)
-            valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
-            unvalid = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
+            batch_real = real.size(0)
+            batch_fake = fake.size(0)
+            valid = Variable(FloatTensor(batch_real, 1).fill_(1.0), requires_grad=False)
+            unvalid = Variable(FloatTensor(batch_fake, 1).fill_(0.0), requires_grad=False)
 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
 
-            Rout, Fout = state_info.forward_disc(real, Ry), state_info.forward_disc(fake, Fy)
+            Rout, Fout = state_info.forward_disc(batch_real, real, Ry), state_info.forward_disc(batch_fake, fake, Fy)
 
             state_info.optim_Disc.zero_grad()
             loss_real = criterion_GAN(Rout, valid)
@@ -105,9 +106,10 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
         state_info.disc.eval()
         for it, (Noise, Ny, label_Ny) in enumerate(Noise_Test_loader):
 
+            batch_noise = Noise.size(0)
             Noise, Ny, label_Ny = to_var(Noise, FloatTensor), to_var(Ny, LongTensor), to_var(label_Ny, LongTensor)
 
-            Nout = state_info.forward_disc(Noise, Ny)
+            Nout = state_info.forward_disc(batch_noise, Noise, Ny)
 
             resultN = label_Ny.eq(Ny).cpu().type(torch.ByteTensor)
             predN = torch.round(Nout).cpu().type(torch.ByteTensor)
