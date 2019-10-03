@@ -23,8 +23,8 @@ class model_optim_state_info(object):
         self.disc = Discriminator(chIn=args.chIn, clsN=args.clsN) # input : [z, y] def __init__(self, chIn=1, clsN=10):
         self.noise = Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
         
-    def forward_disc(self, batch_size, image, label):
-        label_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, label.view(-1, 1), 1).cuda()
+    def forward_disc(self, image, label):
+        label_one = torch.FloatTensor(image.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1).cuda()
         out = self.disc(image, label_one)
         return out
 
