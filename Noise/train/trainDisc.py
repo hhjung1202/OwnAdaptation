@@ -89,11 +89,15 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             predF = torch.round(Fout).cpu().type(torch.ByteTensor)
             
             correctR += float(predR.eq(resultR.data).cpu().sum())
-            correctF += float(predR.eq(resultR.data).cpu().sum())
+            correctF += float(predF.eq(resultF.data).cpu().sum())
 
             total += float(real.size(0))
+            print(correctR)
+            print(total)
+            print(100.*correctR / total)
 
             if it % 10 == 0:
+
                 utils.print_log('Disc Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
                       .format(epoch, it, loss_real.item(), loss_fake.item(), 100.*correctR / total, 100.*correctF / total))
                 print('Disc Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
