@@ -14,7 +14,7 @@ from train import *
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
 parser.add_argument('--db', default='mnist', type=str, help='dataset selection')
-parser.add_argument('--noise-rate', '--learning-rate', default=1e-1, type=float, help='Noise rate')
+parser.add_argument('--noise-rate', default=1e-1, type=float, help='Noise rate')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 
