@@ -42,9 +42,6 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
     percentage = get_percentage_Fake(Fake_loader)
 
-    valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
-    unvalid = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
-
     start_epoch = 0
     checkpoint = utils.load_checkpoint(utils.default_model_dir, mode)    
     if not checkpoint:
@@ -69,6 +66,10 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
         # train
         state_info.disc.train()
         for it, ((real, Ry, label_Ry), (fake, Fy, label_Fy)) in enumerate(zip(True_loader, Fake_loader)):
+
+            batch_size = real.size(0)
+            valid = Variable(FloatTensor(batch_size, 1).fill_(1.0), requires_grad=False)
+            unvalid = Variable(FloatTensor(batch_size, 1).fill_(0.0), requires_grad=False)
 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
