@@ -83,7 +83,9 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             state_info.optim_Disc.step()
 
             resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor)
+            print('r1',resultR)
             predR = torch.round(Rout).cpu().type(torch.ByteTensor)
+            print('r2',predR)
 
             resultF = label_Fy.eq(Fy).cpu().type(torch.ByteTensor)
             predF = torch.round(Fout).cpu().type(torch.ByteTensor)
@@ -92,9 +94,9 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             correctF += float(predF.eq(resultF.data).cpu().sum())
 
             total += float(real.size(0))
-            print(correctR)
-            print(total)
-            print(100.*correctR / total)
+            print('r3',correctR)
+            print('r4',total)
+            print('r5',100.*correctR / total)
 
             if it % 10 == 0:
 
