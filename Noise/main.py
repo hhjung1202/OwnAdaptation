@@ -62,7 +62,7 @@ def main():
     args.Dmilestones = [30,60]
 
     state_info = utils.model_optim_state_info()
-    state_info.model_init()
+    state_info.model_init(args)
     state_info.model_cuda_init()
 
     if cuda:
