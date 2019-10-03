@@ -9,7 +9,7 @@ import time
 import utils
 import dataset
 import math
-from Noise.train import *
+from train import *
 
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
