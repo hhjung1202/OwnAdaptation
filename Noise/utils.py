@@ -25,7 +25,7 @@ class model_optim_state_info(object):
         
     def forward_disc(self, image, label):
         label_one = torch.FloatTensor(batch_size, 10).zero_().scatter_(1, label.view(-1, 1), 1).cuda()
-        out = self.disc(image, label)
+        out = self.disc(image, label_one)
         return out
 
     def forward_Noise(self, image, gamma):
@@ -69,17 +69,21 @@ class model_optim_state_info(object):
         # self.lr_Noise = optim.lr_scheduler.LambdaLR(self.optimizer_G_BA, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
         
         self.lr_Base = optim.lr_scheduler.MultiStepLR(self.optim_Base, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
-        self.lr_Disc = optim.lr_scheduler.MultiStepLR(self.optim_Disc, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
+        self.lr_Disc = optim.lr_scheduler.MultiStepLR(self.optim_Disc, args.Dmilestones, gamma=args.gamma, last_epoch=args.last_epoch)
         self.lr_Noise = optim.lr_scheduler.MultiStepLR(self.optim_Noise, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
-    def load_state_dict(self, checkpoint):
-        self.base.load_state_dict(checkpoint['a'])
-        self.disc.load_state_dict(checkpoint['b'])
-        self.noise.load_state_dict(checkpoint['c'])
+    def load_state_dict(self, checkpoint, mode):
+        if mode == "disc":
+            self.disc.load_state_dict(checkpoint['weight'])
+            self.optim_Disc.load_state_dict(checkpoint['optim'])
+        elif mode == "noise":
+            self.noise.load_state_dict(checkpoint['weight'])
+            self.optim_Noise.load_state_dict(checkpoint['optim'])    
+        elif mode == "base":
+            self.base.load_state_dict(checkpoint['weight'])
+            self.optim_Base.load_state_dict(checkpoint['optim'])
 
-        self.optim_Base.load_state_dict(checkpoint['ao'])
-        self.optim_Disc.load_state_dict(checkpoint['bo'])
-        self.optim_Noise.load_state_dict(checkpoint['co'])
+        
 
 class LambdaLR():
     def __init__(self, n_epochs, offset, decay_start_epoch):
@@ -96,45 +100,49 @@ def make_directory(directory):
         os.makedirs(directory)
     return directory
 
-def save_state_checkpoint(state_info, best_prec_result, filename, directory, epoch):
-    save_checkpoint({
+def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, directory):
+    save = {
         'epoch': epoch,
         'Best_Prec': best_prec_result,
+    }
+    if mode == "disc":
+        save["model"] = state_info.disc,
+        save["weight"] = state_info.disc.state_dict()
+        save["optim"] = state_info.optim_Disc.state_dict(),
+    elif mode == "noise":
+        save["model"] = state_info.noise,
+        save["weight"] = state_info.noise.state_dict()
+        save["optim"] = state_info.optim_Noise.state_dict(),
+    elif mode == "base":
+        save["model"] = state_info.base,
+        save["weight"] = state_info.base.state_dict()
+        save["optim"] = state_info.optim_Base.state_dict(),
 
-        'am': state_info.base,
-        'a': state_info.base.state_dict(),
-        'ao': state_info.optim_Base.state_dict(),
+    save_checkpoint(save, mode, filename, directory)
 
-        'bm': state_info.disc,
-        'b': state_info.disc.state_dict(),
-        'bo': state_info.optim_Disc.state_dict(),
-
-        'cm': state_info.noise,
-        'c': state_info.noise.state_dict(),
-        'co': state_info.optim_Noise.state_dict(),
-
-    }, filename, directory)
-
-
-def save_checkpoint(state, filename, model_dir):
+def save_checkpoint(state, mode, filename, model_dir):
 
     # model_dir = 'drive/app/torch/save_Routing_Gate_2'
-    model_filename = os.path.join(model_dir, filename)
+    model_filename = os.path.join(model_dir, mode, filename)
+    mode_dir = os.path.join(model_dir, mode)
 
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
+
+    if not os.path.exists(mode_dir):
+        os.makedirs(mode_dir)
 
     torch.save(state, model_filename)
     print("=> saving checkpoint '{}'".format(model_filename))
 
     return
 
-def load_checkpoint(directory, is_last=True):
+def load_checkpoint(directory, mode="disc", is_last=True):
 
     if is_last:
-        load_state_name = os.path.join(directory, 'latest.pth.tar')
+        load_state_name = os.path.join(directory, mode, 'latest.pth.tar')
     else:
-        load_state_name = os.path.join(directory, 'checkpoint_best.pth.tar')
+        load_state_name = os.path.join(directory, mode, 'checkpoint_best.pth.tar')
     
     if os.path.exists(load_state_name):
         print("=> loading checkpoint '{}'".format(load_state_name))

@@ -31,27 +31,27 @@ class Discriminator(nn.Module):
             return layers
 
         self.init_model = nn.Sequential(
-            nn.Conv2d(chIn, 32, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(32),
+            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
         self.image_model = nn.Sequential(
+            *d_block(16, 16),
+            *d_block(16, 32, stride=2),           # 8
             *d_block(32, 32),
             *d_block(32, 64, stride=2),           # 8
             *d_block(64, 64),
-            *d_block(64, 128, stride=2),           # 8
-            *d_block(128, 128),
             nn.AvgPool2d(kernel_size=8, stride=1),
         )
 
         self.condition_model = nn.Sequential(
-            nn.Linear(clsN, 32),
-            nn.Linear(32, 64),
+            nn.Linear(clsN, 16),
+            nn.Linear(16, 64),
         )
         
         self.fc = nn.Sequential(
-            nn.Linear(192, 192),
-            nn.Linear(192, 1),
+            nn.Linear(128, 128),
+            nn.Linear(128, 1),
             nn.Sigmoid(),
         )
 
@@ -94,7 +94,7 @@ class Classifier(nn.Module):
         super(Classifier, self).__init__()
 
         self.init_model = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
@@ -129,7 +129,7 @@ class Classifier(nn.Module):
             self.layer3.add_module('layer3_%d' % (i), BasicBlock(in_channels=64, out_channels=64, stride=1, downsample=None))
 
         self.avgpool = nn.AvgPool2d(kernel_size=8, stride=1)
-        self.fc = nn.Linear(64, num_classes)
+        self.fc = nn.Linear(64, clsN)
 
     def forward(self, x, gamma):
         x = self.init_model(x)
@@ -150,7 +150,7 @@ class Basic_Classifier(nn.Module):
         super(Basic_Classifier, self).__init__()
 
         self.init_model = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
@@ -184,7 +184,7 @@ class Basic_Classifier(nn.Module):
             self.layer3.add_module('layer3_%d' % (i), BasicBlock(in_channels=64, out_channels=64, stride=1, downsample=None))
 
         self.avgpool = nn.AvgPool2d(kernel_size=8, stride=1)
-        self.fc = nn.Linear(64, num_classes)
+        self.fc = nn.Linear(64, clsN)
 
     def forward(self, x):
         x = self.init_model(x)
