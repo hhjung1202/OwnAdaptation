@@ -89,6 +89,7 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
             resultF = label_Fy.eq(Fy).cpu().type(torch.ByteTensor)
             predF = torch.round(Fout).cpu().type(torch.ByteTensor)
+            print('r-',predR.eq(resultR.data))
             
             correctR += float(predR.eq(resultR.data).cpu().sum())
             correctF += float(predF.eq(resultF.data).cpu().sum())
