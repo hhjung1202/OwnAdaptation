@@ -119,8 +119,8 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
         print('Disc Test, {}, {}, {:.3f}'
               .format(epoch, it, 100.*correctN / total))
 
-        if 100.*correct_Test / total > best_prec_result:
-            best_prec_result = 100.*correct_Test / total
+        if 100.*correctN / total > best_prec_result:
+            best_prec_result = 100.*correctN / total
             filename = 'checkpoint_best.pth.tar'
             utils.save_state_checkpoint(state_info, best_prec_result, filename, mode, utils.default_model_dir, epoch)
 
