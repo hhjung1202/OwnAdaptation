@@ -73,13 +73,12 @@ class model_optim_state_info(object):
         self.lr_Noise = optim.lr_scheduler.MultiStepLR(self.optim_Noise, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
     def load_state_dict(self, checkpoint, mode):
-        print(checkpoint['optim'])
         if mode == "disc":
             self.disc.load_state_dict(checkpoint['weight'])
-            self.optim_Disc.load_state_dict(checkpoint['optim'])
+            self.optim_Disc.load_state_dict(checkpoint['optim'][0])
         elif mode == "noise":
             self.noise.load_state_dict(checkpoint['weight'])
-            self.optim_Noise.load_state_dict(checkpoint['optim'])   
+            self.optim_Noise.load_state_dict(checkpoint['optim'][0])   
         elif mode == "base":
             self.base.load_state_dict(checkpoint['weight'])
             self.optim_Base.load_state_dict(checkpoint['optim'])
