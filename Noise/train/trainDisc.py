@@ -38,9 +38,9 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
     mode = 'disc'
     utils.default_model_dir = os.path.join(args.dir, mode)
 
-    criterion_GAN = torch.nn.BCELoss()
+    # criterion_GAN = torch.nn.BCELoss()
 
-    # criterion_GAN = torch.nn.MSELoss()
+    criterion_GAN = torch.nn.MSELoss()
 
     percentage = get_percentage_Fake(Fake_loader)
 

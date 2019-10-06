@@ -52,7 +52,7 @@ class Discriminator(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(128, 128),
             nn.Linear(128, 1),
-            nn.Sigmoid(),
+            # nn.Sigmoid(),
         )
 
     def forward(self, x, y):
