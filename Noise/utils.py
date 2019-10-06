@@ -19,6 +19,7 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self, args):
+        self.init_lr = args.lr
         self.base = Basic_Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
         self.disc = Discriminator(chIn=args.chIn, clsN=args.clsN) # input : [z, y] def __init__(self, chIn=1, clsN=10):
         self.noise = Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
@@ -76,12 +77,18 @@ class model_optim_state_info(object):
         if mode == "disc":
             self.disc.load_state_dict(checkpoint['weight'])
             self.optim_Disc.load_state_dict(checkpoint['optim'])
+            for param_group in self.optim_Disc.param_groups:
+                param_group['initial_lr'] = self.init_lr
         elif mode == "noise":
             self.noise.load_state_dict(checkpoint['weight'])
-            self.optim_Noise.load_state_dict(checkpoint['optim'])   
+            self.optim_Noise.load_state_dict(checkpoint['optim'])
+            for param_group in self.optim_Noise.param_groups:
+                param_group['initial_lr'] = self.init_lr  
         elif mode == "base":
             self.base.load_state_dict(checkpoint['weight'])
             self.optim_Base.load_state_dict(checkpoint['optim'])
+            for param_group in self.optim_Base.param_groups:
+                param_group['initial_lr'] = self.init_lr
 
         
 
@@ -125,6 +132,10 @@ def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, d
             'weight': state_info.base.state_dict(),
             'optim': state_info.optim_Base.state_dict(),
         }, filename, directory)
+
+    print(state_info.optim_Disc.state_dict()[''])
+    optim = state_info.optim_Disc.state_dict()
+    print(optim[''])
 
 def save_checkpoint(state, filename, model_dir):
     # model_dir = 'drive/app/torch/save_Routing_Gate_2'
