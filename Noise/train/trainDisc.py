@@ -10,6 +10,8 @@ import utils
 import dataset
 import math
 
+# lr, batch
+
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
