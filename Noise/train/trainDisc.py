@@ -45,7 +45,7 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
     percentage = get_percentage_Fake(Fake_loader)
 
     start_epoch = 0
-    checkpoint = utils.load_checkpoint(utils.default_model_dir, mode)    
+    checkpoint = utils.load_checkpoint(utils.default_model_dir)    
     if not checkpoint:
         args.last_epoch = -1
         state_info.learning_scheduler_init(args)

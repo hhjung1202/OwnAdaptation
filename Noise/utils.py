@@ -134,12 +134,12 @@ def save_checkpoint(state, filename, model_dir):
 
     return
 
-def load_checkpoint(directory, mode="disc", is_last=True):
+def load_checkpoint(directory, is_last=True):
 
     if is_last:
-        load_state_name = os.path.join(directory, mode, 'latest.pth.tar')
+        load_state_name = os.path.join(directory, 'latest.pth.tar')
     else:
-        load_state_name = os.path.join(directory, mode, 'checkpoint_best.pth.tar')
+        load_state_name = os.path.join(directory, 'checkpoint_best.pth.tar')
     
     if os.path.exists(load_state_name):
         print("=> loading checkpoint '{}'".format(load_state_name))

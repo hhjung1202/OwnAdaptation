@@ -26,7 +26,7 @@ def train_Base(args, state_info, All_loader, Test_loader): # all
     criterion = torch.nn.CrossEntropyLoss()
 
     start_epoch = 0
-    checkpoint = utils.load_checkpoint(utils.default_model_dir, mode)    
+    checkpoint = utils.load_checkpoint(utils.default_model_dir)    
     if not checkpoint:
         args.last_epoch = -1
         state_info.learning_scheduler_init(args)
