@@ -64,35 +64,25 @@ class model_optim_state_info(object):
         # self.optim_Disc = optim.SGD(self.disc.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
         # self.optim_Noise = optim.SGD(self.noise.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
-    def learning_scheduler_init(self, args):
-        # self.lr_Base = optim.lr_scheduler.LambdaLR(self.optimizer_G_AB, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        # self.lr_Disc = optim.lr_scheduler.LambdaLR(self.optimizer_D_A, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        # self.lr_Noise = optim.lr_scheduler.LambdaLR(self.optimizer_G_BA, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        
-        self.lr_Base = optim.lr_scheduler.MultiStepLR(self.optim_Base, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
-        self.lr_Disc = optim.lr_scheduler.MultiStepLR(self.optim_Disc, args.Dmilestones, gamma=args.gamma, last_epoch=args.last_epoch)
-        self.lr_Noise = optim.lr_scheduler.MultiStepLR(self.optim_Noise, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
+    def learning_scheduler_init(self, args, mode):
+        if mode == "disc":
+            self.lr_Disc = optim.lr_scheduler.MultiStepLR(self.optim_Disc, args.Dmilestones, gamma=args.gamma, last_epoch=args.last_epoch)
+        elif mode == "noise":
+            self.lr_Noise = optim.lr_scheduler.MultiStepLR(self.optim_Noise, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
+        elif mode == "base":
+            self.lr_Base = optim.lr_scheduler.MultiStepLR(self.optim_Base, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
     def load_state_dict(self, checkpoint, mode):
         if mode == "disc":
             self.disc.load_state_dict(checkpoint['weight'])
             self.optim_Disc.load_state_dict(checkpoint['optim'])
-            print(self.optim_Disc.param_groups)
-            print(self.optim_Disc.param_groups[0])
-            for param_group in self.optim_Disc.param_groups:
-                param_group['initial_lr'] = self.init_lr
         elif mode == "noise":
             self.noise.load_state_dict(checkpoint['weight'])
             self.optim_Noise.load_state_dict(checkpoint['optim'])
-            for param_group in self.optim_Noise.param_groups:
-                param_group['initial_lr'] = self.init_lr  
         elif mode == "base":
             self.base.load_state_dict(checkpoint['weight'])
             self.optim_Base.load_state_dict(checkpoint['optim'])
-            for param_group in self.optim_Base.param_groups:
-                param_group['initial_lr'] = self.init_lr
 
-        
 
 class LambdaLR():
     def __init__(self, n_epochs, offset, decay_start_epoch):

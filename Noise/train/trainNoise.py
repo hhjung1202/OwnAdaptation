@@ -29,13 +29,13 @@ def train_Noise(args, state_info, Noise_loader, Test_loader): # all
     checkpoint = utils.load_checkpoint(utils.default_model_dir)    
     if not checkpoint:
         args.last_epoch = -1
-        state_info.learning_scheduler_init(args)
+        state_info.learning_scheduler_init(args, mode)
     else:
         start_epoch = checkpoint['epoch'] + 1
         best_prec_result = checkpoint['Best_Prec']
         state_info.load_state_dict(checkpoint, mode)
         args.last_epoch = start_epoch
-        state_info.learning_scheduler_init(args)
+        state_info.learning_scheduler_init(args, mode)
 
     utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE')
     
