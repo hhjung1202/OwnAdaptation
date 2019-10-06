@@ -123,10 +123,10 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
         if 100.*correctN / total > best_prec_result:
             best_prec_result = 100.*correctN / total
             filename = 'checkpoint_best.pth.tar'
-            utils.save_state_checkpoint(state_info, best_prec_result, filename, mode, utils.default_model_dir, epoch)
+            utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
 
         filename = 'latest.pth.tar'
-        utils.save_state_checkpoint(state_info, best_prec_result, filename, mode, utils.default_model_dir, epoch)
+        utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
 
         state_info.lr_Base.step()
         utils.print_log('')

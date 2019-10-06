@@ -94,11 +94,10 @@ def train_Noise(args, state_info, Noise_loader, Test_loader): # all
         if 100.*correct_Test / total > best_prec_result:
             best_prec_result = 100.*correct_Test / total
             filename = 'checkpoint_best.pth.tar'
-            utils.save_state_checkpoint(state_info, best_prec_result, filename, mode, utils.default_model_dir, epoch)
+            utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
 
         filename = 'latest.pth.tar'
-        utils.save_state_checkpoint(state_info, best_prec_result, filename, mode, utils.default_model_dir, epoch)
-
+        utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
         state_info.lr_Base.step()
         utils.print_log('')
 
