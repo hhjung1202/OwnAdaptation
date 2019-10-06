@@ -75,10 +75,10 @@ class model_optim_state_info(object):
     def load_state_dict(self, checkpoint, mode):
         if mode == "disc":
             self.disc.load_state_dict(checkpoint['weight'])
-            self.optim_Disc.load_state_dict(checkpoint['optim'][0])
+            self.optim_Disc.load_state_dict(checkpoint['optim'])
         elif mode == "noise":
             self.noise.load_state_dict(checkpoint['weight'])
-            self.optim_Noise.load_state_dict(checkpoint['optim'][0])   
+            self.optim_Noise.load_state_dict(checkpoint['optim'])   
         elif mode == "base":
             self.base.load_state_dict(checkpoint['weight'])
             self.optim_Base.load_state_dict(checkpoint['optim'])
@@ -101,24 +101,26 @@ def make_directory(directory):
     return directory
 
 def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, directory):
-    save = {
+    if mode == "disc":
+        model = state_info.disc,
+        weight = state_info.disc.state_dict()
+        optim = state_info.optim_Disc.state_dict(),
+    elif mode == "noise":
+        model = state_info.noise,
+        weight = state_info.noise.state_dict()
+        optim = state_info.optim_Noise.state_dict(),
+    elif mode == "base":
+        model = state_info.base,
+        weight = state_info.base.state_dict()
+        optim = state_info.optim_Base.state_dict(),
+
+    save_checkpoint({
         'epoch': epoch,
         'Best_Prec': best_prec_result,
-    }
-    if mode == "disc":
-        save["model"] = state_info.disc,
-        save["weight"] = state_info.disc.state_dict()
-        save["optim"] = state_info.optim_Disc.state_dict(),
-    elif mode == "noise":
-        save["model"] = state_info.noise,
-        save["weight"] = state_info.noise.state_dict()
-        save["optim"] = state_info.optim_Noise.state_dict(),
-    elif mode == "base":
-        save["model"] = state_info.base,
-        save["weight"] = state_info.base.state_dict()
-        save["optim"] = state_info.optim_Base.state_dict(),
-
-    save_checkpoint(save, mode, filename, directory)
+        'model' : model,
+        'weight' : weight,
+        'optim' : optim,
+    }, mode, filename, directory)
 
 def save_checkpoint(state, mode, filename, model_dir):
 
