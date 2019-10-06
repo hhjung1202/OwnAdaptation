@@ -125,9 +125,9 @@ def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, d
             'optim': state_info.optim_Base.state_dict(),
         }, filename, directory)
 
-    print(state_info.optim_Disc.state_dict()[''])
-    optim = state_info.optim_Disc.state_dict()
-    print(optim[''])
+    # print(state_info.optim_Disc.state_dict()['param_groups'])
+    # optim = state_info.optim_Disc.state_dict()
+    # print(optim['param_groups'])
 
 def save_checkpoint(state, filename, model_dir):
     # model_dir = 'drive/app/torch/save_Routing_Gate_2'
