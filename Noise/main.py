@@ -25,7 +25,7 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 parser.add_argument('--d-epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 
 parser.add_argument('--epoch', default=165, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('-b', '--batch-size', default=16, type=int, metavar='N', help='mini-batch size (default: 256)')
+parser.add_argument('-b', '--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--gamma', default=0.1, type=float, help='learning gamma')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
