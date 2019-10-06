@@ -115,7 +115,7 @@ def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, d
         optim = state_info.optim_Base.state_dict(),
 
     print(state_info.optim_Noise.state_dict()['param_groups'])
-    print(optim.state_dict()['param_groups'])
+    print(optim['param_groups'])
 
     save_checkpoint({
         'epoch': epoch,
