@@ -37,9 +37,9 @@ class Discriminator(nn.Module):
         )
         self.image_model = nn.Sequential(
             *d_block(16, 16),
-            *d_block(16, 32, stride=2),           # 8
+            *d_block(16, 32, stride=2),
             *d_block(32, 32),
-            *d_block(32, 64, stride=2),           # 8
+            *d_block(32, 64, stride=2),
             *d_block(64, 64),
             nn.AvgPool2d(kernel_size=8, stride=1),
         )
