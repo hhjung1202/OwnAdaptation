@@ -102,28 +102,29 @@ def make_directory(directory):
 
 def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, directory):
     if mode == "disc":
-        model = state_info.disc,
-        weight = state_info.disc.state_dict()
-        optim = state_info.optim_Disc.state_dict(),
+        save_checkpoint({
+            'epoch': epoch,
+            'Best_Prec': best_prec_result,
+            'model': state_info.disc,
+            'weight': state_info.disc.state_dict(),
+            'optim': state_info.optim_Disc.state_dict(),
+        }, filename, directory)
     elif mode == "noise":
-        model = state_info.noise,
-        weight = state_info.noise.state_dict()
-        optim = state_info.optim_Noise.state_dict(),
+        save_checkpoint({
+            'epoch': epoch,
+            'Best_Prec': best_prec_result,
+            'model': state_info.noise,
+            'weight': state_info.noise.state_dict(),
+            'optim': state_info.optim_Noise.state_dict(),
+        }, filename, directory)
     elif mode == "base":
-        model = state_info.base,
-        weight = state_info.base.state_dict()
-        optim = state_info.optim_Base.state_dict(),
-
-    print(state_info.optim_Noise.state_dict()['param_groups'])
-    print(optim['param_groups'])
-
-    save_checkpoint({
-        'epoch': epoch,
-        'Best_Prec': best_prec_result,
-        'model': model,
-        'weight': weight,
-        'optim': optim,
-    }, filename, directory)
+        save_checkpoint({
+            'epoch': epoch,
+            'Best_Prec': best_prec_result,
+            'model': state_info.base,
+            'weight': state_info.base.state_dict(),
+            'optim': state_info.optim_Base.state_dict(),
+        }, filename, directory)
 
 def save_checkpoint(state, filename, model_dir):
     # model_dir = 'drive/app/torch/save_Routing_Gate_2'
