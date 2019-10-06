@@ -60,7 +60,7 @@ class MNIST(datasets.MNIST):
 
             elif self.Task == "Noise_Test": # 45000 N% Noise labeled Set [N% Noise labeled Set]
                 img, real_target = self.Set[index]
-                noise_sample = int(self.noise_rate * len(self.data_shuffle))
+                noise_sample = int(0.5 * len(self.Set))
                 if index < noise_sample:
                     target = self.Intended_Random_Noise_Label(real_target)
                 else:
