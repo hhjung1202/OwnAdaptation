@@ -120,21 +120,14 @@ def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, d
         'model' : model,
         'weight' : weight,
         'optim' : optim,
-    }, mode, filename, directory)
+    }, filename, directory)
 
-def save_checkpoint(state, mode, filename, model_dir):
-
-    print(state["optim"])
-
+def save_checkpoint(state, filename, model_dir):
     # model_dir = 'drive/app/torch/save_Routing_Gate_2'
-    model_filename = os.path.join(model_dir, mode, filename)
-    mode_dir = os.path.join(model_dir, mode)
+    model_filename = os.path.join(model_dir, filename)
 
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-
-    if not os.path.exists(mode_dir):
-        os.makedirs(mode_dir)
 
     torch.save(state, model_filename)
     print("=> saving checkpoint '{}'".format(model_filename))
