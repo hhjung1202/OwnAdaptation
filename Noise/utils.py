@@ -77,6 +77,8 @@ class model_optim_state_info(object):
         if mode == "disc":
             self.disc.load_state_dict(checkpoint['weight'])
             self.optim_Disc.load_state_dict(checkpoint['optim'])
+            print(self.optim_Disc.param_groups)
+            print(self.optim_Disc.param_groups[0])
             for param_group in self.optim_Disc.param_groups:
                 param_group['initial_lr'] = self.init_lr
         elif mode == "noise":
