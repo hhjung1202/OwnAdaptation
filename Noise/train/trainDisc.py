@@ -97,8 +97,8 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             _, predF = torch.max(Fout.data, 1)
             resultF = label_Fy.eq(Fy).cpu().type(torch.LongTensor).view(-1,1)
             
-            correctR += float(predR.cpu().eq(resultR.data).cpu().sum())
-            correctF += float(predF.cpu().eq(resultF.data).cpu().sum())
+            correctR += float(predR.view(-1,1).cpu().eq(resultR.data).cpu().sum())
+            correctF += float(predF.view(-1,1).cpu().eq(resultF.data).cpu().sum())
 
 
             # resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor).view(-1,1)
