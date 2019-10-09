@@ -80,7 +80,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             state_info.optim_Disc.step()
 
             state_info.optim_Disc.zero_grad()
-            loss_reverse = criterion(Fout, Fy)
+            loss_reverse = criterion(Fout, Fy) * 0.1
             loss_reverse.backward()
             state_info.optim_Disc.step()
 
