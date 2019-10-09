@@ -102,9 +102,10 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
                 print('Disc Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
                       .format(epoch, it, loss_real.item(), loss_fake.item(), 100.*correctR / total, 100.*correctF / total))
 
-        total = torch.tensor(0, dtype=torch.float32)
+
         # test
         state_info.disc.eval()
+        total = torch.tensor(0, dtype=torch.float32)
         for it, (Noise, Ny, label_Ny) in enumerate(Noise_Test_loader):
 
             Noise, Ny, label_Ny = to_var(Noise, FloatTensor), to_var(Ny, LongTensor), to_var(label_Ny, LongTensor)

@@ -26,6 +26,8 @@ class model_optim_state_info(object):
         
     def forward_disc(self, image, label):
         label_one = torch.cuda.FloatTensor(image.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
+        print('one',label_one)
+        print('lb',label)
         out = self.disc(image, label_one)
         return out
 
