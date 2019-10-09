@@ -72,8 +72,8 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
             # valid = Variable(FloatTensor(real.size(0), 1).fill_(1.0), requires_grad=False)
             # unvalid = Variable(FloatTensor(fake.size(0), 1).fill_(0.0), requires_grad=False)
-            valid = Variable(LongTensor(real.size(0), 1).fill_(1), requires_grad=False)
-            unvalid = Variable(LongTensor(fake.size(0), 1).fill_(0), requires_grad=False)
+            valid = Variable(LongTensor(real.size(0)).fill_(1), requires_grad=False)
+            unvalid = Variable(LongTensor(fake.size(0)).fill_(0), requires_grad=False)
 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
