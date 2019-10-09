@@ -73,7 +73,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
 
-            Rout, Fout = state_info.forward_disc2(real, gamma=1) # , state_info.forward_disc2(fake, gamma=-1), 
+            Rout, Fout = state_info.forward_disc2(real, gamma=1), state_info.forward_disc2(fake, gamma=-1), 
 
             state_info.optim_Disc.zero_grad()
             loss = criterion(Rout, Ry)
