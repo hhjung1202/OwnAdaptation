@@ -30,7 +30,7 @@ class MNIST(datasets.MNIST):
                 random.shuffle(self.NoiseSet)
                 self.Set = self.CleanSet + self.NoiseSet
             elif self.Task == "Noise_Test": # 45000 N% Noise labeled Set [N% Noise labeled Set]
-                self.NoiseSet = self.data_shuffle[self.sample:int(self.sample * 1.6)]
+                self.NoiseSet = self.data_shuffle[self.sample:]
                 random.shuffle(self.NoiseSet)
                 self.Set = self.NoiseSet
             else: # All N% Noise labeled Set [without True Set, Only Noisy label]
