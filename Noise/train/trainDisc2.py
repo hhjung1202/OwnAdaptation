@@ -66,7 +66,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
         total = torch.tensor(0, dtype=torch.float32)
 
         # train
-        state_info.base.train()
+        state_info.disc.train()
         for it, ((real, Ry, label_Ry), (fake, Fy, label_Fy)) in enumerate(zip(True_loader, Fake_loader)):
 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
@@ -96,7 +96,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
 
 
         # test
-        state_info.base.eval()
+        state_info.disc.eval()
         total = torch.tensor(0, dtype=torch.float32)
         for it, (Noise, Ny, label_Ny) in enumerate(Noise_Test_loader):
 
@@ -120,7 +120,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
 
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
-        state_info.lr_Base.step()
+        state_info.lr_Disc.step()
         utils.print_log('')
 
     now = time.gmtime(time.time() - start_time)
