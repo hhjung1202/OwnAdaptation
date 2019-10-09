@@ -36,7 +36,7 @@ class Discriminator(nn.Module):
 
         self.init_model = nn.Sequential(
             nn.Conv2d(chIn + clsN, 16, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(16),
+            # nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
         self.image_model = nn.Sequential(
