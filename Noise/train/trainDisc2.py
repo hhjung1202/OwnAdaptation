@@ -76,11 +76,12 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
 
             state_info.optim_Disc.zero_grad()
             loss = criterion(Rout, Ry)
-            # loss_straight = criterion(Rout, Ry)
-            # loss_reverse = criterion(Fout, Fy)
-            # loss = loss_straight + loss_reverse
-            # loss.backward()
             loss.backward()
+            state_info.optim_Disc.step()
+
+            state_info.optim_Disc.zero_grad()
+            loss_reverse = criterion(Fout, Fy)
+            loss_reverse.backward()
             state_info.optim_Disc.step()
 
             _, pred = torch.max(Rout.data, 1)
@@ -89,10 +90,10 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             total += float(real.size(0))
             
             if it % 10 == 0:
-                utils.print_log('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
-                print('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
+                utils.print_log('main Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, loss.item(), loss_reverse.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
+                print('main Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, loss.item(), loss_reverse.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
 
 
         # test
