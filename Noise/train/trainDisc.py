@@ -92,10 +92,10 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             state_info.optim_Disc.step()
 
             _, predR = torch.max(Rout.data, 1)
-            resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor).view(-1,1)
+            resultR = label_Ry.eq(Ry).cpu().type(torch.LongTensor).view(-1,1)
 
             _, predF = torch.max(Fout.data, 1)
-            resultF = label_Fy.eq(Fy).cpu().type(torch.ByteTensor).view(-1,1)
+            resultF = label_Fy.eq(Fy).cpu().type(torch.LongTensor).view(-1,1)
             
             correctR += float(predR.cpu().eq(resultR.data).cpu().sum())
             correctF += float(predF.cpu().eq(resultF.data).cpu().sum())
@@ -129,13 +129,13 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
             Nout = state_info.forward_disc(Noise, Ny)
 
-            resultN = label_Ny.eq(Ny).cpu().type(torch.ByteTensor).view(-1,1)
+            resultN = label_Ny.eq(Ny).cpu().type(torch.LongTensor).view(-1,1)
             _, predN = torch.max(Nout.data, 1)
 
             # resultN = label_Ny.eq(Ny).cpu().type(torch.ByteTensor).view(-1,1)
             # predN = torch.round(Nout).cpu().type(torch.ByteTensor)
             
-            correctN += float(predN.eq(resultN.data).cpu().sum())
+            correctN += float(predN.cpu().eq(resultN.data).cpu().sum())
             total += float(Noise.size(0))
 
         utils.print_log('Disc Test, {}, {}, {:.3f}'
