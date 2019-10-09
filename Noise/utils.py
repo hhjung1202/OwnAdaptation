@@ -29,6 +29,10 @@ class model_optim_state_info(object):
         out = self.disc(image, label_one)
         return out
 
+    def forward_disc2(self, image, gamma=1):
+        out = self.disc(image, gamma)
+        return out
+
     def forward_Noise(self, image, gamma):
         out = self.noise(image, gamma)
         return out

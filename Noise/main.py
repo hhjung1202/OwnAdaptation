@@ -75,7 +75,7 @@ def main():
 
     state_info.optimizer_init(args)
 
-    train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
+    train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
     train_Noise(args, state_info, Noise_loader, Test_loader)
     train_Base(args, state_info, All_loader, Test_loader)
 

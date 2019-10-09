@@ -39,7 +39,7 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
     utils.default_model_dir = os.path.join(args.dir, mode)
 
     criterion_GAN = torch.nn.BCELoss()
-
+    criterion = torch.nn.CrossEntropyLoss()
     # criterion_GAN = torch.nn.MSELoss()
 
     percentage = get_percentage_Fake(Fake_loader)
@@ -58,79 +58,69 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
     utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE')
 
-    for epoch in range(start_epoch, args.d_epoch):
+    for epoch in range(start_epoch, args.epoch):
 
-        correctR = torch.tensor(0, dtype=torch.float32)
-        correctF = torch.tensor(0, dtype=torch.float32)
-        correctN = torch.tensor(0, dtype=torch.float32)
+        correct_Noise = torch.tensor(0, dtype=torch.float32)
+        correct_Real = torch.tensor(0, dtype=torch.float32)
+        correct_Test = torch.tensor(0, dtype=torch.float32)
         total = torch.tensor(0, dtype=torch.float32)
 
         # train
-        state_info.disc.train()
+        state_info.base.train()
         for it, ((real, Ry, label_Ry), (fake, Fy, label_Fy)) in enumerate(zip(True_loader, Fake_loader)):
-
-            valid = Variable(FloatTensor(real.size(0), 1).fill_(1.0), requires_grad=False)
-            unvalid = Variable(FloatTensor(fake.size(0), 1).fill_(0.0), requires_grad=False)
 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
 
-            Rout, Fout = state_info.forward_disc(real, Ry), state_info.forward_disc(fake, Fy)
+            Rout, Fout = state_info.forward_disc2(real, gamma=1), state_info.forward_disc2(fake, gamma=-1), 
 
             state_info.optim_Disc.zero_grad()
-            loss_real = criterion_GAN(Rout, valid)
-            loss_fake = criterion_GAN(Fout, unvalid)
-            loss_Disc = (loss_real + loss_fake) / 2
-            loss_Disc.backward()
+            loss = criterion(Rout, Ry)
+            # loss_straight = criterion(Rout, Ry)
+            # loss_reverse = criterion(Fout, Fy)
+            # loss = loss_straight + loss_reverse
+            # loss.backward()
+            loss.backward()
             state_info.optim_Disc.step()
 
-            resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor).view(-1,1)
-            predR = torch.round(Rout).cpu().type(torch.ByteTensor)
-
-            resultF = label_Fy.eq(Fy).cpu().type(torch.ByteTensor).view(-1,1)
-            predF = torch.round(Fout).cpu().type(torch.ByteTensor)
+            _, pred = torch.max(Rout.data, 1)
+            correct_Noise += float(pred.eq(Fy.data).cpu().sum())
+            correct_Real += float(pred.eq(Ry.data).cpu().sum())
+            total += float(All.size(0))
             
-            correctR += float(predR.eq(resultR.data).cpu().sum())
-            correctF += float(predF.eq(resultF.data).cpu().sum())
-
-            total += float(real.size(0))
-
             if it % 10 == 0:
-
-                utils.print_log('Disc Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss_real.item(), loss_fake.item(), 100.*correctR / total, 100.*correctF / total))
-                print('Disc Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss_real.item(), loss_fake.item(), 100.*correctR / total, 100.*correctF / total))
+                utils.print_log('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
+                print('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
 
 
         # test
-        state_info.disc.eval()
+        state_info.base.eval()
         total = torch.tensor(0, dtype=torch.float32)
         for it, (Noise, Ny, label_Ny) in enumerate(Noise_Test_loader):
 
             Noise, Ny, label_Ny = to_var(Noise, FloatTensor), to_var(Ny, LongTensor), to_var(label_Ny, LongTensor)
 
-            Nout = state_info.forward_disc(Noise, Ny)
+            Nout = state_info.forward_disc2(Noise, gamma=1)
 
-            resultN = label_Ny.eq(Ny).cpu().type(torch.ByteTensor).view(-1,1)
-            predN = torch.round(Nout).cpu().type(torch.ByteTensor)
-            
-            correctN += float(predN.eq(resultN.data).cpu().sum())
+            _, pred = torch.max(Nout.data, 1)
+            correct_Test += float(pred.eq(label_Ny.data).cpu().sum())
             total += float(Noise.size(0))
 
-        utils.print_log('Disc Test, {}, {}, {:.3f}'
-              .format(epoch, it, 100.*correctN / total))
-        print('Disc Test, {}, {}, {:.3f}'
-              .format(epoch, it, 100.*correctN / total))
+        utils.print_log('main Test, {}, {}, {:.3f}'
+              .format(epoch, it, 100.*correct_Test / total))
+        print('main Test, {}, {}, {:.3f}'
+              .format(epoch, it, 100.*correct_Test / total))
 
-        if 100.*correctN / total > best_prec_result:
-            best_prec_result = 100.*correctN / total
+        if 100.*correct_Test / total > best_prec_result:
+            best_prec_result = 100.*correct_Test / total
             filename = 'checkpoint_best.pth.tar'
             utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
 
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
-        state_info.lr_Disc.step()
+        state_info.lr_Base.step()
         utils.print_log('')
 
     now = time.gmtime(time.time() - start_time)

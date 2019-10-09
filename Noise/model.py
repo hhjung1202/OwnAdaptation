@@ -19,6 +19,58 @@ class NoiseGradientLayerF(Function):
         output = grad_output * ctx.gamma
         return output
 
+# class Discriminator(nn.Module):
+#     def __init__(self, chIn=1, clsN=10):
+#         super(Discriminator, self).__init__()
+
+#         def d_block(In, Out, stride=1):
+#             """Returns downsampling layers of each discriminator block"""
+
+#             layers = [  nn.Conv2d(In, Out, kernel_size=3, stride=stride, padding=1),
+#                         nn.BatchNorm2d(Out),
+#                         nn.ReLU(inplace=True),]
+#             return layers
+
+#         self.init_model = nn.Sequential(
+#             nn.Conv2d(chIn + clsN, 16, kernel_size=3, stride=1, padding=1),
+#             nn.BatchNorm2d(16),
+#             nn.ReLU(inplace=True)
+#         )
+#         self.image_model = nn.Sequential(
+#             *d_block(16, 16),
+#             *d_block(16, 32, stride=2),
+#             *d_block(32, 32),
+#             *d_block(32, 64, stride=2),
+#             *d_block(64, 64),
+#             nn.AvgPool2d(kernel_size=8, stride=1),
+#         )
+
+#         # self.condition_model = nn.Sequential(
+#         #     nn.Linear(clsN, 16),
+#         #     nn.Linear(16, 64),
+#         # )
+        
+#         self.fc = nn.Sequential(
+#             # nn.Linear(64, 64),
+#             nn.Linear(64, 1),
+#             # nn.Sigmoid(),
+#         )
+
+#     def forward(self, x, y):
+
+#         yb = y.view(y.size(0), -1, 1, 1)
+#         x = conv_y_concat(x, yb)
+
+#         out = self.init_model(x)
+#         out = self.image_model(out).view(out.size(0), -1)
+
+#         # y = self.condition_model(y)
+#         # out = torch.cat([out,y], 1)
+
+#         out = self.fc(out)
+#         return out
+
+
 class Discriminator(nn.Module):
     def __init__(self, chIn=1, clsN=10):
         super(Discriminator, self).__init__()
@@ -32,7 +84,7 @@ class Discriminator(nn.Module):
             return layers
 
         self.init_model = nn.Sequential(
-            nn.Conv2d(chIn + clsN, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
@@ -45,30 +97,18 @@ class Discriminator(nn.Module):
             nn.AvgPool2d(kernel_size=8, stride=1),
         )
 
-        # self.condition_model = nn.Sequential(
-        #     nn.Linear(clsN, 16),
-        #     nn.Linear(16, 64),
-        # )
-        
         self.fc = nn.Sequential(
-            nn.Linear(64, 64),
-            nn.Linear(64, 1),
-            # nn.Sigmoid(),
+            nn.Linear(64, clsN),
         )
 
-    def forward(self, x, y):
-
-        yb = y.view(y.size(0), -1, 1, 1)
-        x = conv_y_concat(x, yb)
+    def forward(self, x, gamma=1):
 
         out = self.init_model(x)
         out = self.image_model(out).view(out.size(0), -1)
-
-        # y = self.condition_model(y)
-        # out = torch.cat([out,y], 1)
-
         out = self.fc(out)
+        out = NoiseGradientLayerF.apply(out, gamma)
         return out
+
 
 class BasicBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride, downsample=None):
