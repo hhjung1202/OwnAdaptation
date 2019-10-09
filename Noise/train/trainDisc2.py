@@ -28,7 +28,7 @@ def get_percentage_Fake(Fake_loader):
     print('Fake Dataset Percentage', 100. * correct / total)
     return 100. * correct / total
 
-def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): # all 
+def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): # all 
 
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     start_time = time.time()
