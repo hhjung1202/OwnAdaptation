@@ -17,7 +17,7 @@ class NoiseGradientLayerF(Function):
     @staticmethod
     def backward(ctx, grad_output):
         output = grad_output * ctx.gamma
-        return output
+        return output, None
 
 # class Discriminator(nn.Module):
 #     def __init__(self, chIn=1, clsN=10):
