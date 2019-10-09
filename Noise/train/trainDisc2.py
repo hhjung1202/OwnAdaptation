@@ -80,11 +80,6 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             loss.backward()
             state_info.optim_Disc.step()
 
-            label_one = torch.cuda.FloatTensor(real.size(0), 10).zero_().scatter_(1, Ry.view(-1, 1), 1)
-            weight = (softmax(Rout) * label_one).sum(dim=1)
-            print('1',softmax(Rout))
-            print('2',label_one)
-            print('3',weight)
 
             # state_info.optim_Disc.zero_grad()
             # loss_reverse = criterion(Fout, Fy) * 0.1
@@ -98,9 +93,9 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             
             if it % 10 == 0:
                 utils.print_log('main Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss.item(), loss_reverse.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
+                      .format(epoch, it, loss.item(), loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
                 print('main Train, {}, {}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss.item(), loss_reverse.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
+                      .format(epoch, it, loss.item(), loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
 
 
         # test
@@ -111,6 +106,13 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             Noise, Ny, label_Ny = to_var(Noise, FloatTensor), to_var(Ny, LongTensor), to_var(label_Ny, LongTensor)
 
             Nout = state_info.forward_disc2(Noise, gamma=1)
+
+            label_one = torch.cuda.FloatTensor(Noise.size(0), 10).zero_().scatter_(1, Ny.view(-1, 1), 1)
+            weight = (softmax(Nout) * label_one).sum(dim=1)
+            print('1',softmax(Nout))
+            print('2',label_one)
+            print('3',weight)
+            print(error)
 
             _, pred = torch.max(Nout.data, 1)
             correct_Test += float(pred.eq(label_Ny.data).cpu().sum())
