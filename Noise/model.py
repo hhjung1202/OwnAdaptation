@@ -35,9 +35,8 @@ class Discriminator(nn.Module):
             return layers
 
         self.init_model = nn.Sequential(
-            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1),
-            # nn.Conv2d(chIn + clsN, 16, kernel_size=3, stride=1, padding=1),
-            # nn.BatchNorm2d(16),
+            nn.Conv2d(chIn + clsN, 16, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
         self.image_model = nn.Sequential(
@@ -62,8 +61,8 @@ class Discriminator(nn.Module):
 
     def forward(self, x, y):
 
-        # yb = y.view(y.size(0), -1, 1, 1)
-        # x = conv_y_concat(x, yb)
+        yb = y.view(y.size(0), -1, 1, 1)
+        x = conv_y_concat(x, yb)
 
         out = self.init_model(x)
         out = self.image_model(out).view(out.size(0), -1)
