@@ -28,9 +28,6 @@ class Discriminator(nn.Module):
 
             layers = [  nn.Conv2d(In, Out, kernel_size=3, stride=stride, padding=1),
                         nn.BatchNorm2d(Out),
-                        nn.ReLU(inplace=True),
-                        nn.Conv2d(Out, Out, kernel_size=3, stride=1, padding=1),
-                        nn.BatchNorm2d(Out),
                         nn.ReLU(inplace=True),]
             return layers
 
