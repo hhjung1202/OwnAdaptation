@@ -3,6 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
 
+def conv_y_concat(x, y):
+    x = torch.cat([x,y*torch.ones(x.size(0), y.size(1), x.size(2), x.size(3)).cuda()], 1)
+    return x
+
 class NoiseGradientLayerF(Function):
 
     @staticmethod
@@ -31,7 +35,7 @@ class Discriminator(nn.Module):
             return layers
 
         self.init_model = nn.Sequential(
-            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(chIn + clsN, 16, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(16),
             nn.ReLU(inplace=True)
         )
@@ -44,24 +48,28 @@ class Discriminator(nn.Module):
             nn.AvgPool2d(kernel_size=8, stride=1),
         )
 
-        self.condition_model = nn.Sequential(
-            nn.Linear(clsN, 16),
-            nn.Linear(16, 64),
-        )
+        # self.condition_model = nn.Sequential(
+        #     nn.Linear(clsN, 16),
+        #     nn.Linear(16, 64),
+        # )
         
         self.fc = nn.Sequential(
-            nn.Linear(128, 128),
-            nn.Linear(128, 1),
+            nn.Linear(64, 64),
+            nn.Linear(64, 1),
             # nn.Sigmoid(),
         )
 
     def forward(self, x, y):
+
+        yb = y.view(y.size(0), -1, 1, 1)
+        x = conv_y_concat(x, yb)
+
         out = self.init_model(x)
         out = self.image_model(out).view(out.size(0), -1)
 
-        y = self.condition_model(y)
+        # y = self.condition_model(y)
+        # out = torch.cat([out,y], 1)
 
-        out = torch.cat([out,y], 1)
         out = self.fc(out)
         return out
 
