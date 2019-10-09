@@ -86,7 +86,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             _, pred = torch.max(Rout.data, 1)
             correct_Noise += float(pred.eq(Fy.data).cpu().sum())
             correct_Real += float(pred.eq(Ry.data).cpu().sum())
-            total += float(All.size(0))
+            total += float(real.size(0))
             
             if it % 10 == 0:
                 utils.print_log('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
