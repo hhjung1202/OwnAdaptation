@@ -98,9 +98,7 @@ def train_Noise(args, state_info, Noise_loader, Test_loader): # all
 
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
-        state_info.lr_Base.step()
         utils.print_log('')
-
         state_info.lr_Noise.step()
 
     now = time.gmtime(time.time() - start_time)

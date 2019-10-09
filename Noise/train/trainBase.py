@@ -96,7 +96,6 @@ def train_Base(args, state_info, All_loader, Test_loader): # all
 
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
-
         state_info.lr_Base.step()
         utils.print_log('')
 
