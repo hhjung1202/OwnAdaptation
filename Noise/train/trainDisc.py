@@ -92,8 +92,6 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             _, predR = torch.max(Rout.data, 1)
             resultR = label_Ry.eq(Ry).cpu().type(torch.LongTensor).view(-1,1)
 
-            print(predR, resultR)
-
             _, predF = torch.max(Fout.data, 1)
             resultF = label_Fy.eq(Fy).cpu().type(torch.LongTensor).view(-1,1)
             
@@ -135,7 +133,7 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             # resultN = label_Ny.eq(Ny).cpu().type(torch.ByteTensor).view(-1,1)
             # predN = torch.round(Nout).cpu().type(torch.ByteTensor)
             
-            correctN += float(predN.cpu().eq(resultN.data).cpu().sum())
+            correctN += float(predN.view(-1,1).cpu().eq(resultN.data).cpu().sum())
             total += float(Noise.size(0))
 
         utils.print_log('Disc Test, {}, {}, {:.3f}'
