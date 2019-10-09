@@ -40,6 +40,7 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
 
     criterion_GAN = torch.nn.BCELoss()
     criterion = torch.nn.CrossEntropyLoss()
+    softmax = torch.nn.Softmax(dim=1)
     # criterion_GAN = torch.nn.MSELoss()
 
     percentage = get_percentage_Fake(Fake_loader)
@@ -72,17 +73,23 @@ def train_Disc2(args, state_info, True_loader, Fake_loader, Noise_Test_loader): 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
 
-            Rout, Fout = state_info.forward_disc2(real, gamma=1), state_info.forward_disc2(fake, gamma=-1), 
+            Rout, Fout = state_info.forward_disc2(real, gamma=1) # , state_info.forward_disc2(fake, gamma=-1), 
 
             state_info.optim_Disc.zero_grad()
             loss = criterion(Rout, Ry)
             loss.backward()
             state_info.optim_Disc.step()
 
-            state_info.optim_Disc.zero_grad()
-            loss_reverse = criterion(Fout, Fy) * 0.1
-            loss_reverse.backward()
-            state_info.optim_Disc.step()
+            label_one = torch.cuda.FloatTensor(real.size(0), 10).zero_().scatter_(1, Ry.view(-1, 1), 1)
+            weight = (softmax(Rout) * label_one).sum(dim=1)
+            print('1',softmax(Rout))
+            print('2',label_one)
+            print('3',weight)
+
+            # state_info.optim_Disc.zero_grad()
+            # loss_reverse = criterion(Fout, Fy) * 0.1
+            # loss_reverse.backward()
+            # state_info.optim_Disc.step()
 
             _, pred = torch.max(Rout.data, 1)
             correct_Noise += float(pred.eq(Fy.data).cpu().sum())
