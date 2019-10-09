@@ -83,8 +83,6 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             state_info.optim_Disc.zero_grad()
             # loss_real = criterion_GAN(Rout, valid)
             # loss_fake = criterion_GAN(Fout, unvalid)
-            print(valid.size())
-            print(Rout.size())
             loss_real = criterion(Rout, valid)
             loss_fake = criterion(Fout, unvalid)
             loss_Disc = (loss_real + loss_fake) / 2
@@ -93,6 +91,8 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
             _, predR = torch.max(Rout.data, 1)
             resultR = label_Ry.eq(Ry).cpu().type(torch.LongTensor).view(-1,1)
+
+            print(predR, resultR)
 
             _, predF = torch.max(Fout.data, 1)
             resultF = label_Fy.eq(Fy).cpu().type(torch.LongTensor).view(-1,1)
