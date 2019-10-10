@@ -64,8 +64,8 @@ def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # al
 
             if args.grad == "T":
                 weight = label_Sy.eq(Sy).type(FloatTensor).view(-1,1)
-                Gamma = WeightedGradientGamma(weight, low=-1, high=1)
-                
+                Gamma = WeightedGradientGamma(weight, low=args.low, high=args.high)
+
             elif args.grad == "F":
                 Gamma = 1
 

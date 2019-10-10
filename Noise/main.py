@@ -18,6 +18,8 @@ parser.add_argument('--noise-rate', default=1e-1, type=float, help='Noise rate')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
+parser.add_argument('--low', default=-1., type=float, help='Weighted Gradient Gamma Low value')
+parser.add_argument('--high', default=1., type=float, help='Weighted Gradient Gamma High value')
 
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
