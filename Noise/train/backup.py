@@ -39,8 +39,7 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
     utils.default_model_dir = os.path.join(args.dir, mode)
 
     criterion_GAN = torch.nn.BCELoss()
-    # criterion = torch.nn.CrossEntropyLoss()
-    # softmax = torch.nn.Softmax(dim=1)
+
     # criterion_GAN = torch.nn.MSELoss()
 
     percentage = get_percentage_Fake(Fake_loader)
@@ -72,8 +71,6 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
             valid = Variable(FloatTensor(real.size(0), 1).fill_(1.0), requires_grad=False)
             unvalid = Variable(FloatTensor(fake.size(0), 1).fill_(0.0), requires_grad=False)
-            # valid = Variable(LongTensor(real.size(0)).fill_(1), requires_grad=False)
-            # unvalid = Variable(LongTensor(fake.size(0)).fill_(0), requires_grad=False)
 
             real, Ry, label_Ry = to_var(real, FloatTensor), to_var(Ry, LongTensor), to_var(label_Ry, LongTensor)
             fake, Fy, label_Fy = to_var(fake, FloatTensor), to_var(Fy, LongTensor), to_var(label_Fy, LongTensor)
@@ -86,16 +83,6 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
             loss_Disc = (loss_real + loss_fake) / 2
             loss_Disc.backward()
             state_info.optim_Disc.step()
-
-            # _, predR = torch.max(Rout.data, 1)
-            # resultR = label_Ry.eq(Ry).cpu().type(torch.LongTensor).view(-1,1)
-
-            # _, predF = torch.max(Fout.data, 1)
-            # resultF = label_Fy.eq(Fy).cpu().type(torch.LongTensor).view(-1,1)
-            
-            # correctR += float(predR.view(-1,1).cpu().eq(resultR.data).cpu().sum())
-            # correctF += float(predF.view(-1,1).cpu().eq(resultF.data).cpu().sum())
-
 
             resultR = label_Ry.eq(Ry).cpu().type(torch.ByteTensor).view(-1,1)
             predR = torch.round(Rout).cpu().type(torch.ByteTensor)
@@ -125,13 +112,10 @@ def train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader): #
 
             Nout = state_info.forward_disc(Noise, Ny)
 
-            # resultN = label_Ny.eq(Ny).cpu().type(torch.LongTensor).view(-1,1)
-            # _, predN = torch.max(Nout.data, 1)
-
             resultN = label_Ny.eq(Ny).cpu().type(torch.ByteTensor).view(-1,1)
             predN = torch.round(Nout).cpu().type(torch.ByteTensor)
             
-            correctN += float(predN.view(-1,1).cpu().eq(resultN.data).cpu().sum())
+            correctN += float(predN.eq(resultN.data).cpu().sum())
             total += float(Noise.size(0))
 
         utils.print_log('Disc Test, {}, {}, {:.3f}'

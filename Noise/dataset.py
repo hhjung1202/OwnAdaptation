@@ -33,9 +33,10 @@ class MNIST(datasets.MNIST):
                 self.NoiseSet = self.data_shuffle[self.sample:]
                 random.shuffle(self.NoiseSet)
                 self.Set = self.NoiseSet
+            elif self.Task == "Noise_Sample": # 45000 N% Noise labeled Set [N% Noise labeled Set]
+                self.Set = self.data_shuffle[:self.sample]
             else: # All N% Noise labeled Set [without True Set, Only Noisy label]
                 self.Set = self.data_shuffle
-
         else:
             self.Set = self.data_shuffle
 
@@ -61,6 +62,14 @@ class MNIST(datasets.MNIST):
             elif self.Task == "Noise_Test": # 45000 N% Noise labeled Set [N% Noise labeled Set]
                 img, real_target = self.Set[index]
                 noise_sample = int(0.5 * len(self.Set))
+                if index < noise_sample:
+                    target = self.Intended_Random_Noise_Label(real_target)
+                else:
+                    target = real_target
+
+            elif self.Task == "Noise_Sample": # 5000 N% Noise labeled Set [N% Noise labeled Set]
+                img, real_target = self.Set[index]
+                noise_sample = int(self.noise_rate * len(self.Set))
                 if index < noise_sample:
                     target = self.Intended_Random_Noise_Label(real_target)
                 else:
@@ -104,6 +113,10 @@ class MNIST(datasets.MNIST):
         return len(self.Set)
 
 def MNIST_loader(args):
+    
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    
     print("MNIST Data Loading ...")
     root = '/home/hhjung/hhjung/MNIST/'
     transform = transforms.Compose([
@@ -114,7 +127,7 @@ def MNIST_loader(args):
     args.noise_rate = 0.1
     args.sample = 5000
     args.seed = 1234
-    Task = ["True", "Fake", "Noise", "Noise_Test", "All"]
+    Task = ["True", "Fake", "Noise", "Noise_Test", "All", "Noise_Sample"]
 
     # Discriminator Method for True
     True_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
@@ -141,15 +154,22 @@ def MNIST_loader(args):
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[4])
 
+    # 5000 Noise Sample Dataset
+    Noise_Sample_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+                                        noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
+                                        Task=Task[5])
+
+
     Test_dataset = MNIST(root=root, train=False, transform=transform, download=True)
 
     True_loader = torch.utils.data.DataLoader(dataset=True_dataset, batch_size=args.batch_size, shuffle=True)
     Fake_loader = torch.utils.data.DataLoader(dataset=Fake_dataset, batch_size=args.batch_size, shuffle=True)
     Noise_loader = torch.utils.data.DataLoader(dataset=Noise_dataset, batch_size=args.batch_size, shuffle=True)
     Noise_Test_loader = torch.utils.data.DataLoader(dataset=Noise_Test_dataset, batch_size=args.batch_size, shuffle=False)
+    Noise_Sample_loader = torch.utils.data.DataLoader(dataset=Noise_Sample_dataset, batch_size=args.batch_size, shuffle=True)
     All_loader = torch.utils.data.DataLoader(dataset=All_dataset, batch_size=args.batch_size, shuffle=True)
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False)
-    return True_loader, Fake_loader, Noise_loader, Noise_Test_loader, All_loader, Test_loader, 1, 10
+    return True_loader, Fake_loader, Noise_loader, Noise_Test_loader, Noise_Sample_loader, All_loader, Test_loader, 1, 10
 
 if __name__=='__main__':
     class e():

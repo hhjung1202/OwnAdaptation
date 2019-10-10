@@ -19,6 +19,73 @@ class NoiseGradientLayerF(Function):
         output = grad_output * ctx.gamma
         return output, None
 
+class NoiseSampleGradientLayerF(Function):
+
+    @staticmethod
+    def forward(ctx, x, gamma):
+        ctx.gamma = gamma
+        return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        output = grad_output * ctx.gamma # Need to Edit
+        return output, None
+
+class SampleClassifier(nn.Module):
+    def __init__(self, chIn=1, clsN=10, resnet_layer=20):
+        super(SampleClassifier, self).__init__()
+
+        self.init_model = nn.Sequential(
+            nn.Conv2d(chIn, 16, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True)
+        )
+
+        if resnet_layer is 14:
+            self.n = 2
+        elif resnet_layer is 20:
+            self.n = 3
+        elif resnet_layer is 32:
+            self.n = 5
+        elif resnet_layer is 44:
+            self.n = 7
+        elif resnet_layer is 56:
+            self.n = 9
+        elif resnet_layer is 110:
+            self.n = 18
+            
+
+        self.layer1 = nn.Sequential()
+        self.layer1.add_module('layer1_0', BasicBlock(in_channels=16, out_channels=16, stride=1, downsample=None))
+        for i in range(1,self.n):
+            self.layer1.add_module('layer1_%d' % (i), BasicBlock(in_channels=16, out_channels=16, stride=1, downsample=None))
+
+        self.layer2 = nn.Sequential()
+        self.layer2.add_module('layer2_0', BasicBlock(in_channels=16, out_channels=32, stride=2, downsample=True))
+        for i in range(1,self.n):
+            self.layer2.add_module('layer2_%d' % (i), BasicBlock(in_channels=32, out_channels=32, stride=1, downsample=None))
+
+        self.layer3 = nn.Sequential()
+        self.layer3.add_module('layer3_0', BasicBlock(in_channels=32, out_channels=64, stride=2, downsample=True))
+        for i in range(1,self.n):
+            self.layer3.add_module('layer3_%d' % (i), BasicBlock(in_channels=64, out_channels=64, stride=1, downsample=None))
+
+        self.avgpool = nn.AvgPool2d(kernel_size=8, stride=1)
+        self.fc = nn.Linear(64, clsN)
+
+    def forward(self, x, gamma):
+        x = self.init_model(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+
+        x = self.avgpool(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
+        Noised_x = NoiseSampleGradientLayerF.apply(x, gamma)
+        return Noised_x
+
 class Discriminator(nn.Module):
     def __init__(self, chIn=1, clsN=10):
         super(Discriminator, self).__init__()

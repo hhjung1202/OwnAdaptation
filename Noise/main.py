@@ -17,6 +17,7 @@ parser.add_argument('--db', default='mnist', type=str, help='dataset selection')
 parser.add_argument('--noise-rate', default=1e-1, type=float, help='Noise rate')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
+parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
 
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
@@ -55,7 +56,7 @@ def main():
     utils.default_model_dir = args.dir
     start_time = time.time()
 
-    True_loader, Fake_loader, Noise_loader, Noise_Test_loader, All_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
+    True_loader, Fake_loader, Noise_loader, Noise_Test_loader, Noise_Sample_loader, All_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
     args.chIn = chIn
     args.clsN = clsN
     args.milestones = [80,120]
@@ -75,9 +76,10 @@ def main():
 
     state_info.optimizer_init(args)
 
-    train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
-    train_Noise(args, state_info, Noise_loader, Test_loader)
-    train_Base(args, state_info, All_loader, Test_loader)
+    train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
+    # train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
+    # train_Noise(args, state_info, Noise_loader, Test_loader)
+    # train_Base(args, state_info, All_loader, Test_loader)
 
 def dataset_selector(data):
     if data == 'mnist':

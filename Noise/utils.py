@@ -23,6 +23,7 @@ class model_optim_state_info(object):
         self.base = Basic_Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
         self.disc = Discriminator(chIn=args.chIn, clsN=args.clsN) # input : [z, y] def __init__(self, chIn=1, clsN=10):
         self.noise = Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
+        self.sample = SampleClassifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
         
     def forward_disc(self, image, label):
         label_one = torch.cuda.FloatTensor(image.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
@@ -37,6 +38,10 @@ class model_optim_state_info(object):
         out = self.noise(image, gamma)
         return out
 
+    def forward_Sample(self, image, gamma=1):
+        out = self.sample(image, gamma)
+        return out
+
     def forward_Base(self, image):
         out = self.base(image)
         return out
@@ -46,11 +51,13 @@ class model_optim_state_info(object):
             self.base = nn.DataParallel(self.base).cuda()
             self.disc = nn.DataParallel(self.disc).cuda()
             self.noise = nn.DataParallel(self.noise).cuda()
+            self.sample = nn.DataParallel(self.sample).cuda()
 
     def weight_cuda_init(self):
         self.base.apply(self.weights_init_normal)
         self.disc.apply(self.weights_init_normal)
         self.noise.apply(self.weights_init_normal)
+        self.sample.apply(self.weights_init_normal)
         
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
@@ -63,6 +70,7 @@ class model_optim_state_info(object):
         self.optim_Base = optim.Adam(self.base.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay) # lr, b1, b2, weight_decay
         self.optim_Disc = optim.Adam(self.disc.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay)
         self.optim_Noise = optim.Adam(self.noise.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay)
+        self.optim_Sample = optim.Adam(self.sample.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay)
 
         # self.optim_Base = optim.SGD(self.base.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
         # self.optim_Disc = optim.SGD(self.disc.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -73,6 +81,8 @@ class model_optim_state_info(object):
             self.lr_Disc = optim.lr_scheduler.MultiStepLR(self.optim_Disc, args.Dmilestones, gamma=args.gamma, last_epoch=args.last_epoch)
         elif mode == "noise":
             self.lr_Noise = optim.lr_scheduler.MultiStepLR(self.optim_Noise, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
+        elif mode == "sample":
+            self.lr_Sample = optim.lr_scheduler.MultiStepLR(self.optim_Sample, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
         elif mode == "base":
             self.lr_Base = optim.lr_scheduler.MultiStepLR(self.optim_Base, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
@@ -83,6 +93,9 @@ class model_optim_state_info(object):
         elif mode == "noise":
             self.noise.load_state_dict(checkpoint['weight'])
             self.optim_Noise.load_state_dict(checkpoint['optim'])
+        elif mode == "sample":   
+            self.sample.load_state_dict(checkpoint['weight'])
+            self.optim_Sample.load_state_dict(checkpoint['optim'])
         elif mode == "base":
             self.base.load_state_dict(checkpoint['weight'])
             self.optim_Base.load_state_dict(checkpoint['optim'])
@@ -119,6 +132,14 @@ def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, d
             'model': state_info.noise,
             'weight': state_info.noise.state_dict(),
             'optim': state_info.optim_Noise.state_dict(),
+        }, filename, directory)
+    elif mode == "sample":   
+        save_checkpoint({
+            'epoch': epoch,
+            'Best_Prec': best_prec_result,
+            'model': state_info.sample,
+            'weight': state_info.sample.state_dict(),
+            'optim': state_info.optim_Sample.state_dict(),
         }, filename, directory)
     elif mode == "base":
         save_checkpoint({
