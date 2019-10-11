@@ -124,9 +124,6 @@ def MNIST_loader(args):
                                         transforms.ToTensor(),
                                         transforms.Normalize(mean=(0.5,), std=(0.5,)),
                                   ])
-    args.noise_rate = 0.1
-    args.sample = 5000
-    args.seed = 1234
     Task = ["True", "Fake", "Noise", "Noise_Test", "All", "Noise_Sample"]
 
     # Discriminator Method for True
