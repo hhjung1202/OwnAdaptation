@@ -1,9 +1,9 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group4/batch16 --Mode 2 -b 16 --Method P3 --group 4 --gpu 7 --layer 2 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group4/batch32 --Mode 2 -b 32 --Method P3 --group 4 --gpu 7 --layer 2 1> /dev/null && 
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group4/batch64 --Mode 2 -b 64 --Method P3 --group 4 --gpu 7 --layer 2 1> /dev/null && 
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group4/batch128 --Mode 2 -b 128 --Method P3 --group 4 --gpu 7 --layer 2 1> /dev/null && 
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group16/batch16 --Mode 2 -b 16 --Method P3 --group 16 --gpu 7 --layer 2 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group16/batch32 --Mode 2 -b 32 --Method P3 --group 16 --gpu 7 --layer 2 1> /dev/null && 
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group16/batch64 --Mode 2 -b 64 --Method P3 --group 16 --gpu 7 --layer 2 1> /dev/null && 
-python3 ../main.py --dir /data2/hhjung/Norm3/P3/All/group16/batch128 --Mode 2 -b 128 --Method P3 --group 16 --gpu 7 --layer 2 1> /dev/null
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise0/Rev_F/one --noise-rate 0.0 --grad F --gpu 0 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise10/Rev_F/one --noise-rate 0.1 --grad F --gpu 1 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise20/Rev_F/one --noise-rate 0.2 --grad F --gpu 2 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise30/Rev_F/one --noise-rate 0.3 --grad F --gpu 3 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise10/Rev_T/one --noise-rate 0.1 --grad T --gpu 4 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise20/Rev_T/one --noise-rate 0.2 --grad T --gpu 5 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise30/Rev_T/one --noise-rate 0.3 --grad T --gpu 6 --lr 1e-4 --layer 20 --low=-1. --high=1. 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/Gradient/Noise30/Rev_T/dotone --noise-rate 0.3 --grad T --gpu 7 --lr 1e-4 --layer 20 --low=-0.1 --high=1. 1> /dev/null
