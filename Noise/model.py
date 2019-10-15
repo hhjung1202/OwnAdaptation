@@ -41,7 +41,9 @@ class SampleClassifier(nn.Module):
             nn.ReLU(inplace=True)
         )
 
-        if resnet_layer is 14:
+        if resnet_layer is 8:
+            self.n = 1
+        elif resnet_layer is 14:
             self.n = 2
         elif resnet_layer is 20:
             self.n = 3
@@ -211,7 +213,9 @@ class Classifier(nn.Module):
             nn.ReLU(inplace=True)
         )
 
-        if resnet_layer is 14:
+        if resnet_layer is 8:
+            self.n = 1
+        elif resnet_layer is 14:
             self.n = 2
         elif resnet_layer is 20:
             self.n = 3
@@ -267,7 +271,9 @@ class Basic_Classifier(nn.Module):
             nn.ReLU(inplace=True)
         )
 
-        if resnet_layer is 14:
+        if resnet_layer is 8:
+            self.n = 1
+        elif resnet_layer is 14:
             self.n = 2
         elif resnet_layer is 20:
             self.n = 3

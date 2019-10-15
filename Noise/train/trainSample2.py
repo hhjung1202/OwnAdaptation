@@ -74,11 +74,7 @@ def train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader): # a
             Sout = state_info.forward_Sample(Sample, gamma=Gamma)
 
             _, pred = torch.max(Sout.data, 1)
-            print(Sy)
-            print(Sy * weight.type(LongTensor))
-            print(pred * reverse_weight)
             label = Sy * weight.type(LongTensor).view(-1) + pred * reverse_weight
-            print(label)
             state_info.optim_Sample.zero_grad()
             loss = criterion(Sout, label)
             loss.backward()
