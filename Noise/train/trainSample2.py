@@ -21,7 +21,7 @@ def WeightedGradientGamma(weight, low=-1, high=1):
 # def WeightedExponentialGradientGamma(weight, low=-1, high=1):
 #     return weight * (high-low) + low
 
-def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # all 
+def train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader): # all 
 
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     start_time = time.time()
