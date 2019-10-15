@@ -64,7 +64,7 @@ def train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader): # a
 
             if args.grad == "T":
                 weight = label_Sy.eq(Sy).type(FloatTensor).view(-1,1)
-                zero = FloatTensor(torch.zeros(weight.size()))
+                zero = torch.zeros(weight.size()).type(FloatTensor)
                 reverse_weight = weight.eq(zero).type(FloatTensor).view(-1,1)
                 print(weight)
                 print(zero)
