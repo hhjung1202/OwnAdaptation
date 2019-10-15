@@ -44,6 +44,7 @@ parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='man
 parser.add_argument('--cycle', type=float, default=10.0, help='Cycle Consistency Parameter')
 parser.add_argument('--identity', type=float, default=5.0, help='Identity Consistency Parameter')
 parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
+parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
@@ -78,7 +79,11 @@ def main():
 
     state_info.optimizer_init(args)
 
-    train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
+    if args.mode is 0:
+        train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
+    elif args.mode is 1:
+        train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader)
+
     # train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
     # train_Noise(args, state_info, Noise_loader, Test_loader)
     # train_Base(args, state_info, All_loader, Test_loader)
