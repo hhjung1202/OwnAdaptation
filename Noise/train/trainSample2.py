@@ -65,10 +65,7 @@ def train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader): # a
             if args.grad == "T":
                 weight = label_Sy.eq(Sy).type(FloatTensor).view(-1,1)
                 zero = torch.zeros(weight.size()).type(FloatTensor)
-                reverse_weight = weight.eq(zero).type(FloatTensor).view(-1,1)
-                print(weight)
-                print(zero)
-                print(reverse_weight)
+                reverse_weight = weight.eq(zero).type(LongTensor).view(-1,1)
                 Gamma = WeightedGradientGamma(weight, low=args.low, high=args.high)
 
             elif args.grad == "F":
@@ -77,7 +74,7 @@ def train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader): # a
             Sout = state_info.forward_Sample(Sample, gamma=Gamma)
 
             _, pred = torch.max(Sout.data, 1)
-            label = Sy * weight + pred * reverse_weight
+            label = Sy * weight.type(LongTensor) + pred * reverse_weight
 
             state_info.optim_Sample.zero_grad()
             loss = criterion(Sout, label)
