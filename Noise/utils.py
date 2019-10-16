@@ -1,11 +1,7 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.optim as optim
-import numpy as np
 from model import *
-import csv
-import random
 import os
 
 default_model_dir = "./"
@@ -19,6 +15,9 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self, args):
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed(args.seed)
+        
         self.init_lr = args.lr
         self.base = Basic_Classifier(chIn=args.chIn, clsN=args.clsN, resnet_layer=args.layer) # input : [z, y] def __init__(self, chIn=1, clsN=10, resnet_layer=20):
         self.disc = Discriminator(chIn=args.chIn, clsN=args.clsN) # input : [z, y] def __init__(self, chIn=1, clsN=10):
@@ -60,8 +59,14 @@ class model_optim_state_info(object):
         self.sample.apply(self.weights_init_normal)
         
     def weights_init_normal(self, m):
-        if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
+        if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
             torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+            # if init_type == 'normal':
+            #     torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+            # elif init_type == 'xavier':
+            #     torch.nn.init.xavier_normal_(m.weight.data, gain=1.0)
+            # elif init_type == 'kaiming':
+            #     torch.nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
         elif isinstance(m, nn.BatchNorm2d):
             torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
             torch.nn.init.constant_(m.bias.data, 0.0)

@@ -1,14 +1,10 @@
 import argparse
 import torch
-from torch.autograd import Variable
-from torchvision.utils import save_image
-import numpy as np
 import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
 import dataset
-import math
 from train import *
 
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
@@ -55,9 +51,6 @@ torch.cuda.manual_seed(args.seed)
 
 def main():
     global args, best_prec_result
-    
-    utils.default_model_dir = args.dir
-    start_time = time.time()
 
     True_loader, Fake_loader, Noise_loader, Noise_Test_loader, Noise_Sample_loader, All_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
     args.chIn = chIn
