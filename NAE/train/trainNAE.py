@@ -34,9 +34,23 @@ def Reg_vector():
 
 class Memory(object):
     def __init__(self):
+        pass 
+        # Torch Tensor로 Concat하면서 CUDA 메모리에 축적하고, 만약 너무 크다면 CPU 메모리로 변환한 후 Concat한다.
+        # Index를 두어 최신화 시킬 Index를 Update한다. 1 2 3 4 5 1 2 3 4 5 (이런식으로 Not Push Pop, Circular Queue)
+        # 
+
+
+    def get_Mean_Var():
+        # return mean, var
         pass
 
-    def get_Mean():
+    def Insert():
+        pass
+
+    def Calc_CosSim_N():
+        pass
+
+    def Weighted_Mean():
         pass
 
 class MemorySet(object):
