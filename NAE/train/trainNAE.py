@@ -37,7 +37,6 @@ class Memory(object):
         pass 
         # Torch Tensor로 Concat하면서 CUDA 메모리에 축적하고, 만약 너무 크다면 CPU 메모리로 변환한 후 Concat한다.
         # Index를 두어 최신화 시킬 Index를 Update한다. 1 2 3 4 5 1 2 3 4 5 (이런식으로 Not Push Pop, Circular Queue)
-        # 
 
 
     def get_Mean_Var():
@@ -48,6 +47,8 @@ class Memory(object):
         pass
 
     def Calc_CosSim_N():
+        # Cos Similarity 를 쓰지 않고 Normalization을 사용해도 된다.
+
         pass
 
     def Weighted_Mean():
