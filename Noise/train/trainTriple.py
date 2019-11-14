@@ -3,6 +3,7 @@ from torch.autograd import Variable
 import os
 import time
 import utils
+import torch.nn.functional as F
 
 # lr, batch
 
@@ -14,8 +15,7 @@ def WeightedGradientGamma(weight, low=-1, high=1):
 
 # def WeightedExponentialGradientGamma(weight, low=-1, high=1):
 #     return weight * (high-low) + low
-
-def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # all 
+def train_Triple(args, state_info, Noise_Triple_loader, Test_loader): # all 
 
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     start_time = time.time()
@@ -23,7 +23,7 @@ def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # al
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
     mode = 'sample'
-    utils.default_model_dir = os.path.join(args.dir, mode)
+    utils.default_model_dir = os.path.join(args.dir, "triple")
 
     criterion = torch.nn.CrossEntropyLoss()
     softmax = torch.nn.Softmax(dim=1)
@@ -52,25 +52,37 @@ def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # al
 
         # train
         state_info.sample.train()
-        for it, (Sample, Sy, label_Sy) in enumerate(Noise_Sample_loader):
+        for it, (Sample, Sy, label_Sy) in enumerate(Noise_Triple_loader):
 
             Sample, Sy, label_Sy = to_var(Sample, FloatTensor), to_var(Sy, LongTensor), to_var(label_Sy, LongTensor)
+            Ry = torch.randint_like(Sy, low=0, high=10)
 
             if args.grad == "T":
                 weight = label_Sy.eq(Sy).type(FloatTensor).view(-1,1)
+                zero = torch.zeros(weight.size()).type(FloatTensor)
+                reverse_weight = weight.eq(zero).type(LongTensor).view(-1)
                 Gamma = WeightedGradientGamma(weight, low=args.low, high=args.high)
 
             elif args.grad == "F":
                 Gamma = 1
 
-            Sout = state_info.forward_Sample(Sample, gamma=Gamma)
+            Sout = state_info.forward_Triple(Sample, gamma=1)
 
+            alpha = 0.8
+            beta = 0.2
+            gamma = 0.5
+
+            _, pred = torch.max(Sout.data, 1)
             state_info.optim_Sample.zero_grad()
-            loss = criterion(Sout, Sy)
+            loss_Noise = alpha * criterion(Sout, Sy)
+            loss_Pred = beta * criterion(Sout, pred)
+            Reverse_log_P = torch.log(1 - softmax(Sout))
+            loss_Ry = gamma * F.nll_loss(Reverse_log_P, Ry)
+            loss = loss_Noise + loss_Pred + loss_Ry
             loss.backward()
             state_info.optim_Sample.step()
 
-            _, pred = torch.max(Sout.data, 1)
+            # _, pred = torch.max(Sout.data, 1)
             correct_Noise += float(pred.eq(Sy.data).cpu().sum())
             correct_Real += float(pred.eq(label_Sy.data).cpu().sum())
             total += float(Sample.size(0))

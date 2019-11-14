@@ -41,6 +41,10 @@ class model_optim_state_info(object):
         out = self.sample(image, gamma)
         return out
 
+    def forward_Triple(self, image, gamma=1):
+        out = self.sample(image, gamma)
+        return out
+
     def forward_Base(self, image):
         out = self.base(image)
         return out

@@ -52,7 +52,7 @@ torch.cuda.manual_seed(args.seed)
 def main():
     global args, best_prec_result
 
-    True_loader, Fake_loader, Noise_loader, Noise_Test_loader, Noise_Sample_loader, All_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
+    True_loader, Fake_loader, Noise_loader, Noise_Test_loader, Noise_Sample_loader, Noise_Triple_loader, All_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
     args.chIn = chIn
     args.clsN = clsN
     args.milestones = [80,120]
@@ -72,10 +72,12 @@ def main():
 
     state_info.optimizer_init(args)
 
-    if args.mode is 0:
-        train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
-    elif args.mode is 1:
-        train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader)
+    train_Triple(args, state_info, Noise_Triple_loader, Test_loader)
+
+    # if args.mode is 0:
+    #     train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
+    # elif args.mode is 1:
+    #     train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader)
 
     # train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
     # train_Noise(args, state_info, Noise_loader, Test_loader)

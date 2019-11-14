@@ -10,7 +10,7 @@ from train import *
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
 parser.add_argument('--db', default='mnist', type=str, help='dataset selection')
-parser.add_argument('--noise-rate', default=1e-1, type=float, help='Noise rate')
+parser.add_argument('--noise-rate', default=1e-3, type=float, help='Noise rate')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 # parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
@@ -71,15 +71,7 @@ def main():
         print("NO GPU")
 
     state_info.optimizer_init(args)
-
-    if args.mode is 0:
-        train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
-    elif args.mode is 1:
-        train_Sample2(args, state_info, Noise_Sample_loader, Noise_Test_loader)
-
-    # train_Disc(args, state_info, True_loader, Fake_loader, Noise_Test_loader)
-    # train_Noise(args, state_info, Noise_loader, Test_loader)
-    # train_Base(args, state_info, All_loader, Test_loader)
+    train_NAE(args, state_info, Train_loader, Test_loader)
 
 def dataset_selector(data):
     if data == 'mnist':

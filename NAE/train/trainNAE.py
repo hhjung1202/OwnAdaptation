@@ -13,14 +13,49 @@ import math
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
-def train_Base(args, state_info, All_loader, Test_loader): # all 
+def get_percentage_Fake(Fake_loader):
+
+    correct = torch.tensor(0, dtype=torch.float32)
+    total = torch.tensor(0, dtype=torch.float32)
+
+    for it, (fake, Fy, label_Fy) in enumerate(Fake_loader):
+        resultF = label_Fy.eq(Fy).cpu().type(torch.ByteTensor)
+        correct += float(resultF.sum())
+        total += float(fake.size(0))
+    
+    print('Fake Dataset Percentage', 100. * correct / total)
+    return 100. * correct / total
+
+def Loss_Dot():
+    pass
+
+def Reg_vector():
+    pass
+
+class Memory(object):
+    def __init__(self):
+        pass
+
+    def get_Mean():
+        pass
+
+class MemorySet(object):
+    def __init__(self):
+        self.Set = []
+        pass
+
+    def get_Center():
+        pass
+
+
+def train_NAE(args, state_info, All_loader, Test_loader): # all 
     
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     start_time = time.time()
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
-    mode = 'base'
+    mode = 'NAE'
     utils.default_model_dir = os.path.join(args.dir, mode)
     
     criterion = torch.nn.CrossEntropyLoss()
@@ -48,17 +83,17 @@ def train_Base(args, state_info, All_loader, Test_loader): # all
         total = torch.tensor(0, dtype=torch.float32)
 
         # train
-        state_info.base.train()
+        state_info.NAE.train()
         for it, (All, Ay, label_Ay) in enumerate(Noise_loader):
 
             All, Ay, label_Ay = to_var(All, FloatTensor), to_var(Ay, LongTensor), to_var(label_Ay, LongTensor)
 
-            cls_out = state_info.forward_Base(All)
+            cls_out = state_info.forward_NAE(All)
 
-            state_info.optim_Base.zero_grad()
+            state_info.optim_NAE.zero_grad()
             loss = criterion(cls_out, Ay)
             loss.backward()
-            state_info.optim_Base.step()
+            state_info.optim_NAE.step()
 
             _, pred = torch.max(cls_out.data, 1)
             correct_Noise += float(pred.eq(Ay.data).cpu().sum())
@@ -73,12 +108,12 @@ def train_Base(args, state_info, All_loader, Test_loader): # all
 
         total = torch.tensor(0, dtype=torch.float32)
         # test
-        state_info.base.eval()
+        state_info.NAE.eval()
         for it, (Test, Ty, label_Ty) in enumerate(Test_loader):
 
             Test, Ty, label_Ty = to_var(Test, FloatTensor), to_var(Ty, LongTensor), to_var(label_Ty, LongTensor)
 
-            cls_out = state_info.forward_Base(Test)
+            cls_out = state_info.forward_NAE(Test)
 
             _, pred = torch.max(cls_out.data, 1)
             correct_Test += float(pred.eq(Ty.data).cpu().sum())
@@ -96,7 +131,7 @@ def train_Base(args, state_info, All_loader, Test_loader): # all
 
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
-        state_info.lr_Base.step()
+        state_info.lr_NAE.step()
         utils.print_log('')
 
     now = time.gmtime(time.time() - start_time)

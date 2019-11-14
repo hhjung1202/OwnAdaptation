@@ -3,10 +3,9 @@ from torchvision import datasets, transforms
 import random
 from PIL import Image
 
-
-class MNIST(datasets.MNIST):
+class cifar10(datasets.CIFAR10):
     def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, sample=5000, seed=1234, Task='True'):
-        super(MNIST, self).__init__(root, train=train
+        super(cifar10, self).__init__(root, train=train
             , transform=transform, target_transform=None, download=download)
 
         self.sample = sample
@@ -112,13 +111,15 @@ class MNIST(datasets.MNIST):
         """Return the number of images."""
         return len(self.Set)
 
-def MNIST_loader(args):
+
+
+def CIFAR10_loader(args):
     
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
     
-    print("MNIST Data Loading ...")
-    root = '/home/hhjung/hhjung/MNIST/'
+    print("cifar10 Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
     transform = transforms.Compose([
                                         transforms.Resize(args.img_size),
                                         transforms.ToTensor(),
@@ -127,37 +128,37 @@ def MNIST_loader(args):
     Task = ["True", "Fake", "Noise", "Noise_Test", "All", "Noise_Sample"]
 
     # Discriminator Method for True
-    True_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+    True_dataset = cifar10(root=root, train=True, transform=transform, download=True, 
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[0])
 
     # Discriminator Method for Fake
-    Fake_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+    Fake_dataset = cifar10(root=root, train=True, transform=transform, download=True, 
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[1])
 
     # Proposed Method
-    Noise_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+    Noise_dataset = cifar10(root=root, train=True, transform=transform, download=True, 
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[2])
 
     # Proposed Method Test
-    Noise_Test_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+    Noise_Test_dataset = cifar10(root=root, train=True, transform=transform, download=True, 
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[3])
 
     # Baseline result
-    All_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+    All_dataset = cifar10(root=root, train=True, transform=transform, download=True, 
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[4])
 
     # 5000 Noise Sample Dataset
-    Noise_Sample_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
+    Noise_Sample_dataset = cifar10(root=root, train=True, transform=transform, download=True, 
                                         noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
                                         Task=Task[5])
 
 
-    Test_dataset = MNIST(root=root, train=False, transform=transform, download=True)
+    Test_dataset = cifar10(root=root, train=False, transform=transform, download=True)
 
     True_loader = torch.utils.data.DataLoader(dataset=True_dataset, batch_size=args.batch_size, shuffle=True)
     Fake_loader = torch.utils.data.DataLoader(dataset=Fake_dataset, batch_size=args.batch_size, shuffle=True)
@@ -167,6 +168,38 @@ def MNIST_loader(args):
     All_loader = torch.utils.data.DataLoader(dataset=All_dataset, batch_size=args.batch_size, shuffle=True)
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False)
     return True_loader, Fake_loader, Noise_loader, Noise_Test_loader, Noise_Sample_loader, All_loader, Test_loader, 1, 10
+
+def cifar10_loader():
+    batch_size = 128
+    rgb2grayWeights = [0.2989, 0.5870, 0.1140]
+
+    print("cifar10 Data Loading ...")
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    train_dataset = datasets.CIFAR10(root='../hhjung/cifar10/', train=True, transform=transform_train, download=True)
+
+    test_dataset = datasets.CIFAR10(root='../hhjung/cifar10/', train=False, transform=transform_test)
+
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+
+    return train_loader, test_loader
+
+
+
 
 if __name__=='__main__':
     class e():
@@ -195,3 +228,5 @@ if __name__=='__main__':
     #     print('y', y1)
     #     print('y', y2)
     #     break;
+
+
