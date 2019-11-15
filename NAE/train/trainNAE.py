@@ -32,35 +32,63 @@ def Loss_Dot():
 def Reg_vector():
     pass
 
+def c(n, N):
+    return 9*N / (10*n-N)
+
 class Memory(object):
     def __init__(self):
+        self.N = 0 # size of ALL [max 제한 둬야함]
+
         pass 
         # Torch Tensor로 Concat하면서 CUDA 메모리에 축적하고, 만약 너무 크다면 CPU 메모리로 변환한 후 Concat한다.
         # Index를 두어 최신화 시킬 Index를 Update한다. 1 2 3 4 5 1 2 3 4 5 (이런식으로 Not Push Pop, Circular Queue)
 
 
-    def get_Mean_Var():
+    def get_Mean_Var(self):
         # return mean, var
         pass
 
-    def Insert():
+    def Insert(self):
         pass
 
-    def Calc_CosSim_N():
+    def Calc_CosSim_N(self):
+        self.n = 0 # size of Similar vector
+        pass
         # Cos Similarity 를 쓰지 않고 Normalization을 사용해도 된다.
 
-        pass
+    def Weighted_Mean(self):
+        if self.n <= 0.1 * self.N:
+            return self.mean
+        elif self.n <= 0.4 * self.N:
+            return self.mean * 3
+        else:
+            return self.mean * 9*self.N / (10*self.n - self.N)
 
-    def Weighted_Mean():
-        pass
 
 class MemorySet(object):
     def __init__(self):
-        self.Set = []
-        pass
+        self.Set = {
+            0: Memory(),
+            1: Memory(),
+            2: Memory(),
+            3: Memory(),
+            4: Memory(),
+            5: Memory(),
+            6: Memory(),
+            7: Memory(),
+            8: Memory(),
+            9: Memory(),
+        }
 
-    def get_Center():
-        pass
+    def get_Center(self):
+        Sum = None
+        for i in range(10):
+            if Sum is None:
+                Sum = self.Set[i].Weighted_Mean()
+            else:
+                Sum = Sum + self.Set[i].Weighted_Mean()
+
+        return Sum / 10
 
 
 def train_NAE(args, state_info, All_loader, Test_loader): # all 
