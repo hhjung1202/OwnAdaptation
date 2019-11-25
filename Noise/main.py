@@ -73,7 +73,7 @@ def main():
 
     state_info.optimizer_init(args)
 
-    train_Triple(args, state_info, Noise_Triple_loader, Test_loader)
+    train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)
 
     # if args.mode is 0:
     #     train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader)

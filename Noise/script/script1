@@ -1,11 +1,4 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise00/Rev_F/one --noise-rate 0. --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise10/Rev_F/one --noise-rate 0.1 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise20/Rev_F/one --noise-rate 0.2 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise40/Rev_F/one --noise-rate 0.4 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise30/Rev_F/one --noise-rate 0.3 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise50/Rev_F/one --noise-rate 0.5 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise60/Rev_F/one --noise-rate 0.6 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise70/Rev_F/one --noise-rate 0.7 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise80/Rev_F/one --noise-rate 0.8 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise90/Rev_F/one --noise-rate 0.9 --grad F --gpu 0 --lr 1e-4 --layer 8 --low=-1. --high=1. 1> /dev/null
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise10/Dist10 --dist 0.1 --noise-rate 0.1 --grad T --gpu 3 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise20/Dist10 --dist 0.1 --noise-rate 0.2 --grad T --gpu 3 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise30/Dist10 --dist 0.1 --noise-rate 0.3 --grad T --gpu 3 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&

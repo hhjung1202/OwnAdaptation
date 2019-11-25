@@ -1,10 +1,4 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise10/Rev_T/zero --noise-rate 0.1 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise20/Rev_T/zero --noise-rate 0.2 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise30/Rev_T/zero --noise-rate 0.3 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise40/Rev_T/zero --noise-rate 0.4 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise50/Rev_T/zero --noise-rate 0.5 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise60/Rev_T/zero --noise-rate 0.6 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise70/Rev_T/zero --noise-rate 0.7 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise80/Rev_T/zero --noise-rate 0.8 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient/Noise90/Rev_T/zero --noise-rate 0.9 --grad T --gpu 2 --lr 1e-4 --layer 8 --low=0. --high=1. 1> /dev/null
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise10/Dist30 --dist 0.3 --noise-rate 0.1 --grad T --gpu 3 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise20/Dist30 --dist 0.3 --noise-rate 0.2 --grad T --gpu 3 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise30/Dist30 --dist 0.3 --noise-rate 0.3 --grad T --gpu 3 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
