@@ -1,4 +1,4 @@
 #!/bin/bash
 python3 ../main.py --dir /data2/hhjung/Gradient4/Noise10/Dist20 --dist 0.2 --noise-rate 0.1 --grad T --gpu 1 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
 python3 ../main.py --dir /data2/hhjung/Gradient4/Noise20/Dist20 --dist 0.2 --noise-rate 0.2 --grad T --gpu 1 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/Gradient4/Noise30/Dist20 --dist 0.2 --noise-rate 0.3 --grad T --gpu 1 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/Gradient4/Noise30/Dist20 --dist 0.2 --noise-rate 0.3 --grad T --gpu 1 --lr 1e-4 --layer 8 --low=-0.1 --high=1. 1> /dev/null
