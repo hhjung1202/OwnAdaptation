@@ -25,6 +25,10 @@ class model_optim_state_info(object):
         z, x_h = self.NAE(image)
         return z, x_h
 
+    def test_NAE(self, z):
+        x_h = self.NAE(z, test=True)
+        return x_h
+
     def model_cuda_init(self):
         if torch.cuda.is_available():
             self.NAE = nn.DataParallel(self.NAE).cuda()

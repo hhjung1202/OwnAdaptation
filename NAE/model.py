@@ -47,7 +47,10 @@ class NAE(nn.Module):
         self.Encoder = Encoder(I=I, H=H, latent_size=latent_size)
         self.Decoder = Decoder(I=I, H=H, latent_size=latent_size)
 
-    def forward(self, x):
+    def forward(self, x, test=False):
+        if test:
+            x = self.Decoder(x)
+            return x
         z = self.Encoder(x)
         x = self.Decoder(z)
         return z, x

@@ -41,14 +41,16 @@ class Memory(object):
         # self.alpha = args.alpha
         # Index를 두어 최신화 시킬 Index를 Update한다. 1 2 3 4 5 1 2 3 4 5 (이런식으로 Not Push Pop, Circular Queue)
 
-    def Calc_Vector(self): # After 1 Epoch, it will calculated
-        self.mean_v = self.vector.mean(dim=0)
-        self.var_v = self.vector.var(dim=0)
-        self.len_v = self.mean_v.pow(2).sum().sqrt()
+    def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
+        mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
+        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
+        self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
+        self.sigma_v = self.vector.var(dim=0).sqrt()
+        self.len_v = len_mean
 
     def Calc_Memory(self): # After 1 Epoch, it will calculated
         self.mean = self.z.mean(dim=0)
-        self.var = self.z.var(dim=0)
+        self.sigma = self.z.var(dim=0).sqrt()
         return self.mean
 
     def Insert_memory(self, z): # Actual Function
@@ -62,29 +64,6 @@ class Memory(object):
             self.index2 = 0
         self.vector[self.index2] = vector
         self.index2 = self.index2 + 1
-
-    # def Calc_CosSim_N(self): # After 1 Epoch, it will calculated
-
-    #     cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
-    #     mu_repeat = self.mean.repeat([self.N, 1])
-    #     simm = cos(self.z ,mu_repeat)
-    #     self.n = int(torch.sum(simm > self.beta))
-    #     # Cos Similarity 를 쓰지 않고 Normalization을 사용해도 된다.
-    #     # Variance를 고려해야만 한다. 하나의 돌출변수로 인한 Cosine Sim 변화율이 너무 크다.
-
-
-    # def Weighted_Mean(self): # Actual Function, After 1 Epoch, it will calculated
-    #     self.Calc_Memory()
-
-
-    #     return self.mean * self.alpha
-
-        # if self.n <= 0.1 * self.N:
-        #     return self.mean
-        # elif self.n <= 0.4 * self.N:
-        #     return self.mean * 3
-        # else:
-        #     return self.mean * 9*self.N / (10*self.n - self.N)
 
 
 class MemorySet(object):
@@ -108,11 +87,11 @@ class MemorySet(object):
             self.Set[i].Calc_Vector()
 
     def Batch_Vector_Insert(self, z, y):
-        vector = z - self.T
-        for i in range(vector.size(0)):
+        vectorSet = z - self.T
+        for i in range(vectorSet.size(0)):
             Noise_label = y[i]
-            data = vector[i]
-            self.Set[Noise_label].Insert_vector(data)
+            vector = vectorSet[i]
+            self.Set[Noise_label].Insert_vector(vector)
 
     def Calc_Center(self):
         self.T = None
@@ -125,16 +104,16 @@ class MemorySet(object):
         self.T = self.T / self.clsN
 
     def get_DotLoss(self, z, y, reduction='mean', reverse=False):
-        vector = z - self.T
+        vectorSet = z - self.T
         if reverse:
-            vector = -vector
+            vectorSet = -vectorSet
         
         loss = None
         for i in range(z.size(0)):
             label = y[i]
-            data = vector[i]
-            len_v = data.pow(2).sum().sqrt()
-            Dot = torch.sum(data * self.Set[label].mean_v)
+            vector = vectorSet[i]
+            len_v = vector.pow(2).sum().sqrt()
+            Dot = torch.sum(vector * self.Set[label].mean_v)
             if loss is None:
                 loss = len_v * self.Set[label].len_v - Dot
             else:
@@ -160,6 +139,25 @@ class MemorySet(object):
 
         Regularizer = ss - s
         return Regularizer
+
+    def Calc_Test_Similarity(self, z, y):
+        vectorSet = z - self.T
+        Sim_scale = None
+        Sim_vector = None
+        cos = torch.nn.CosineSimilarity(dim=0)
+        for i in range(z.size(0)):
+            label = y[i]
+            vector = vectorSet[i]
+
+            if Sim_vector is None:
+                Sim_scale = torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
+                Sim_vector = cos(vector, self.Set[label].mean_v)
+            else:
+                Sim_scale += torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
+                Sim_vector += cos(vector, self.Set[label].mean_v)
+
+        return Sim_scale, Sim_vector
+
 
 def train_NAE(args, state_info, Train_loader, Test_loader): # all 
 
@@ -188,14 +186,9 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         args.last_epoch = start_epoch
         state_info.learning_scheduler_init(args, mode)
 
-    utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE')
+    utils.print_log('Type, Epoch, Batch, total, Recon, Noise, Random, Regular')
 
     for epoch in range(start_epoch, args.epoch):
-
-        correct_Noise = torch.tensor(0, dtype=torch.float32)
-        correct_Real = torch.tensor(0, dtype=torch.float32)
-        correct_Test = torch.tensor(0, dtype=torch.float32)
-        total = torch.tensor(0, dtype=torch.float32)
 
         # train
         state_info.NAE.train()
@@ -218,33 +211,37 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             state_info.optim_NAE.step()
 
             if it % 10 == 0:
-                utils.print_log('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
-                print('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))
+                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item()))
+                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item()))
 
         total = torch.tensor(0, dtype=torch.float32)
+        Similarity_Scale = torch.tensor(0, dtype=torch.float32)
+        Similarity_Vector = torch.tensor(0, dtype=torch.float32)
+
         # test
         state_info.NAE.eval()
-        for it, (Test, Ty, label_Ty) in enumerate(Test_loader):
+        for it, (x, y, label) in enumerate(Test_loader):
 
-            Test, Ty, label_Ty = to_var(Test, FloatTensor), to_var(Ty, LongTensor), to_var(label_Ty, LongTensor)
+            x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
-            cls_out = state_info.forward_NAE(Test)
+            z, x_h = state_info.forward_NAE(x)
+            Sim_scale, Sim_vector = Memory.Calc_Test_Similarity(z, y)
 
-            _, pred = torch.max(cls_out.data, 1)
-            correct_Test += float(pred.eq(Ty.data).cpu().sum())
-            total += float(Noise.size(0))
+            Similarity_Scale += Sim_scale
+            Similarity_Vector += Sim_vector
 
-        utils.print_log('main Test, {}, {}, {:.3f}'
-              .format(epoch, it, 100.*correct_Test / total))
-        print('main Test, {}, {}, {:.3f}'
-              .format(epoch, it, 100.*correct_Test / total))
+            total += float(x.size(0))
 
-        if 100.*correct_Test / total > best_prec_result:
-            best_prec_result = 100.*correct_Test / total
-            filename = 'checkpoint_best.pth.tar'
-            utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
+        utils.print_log('Type, Epoch, Batch, Scale, Vector')
+
+        utils.print_log('Test, {}, {}, {:.6f}, {:.6f}'
+              .format(epoch, it, Similarity_Scale / total, Similarity_Vector / total))
+        print('Test, {}, {}, {:.6f}, {:.6f}'
+              .format(epoch, it, Similarity_Scale / total, Similarity_Vector / total))
+
+        Generation(args, state_info, Memory, epoch)
 
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
@@ -254,6 +251,46 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     now = time.gmtime(time.time() - start_time)
     utils.print_log('Best Prec : {:.4f}'.format(best_prec_result.item()))
     utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
+
+def Generation(args, state_info, Memory, epoch):
+
+    img_path = utils.make_directory(os.path.join(utils.default_model_dir, 'images'))
+
+    Rand = torch.rand(10)
+    ImageSet = []
+    for i in range(args.clsN):
+        r = Rand[i]
+        z = Memory.Set[i].sigma_v * r + self.Set[i].mean_v + Memory.T
+        x_h = state_info.test_NAE(z)
+        ImageSet.append(x_h.view(1,-1,32,32))
+
+    z = Memory.T
+    x_h = state_info.test_NAE(z)
+    ImageSet.append(x_h.view(1,-1,32,32))
+    ImageSet.append(x_h.view(1,-1,32,32))
+
+    ImageSet = torch.cat(ImageSet, dim=0)
+    merge = merge_images(to_data(ImageSet))
+
+    save_image(merge.data, os.path.join(img_path, '%d.png' % epoch), normalize=True)
+
+def to_data(x):
+    """Converts variable to numpy."""
+    if torch.cuda.is_available():
+        x = x.cpu()
+    return x.data.numpy()
+
+def merge_images(imageSet, row=3, col=4):
+    _, _, h, w = imageSet.shape
+    merged = np.zeros([1, row*h, col*w])
+    for idx, (s) in enumerate(imageSet):
+        i = idx // row
+        j = idx % col
+        if i is row:
+            break
+        merged[:, i*h:(i+1)*h, (j)*w:(j+1)*w] = s
+
+    return torch.from_numpy(merged)
 
 # adversarial_loss = torch.nn.BCELoss()
 # criterion_GAN = torch.nn.MSELoss()
