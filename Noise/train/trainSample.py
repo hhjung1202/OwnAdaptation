@@ -12,6 +12,22 @@ def to_var(x, dtype):
 def WeightedGradientGamma(weight, low=-1, high=1):
     return weight * (high-low) + low
 
+def SetDistinguishPercentage(weight, N=0.3):
+    batch_size = weight.size(0)
+    sample_size = int(batch_size * N)
+    selection = torch.randperm(batch_size)
+    weight_P = ZeroFromToOne(weight, selection[:sample_size])
+    return weight_P
+
+def ZeroFromToOne(weight, selection):
+    for i in selection:
+        if weight[i] == 1:
+            weight[i] = 0
+        else:
+            weight[i] = 1
+    return weight
+
+
 # def WeightedExponentialGradientGamma(weight, low=-1, high=1):
 #     return weight * (high-low) + low
 
@@ -57,8 +73,9 @@ def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # al
             Sample, Sy, label_Sy = to_var(Sample, FloatTensor), to_var(Sy, LongTensor), to_var(label_Sy, LongTensor)
 
             if args.grad == "T":
-                weight = label_Sy.eq(Sy).type(FloatTensor).view(-1,1)
-                Gamma = WeightedGradientGamma(weight, low=args.low, high=args.high)
+                weight = label_Sy.eq(Sy).type(FloatTensor)
+                weight_P = SetDistinguishPercentage(weight, N=args.dist).view(-1,1)
+                Gamma = WeightedGradientGamma(weight_P, low=args.low, high=args.high)
 
             elif args.grad == "F":
                 Gamma = 1

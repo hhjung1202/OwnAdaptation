@@ -26,72 +26,144 @@ def get_percentage_Fake(Fake_loader):
     print('Fake Dataset Percentage', 100. * correct / total)
     return 100. * correct / total
 
-def Loss_Dot():
-    pass
 
-def Reg_vector():
-    pass
-
-def c(n, N):
-    return 9*N / (10*n-N)
-
+# args.maxN
+# args.alpha weight Upsample
+# args.beta cos simm param
 class Memory(object):
-    def __init__(self):
-        self.N = 0 # size of ALL [max 제한 둬야함]
-
-        pass 
-        # Torch Tensor로 Concat하면서 CUDA 메모리에 축적하고, 만약 너무 크다면 CPU 메모리로 변환한 후 Concat한다.
+    def __init__(self, args):
+        self.N = args.maxN # size of ALL [max 제한 둬야함]
+        self.index = 0
+        self.index2 = 0
+        self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
+        self.vector = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
+        # self.beta = args.beta
+        # self.alpha = args.alpha
         # Index를 두어 최신화 시킬 Index를 Update한다. 1 2 3 4 5 1 2 3 4 5 (이런식으로 Not Push Pop, Circular Queue)
 
+    def Calc_Vector(self): # After 1 Epoch, it will calculated
+        self.mean_v = self.vector.mean(dim=0)
+        self.var_v = self.vector.var(dim=0)
+        self.len_v = self.mean_v.pow(2).sum().sqrt()
 
-    def get_Mean_Var(self):
-        # return mean, var
-        pass
+    def Calc_Memory(self): # After 1 Epoch, it will calculated
+        self.mean = self.z.mean(dim=0)
+        self.var = self.z.var(dim=0)
+        return self.mean
 
-    def Insert(self):
-        pass
+    def Insert_memory(self, z): # Actual Function
+        if self.index >= self.N:
+            self.index = 0
+        self.z[self.index] = z
+        self.index = self.index + 1
+        
+    def Insert_vector(self, vector): # Actual Function
+        if self.index2 >= self.N:
+            self.index2 = 0
+        self.vector[self.index2] = vector
+        self.index2 = self.index2 + 1
 
-    def Calc_CosSim_N(self):
-        self.n = 0 # size of Similar vector
-        pass
-        # Cos Similarity 를 쓰지 않고 Normalization을 사용해도 된다.
+    # def Calc_CosSim_N(self): # After 1 Epoch, it will calculated
 
-    def Weighted_Mean(self):
-        if self.n <= 0.1 * self.N:
-            return self.mean
-        elif self.n <= 0.4 * self.N:
-            return self.mean * 3
-        else:
-            return self.mean * 9*self.N / (10*self.n - self.N)
+    #     cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
+    #     mu_repeat = self.mean.repeat([self.N, 1])
+    #     simm = cos(self.z ,mu_repeat)
+    #     self.n = int(torch.sum(simm > self.beta))
+    #     # Cos Similarity 를 쓰지 않고 Normalization을 사용해도 된다.
+    #     # Variance를 고려해야만 한다. 하나의 돌출변수로 인한 Cosine Sim 변화율이 너무 크다.
+
+
+    # def Weighted_Mean(self): # Actual Function, After 1 Epoch, it will calculated
+    #     self.Calc_Memory()
+
+
+    #     return self.mean * self.alpha
+
+        # if self.n <= 0.1 * self.N:
+        #     return self.mean
+        # elif self.n <= 0.4 * self.N:
+        #     return self.mean * 3
+        # else:
+        #     return self.mean * 9*self.N / (10*self.n - self.N)
 
 
 class MemorySet(object):
-    def __init__(self):
-        self.Set = {
-            0: Memory(),
-            1: Memory(),
-            2: Memory(),
-            3: Memory(),
-            4: Memory(),
-            5: Memory(),
-            6: Memory(),
-            7: Memory(),
-            8: Memory(),
-            9: Memory(),
-        }
+    def __init__(self, args):
+        self.clsN = args.clsN
+        self.Set = []
+        for i in range(self.clsN):
+            self.Set.append(Memory(args=args))
 
-    def get_Center(self):
-        Sum = None
-        for i in range(10):
-            if Sum is None:
-                Sum = self.Set[i].Weighted_Mean()
+    def Batch_Insert(self, z, y):
+
+        for i in range(z.size(0)):
+            Noise_label = y[i]
+            data = z[i]
+            self.Set[Noise_label].Insert_memory(data)
+
+        self.Calc_Center()
+        self.Batch_Vector_Insert(z, y)
+
+        for i in range(self.clsN):
+            self.Set[i].Calc_Vector()
+
+    def Batch_Vector_Insert(self, z, y):
+        vector = z - self.T
+        for i in range(vector.size(0)):
+            Noise_label = y[i]
+            data = vector[i]
+            self.Set[Noise_label].Insert_vector(data)
+
+    def Calc_Center(self):
+        self.T = None
+        for i in range(self.clsN):
+            if self.T is None:
+                self.T = self.Set[i].Calc_Memory()
             else:
-                Sum = Sum + self.Set[i].Weighted_Mean()
+                self.T = self.T + self.Set[i].Calc_Memory()
 
-        return Sum / 10
+        self.T = self.T / self.clsN
 
+    def get_DotLoss(self, z, y, reduction='mean', reverse=False):
+        vector = z - self.T
+        if reverse:
+            vector = -vector
+        
+        loss = None
+        for i in range(z.size(0)):
+            label = y[i]
+            data = vector[i]
+            len_v = data.pow(2).sum().sqrt()
+            Dot = torch.sum(data * self.Set[label].mean_v)
+            if loss is None:
+                loss = len_v * self.Set[label].len_v - Dot
+            else:
+                loss += len_v * self.Set[label].len_v - Dot
+        if reduction == "mean":
+            return loss / z.size(0)
+        elif reduction == "sum":
+            return loss
 
-def train_NAE(args, state_info, All_loader, Test_loader): # all 
+    def get_Regularizer(self):
+        s = None
+        ss = None
+        for i in range(self.clsN):
+            if s is None:
+                s = self.Set[i].len_v
+                ss = self.Set[i].len_v.pow(2)
+            else:
+                s += self.Set[i].len_v
+                ss += self.Set[i].len_v.pow(2)
+
+        s = (s / self.clsN).pow(2)   # E(X)^2
+        ss = ss / self.clsN # E(X^2)
+
+        Regularizer = ss - s
+        return Regularizer
+
+def train_NAE(args, state_info, Train_loader, Test_loader): # all 
+
+    Memory = MemorySet(args=args)
     
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     start_time = time.time()
@@ -101,7 +173,8 @@ def train_NAE(args, state_info, All_loader, Test_loader): # all
     mode = 'NAE'
     utils.default_model_dir = os.path.join(args.dir, mode)
     
-    criterion = torch.nn.CrossEntropyLoss()
+    criterion_BCE = torch.nn.BCELoss(reduction='mean')
+    # criterion = torch.nn.CrossEntropyLoss()
 
     start_epoch = 0
     checkpoint = utils.load_checkpoint(utils.default_model_dir)    
@@ -116,7 +189,6 @@ def train_NAE(args, state_info, All_loader, Test_loader): # all
         state_info.learning_scheduler_init(args, mode)
 
     utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE')
-    state_info.set_train_mode()
 
     for epoch in range(start_epoch, args.epoch):
 
@@ -127,22 +199,24 @@ def train_NAE(args, state_info, All_loader, Test_loader): # all
 
         # train
         state_info.NAE.train()
-        for it, (All, Ay, label_Ay) in enumerate(Noise_loader):
+        for it, (x, y, label) in enumerate(Train_loader):
 
-            All, Ay, label_Ay = to_var(All, FloatTensor), to_var(Ay, LongTensor), to_var(label_Ay, LongTensor)
-
-            cls_out = state_info.forward_NAE(All)
+            x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
+            rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
 
             state_info.optim_NAE.zero_grad()
-            loss = criterion(cls_out, Ay)
-            loss.backward()
+            
+            z, x_h = state_info.forward_NAE(x)
+            Memory.Batch_Insert(z, y)
+            loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
+            loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
+            reg = Memory.get_Regularizer()
+            loss = criterion_BCE(x_h, x)
+            total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+            total.backward()
+
             state_info.optim_NAE.step()
 
-            _, pred = torch.max(cls_out.data, 1)
-            correct_Noise += float(pred.eq(Ay.data).cpu().sum())
-            correct_Real += float(pred.eq(label_Ay.data).cpu().sum())
-            total += float(All.size(0))
-            
             if it % 10 == 0:
                 utils.print_log('main Train, {}, {}, {:.6f}, {:.3f}, {:.3f}'
                       .format(epoch, it, loss.item(), 100.*correct_Noise / total, 100.*correct_Real / total))

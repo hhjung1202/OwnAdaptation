@@ -19,11 +19,11 @@ class model_optim_state_info(object):
         torch.cuda.manual_seed(args.seed)
         
         self.init_lr = args.lr
-        self.NAE = NAE(I=32, H=400, latent_size=64)
+        self.NAE = NAE(I=args.img_size, H=args.h, latent_size=args.z)
         
     def forward_NAE(self, image):
-        z, x = self.NAE(image)
-        return z, x
+        z, x_h = self.NAE(image)
+        return z, x_h
 
     def model_cuda_init(self):
         if torch.cuda.is_available():

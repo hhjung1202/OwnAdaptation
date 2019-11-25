@@ -33,6 +33,8 @@ parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first 
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
 
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
+parser.add_argument('--h', type=int, default=400, help='hidden size')
+parser.add_argument('--z', type=int, default=64, help='latent feature')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
 parser.add_argument('--decay-epoch', default=100, type=int, metavar='N', help='epoch from which to start lr decay')
