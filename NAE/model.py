@@ -32,7 +32,7 @@ class Decoder(nn.Module):
             nn.Linear(latent_size, H),
             nn.ReLU(inplace=True),
             nn.Linear(H, I*I),
-            nn.Sigmoid()
+            nn.Sigmoid(),
             UnFlatten(size=32),
         )
     def forward(self, x):
