@@ -186,7 +186,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         with torch.autograd.detect_anomaly():
             Memory.Batch_Insert(z, y)
             loss = criterion_BCE(x_h, x)
-            loss.backward()
+            loss.backward(retain_graph=True)
 
         state_info.optim_NAE.step()
 
@@ -215,7 +215,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
                 reg = Memory.get_Regularizer()
                 loss = criterion_BCE(x_h, x)
                 total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-                total.backward()
+                total.backward(retain_graph=True)
 
             state_info.optim_NAE.step()
 
