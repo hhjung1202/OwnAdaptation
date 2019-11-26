@@ -171,7 +171,7 @@ def MNIST_loader(args):
 
     # 5000 Noise Sample Dataset
     Noise_Sample_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
-                                        noise_rate=args.noise_rate, sample=args.sample, seed=args.seed, 
+                                        noise_rate=args.noise_rate, dist_rate=args.dist, sample=args.sample, seed=args.seed, 
                                         Task=Task[5])
 
     # 5000 Noise Sample Dataset
