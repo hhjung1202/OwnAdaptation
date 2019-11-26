@@ -13,6 +13,7 @@ parser.add_argument('--db', default='mnist', type=str, help='dataset selection')
 parser.add_argument('--noise-rate', default=1e-3, type=float, help='Noise rate')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
+parser.add_argument('--maxN', default=500, type=int, help='Max Buffer Size')
 # parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
 # parser.add_argument('--low', default=-1., type=float, help='Weighted Gradient Gamma Low value')
 # parser.add_argument('--high', default=1., type=float, help='Weighted Gradient Gamma High value')
@@ -24,7 +25,7 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 parser.add_argument('--d-epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 
 parser.add_argument('--epoch', default=165, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('-b', '--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 256)')
+parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--gamma', default=0.1, type=float, help='learning gamma')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
@@ -37,11 +38,9 @@ parser.add_argument('--h', type=int, default=400, help='hidden size')
 parser.add_argument('--z', type=int, default=64, help='latent feature')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
-parser.add_argument('--decay-epoch', default=100, type=int, metavar='N', help='epoch from which to start lr decay')
-parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
-parser.add_argument('--cycle', type=float, default=10.0, help='Cycle Consistency Parameter')
-parser.add_argument('--identity', type=float, default=5.0, help='Identity Consistency Parameter')
-parser.add_argument('--cls', type=float, default=1.0, help='[A,y] -> G_AB -> G_BA -> [A_,y] Source Class Consistency Parameter')
+parser.add_argument('--t1', type=float, default=1.0, help='Noise label Vectorization')
+parser.add_argument('--t2', type=float, default=1.0, help='Random label Vectorization')
+parser.add_argument('--t3', type=float, default=1.0, help='Vector length Consistency Regularization')
 # parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
@@ -59,6 +58,8 @@ def main():
     args.clsN = clsN
     args.milestones = [80,120]
     args.Dmilestones = [30,60]
+    if args.t2 == -1:
+        args.t2 = args.t1
 
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)

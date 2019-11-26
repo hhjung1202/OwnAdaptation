@@ -27,9 +27,6 @@ def get_percentage_Fake(Fake_loader):
     return 100. * correct / total
 
 
-# args.maxN
-# args.alpha weight Upsample
-# args.beta cos simm param
 class Memory(object):
     def __init__(self, args):
         self.N = args.maxN # size of ALL [max 제한 둬야함]
