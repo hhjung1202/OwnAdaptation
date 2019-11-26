@@ -8,6 +8,7 @@ class Flatten(nn.Module):
 
 class UnFlatten(nn.Module):
     def __init__(self, size=1):
+        super(UnFlatten, self).__init__()
         self.size = size
     def forward(self, x):
         return x.view(x.size(0), -1, self.size, self.size)
