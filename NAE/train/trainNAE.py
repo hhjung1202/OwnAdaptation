@@ -29,14 +29,11 @@ def get_percentage_Fake(Fake_loader):
 
 class Memory(object):
     def __init__(self, args):
-        self.N = args.maxN # size of ALL [max 제한 둬야함]
+        self.N = args.maxN # size of ALL Buffer
         self.index = 0
         self.index2 = 0
         self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
         self.vector = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
-        # self.beta = args.beta
-        # self.alpha = args.alpha
-        # Index를 두어 최신화 시킬 Index를 Update한다. 1 2 3 4 5 1 2 3 4 5 (이런식으로 Not Push Pop, Circular Queue)
 
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
