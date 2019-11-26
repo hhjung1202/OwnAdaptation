@@ -58,7 +58,7 @@ class model_optim_state_info(object):
             self.lr_NAE = optim.lr_scheduler.MultiStepLR(self.optim_NAE, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
     def load_state_dict(self, checkpoint, mode):
-        elif mode == "NAE":
+        if mode == "NAE":
             self.NAE.load_state_dict(checkpoint['weight'])
             self.optim_NAE.load_state_dict(checkpoint['optim'])
 
