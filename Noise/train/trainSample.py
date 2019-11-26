@@ -73,9 +73,10 @@ def train_Sample(args, state_info, Noise_Sample_loader, Noise_Test_loader): # al
             Sample, Sy, label_Sy = to_var(Sample, FloatTensor), to_var(Sy, LongTensor), to_var(label_Sy, LongTensor)
 
             if args.grad == "T":
-                weight = label_Sy.eq(Sy).type(FloatTensor)
-                weight_P = SetDistinguishPercentage(weight, N=args.dist).view(-1,1)
-                Gamma = WeightedGradientGamma(weight_P, low=args.low, high=args.high)
+                weight = label_Sy.eq(Sy).type(FloatTensor).view(-1,1)
+                # weight_P = SetDistinguishPercentage(weight, N=args.dist).view(-1,1)
+                # Gamma = WeightedGradientGamma(weight_P, low=args.low, high=args.high)
+                Gamma = WeightedGradientGamma(weight, low=args.low, high=args.high)
 
             elif args.grad == "F":
                 Gamma = 1

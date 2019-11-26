@@ -5,12 +5,13 @@ from PIL import Image
 
 
 class MNIST(datasets.MNIST):
-    def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, sample=5000, seed=1234, Task='True'):
+    def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, dist_rate=0.1, sample=5000, seed=1234, Task='True'):
         super(MNIST, self).__init__(root, train=train
             , transform=transform, target_transform=None, download=download)
 
         self.sample = sample
         self.noise_rate = noise_rate
+        self.dist_rate = dist_rate
         self.Task = Task
 
         self.data_shuffle = list(zip(self.data, self.targets))
@@ -72,10 +73,17 @@ class MNIST(datasets.MNIST):
             elif self.Task == "Noise_Sample": # 5000 N% Noise labeled Set [N% Noise labeled Set]
                 img, real_target = self.Set[index]
                 noise_sample = int(self.noise_rate * len(self.Set))
+                dist_sample = int(self.dist_rate * len(self.Set))
                 if index < noise_sample:
                     target = self.Intended_Random_Noise_Label(real_target)
                 else:
                     target = real_target
+
+                if index < dist_sample//2:
+                    real_target = target
+
+                if index >= len(self.Set) - dist_sample//2:
+                    real_target = self.Intended_Random_Noise_Label(real_target)
 
             elif self.Task == "Noise_Triple": # All N% Noise labeled Set
                 img, real_target = self.Set[index]
