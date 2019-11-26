@@ -105,31 +105,24 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
         
-        loss = None
+        loss = torch.tensor(0, device='cuda', dtype=torch.float32)
         for i in range(z.size(0)):
             label = y[i]
             vector = vectorSet[i]
             len_v = vector.pow(2).sum().sqrt()
             Dot = torch.sum(vector * self.Set[label].mean_v)
-            if loss is None:
-                loss = len_v * self.Set[label].len_v - Dot
-            else:
-                loss += len_v * self.Set[label].len_v - Dot
+            loss += len_v * self.Set[label].len_v - Dot
         if reduction == "mean":
             return loss / z.size(0)
         elif reduction == "sum":
             return loss
 
     def get_Regularizer(self):
-        s = None
-        ss = None
+        s = torch.tensor(0, device='cuda', dtype=torch.float32)
+        ss = torch.tensor(0, device='cuda', dtype=torch.float32)
         for i in range(self.clsN):
-            if s is None:
-                s = self.Set[i].len_v
-                ss = self.Set[i].len_v.pow(2)
-            else:
-                s += self.Set[i].len_v
-                ss += self.Set[i].len_v.pow(2)
+            s += self.Set[i].len_v
+            ss += self.Set[i].len_v.pow(2)
 
         s = (s / self.clsN).pow(2)   # E(X)^2
         ss = ss / self.clsN # E(X^2)
@@ -139,19 +132,15 @@ class MemorySet(object):
 
     def Calc_Test_Similarity(self, z, y):
         vectorSet = z - self.T
-        Sim_scale = None
-        Sim_vector = None
+        Sim_scale = torch.tensor(0, device='cuda', dtype=torch.float32)
+        Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
         cos = torch.nn.CosineSimilarity(dim=0)
         for i in range(z.size(0)):
             label = y[i]
             vector = vectorSet[i]
 
-            if Sim_vector is None:
-                Sim_scale = torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
-                Sim_vector = cos(vector, self.Set[label].mean_v)
-            else:
-                Sim_scale += torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
-                Sim_vector += cos(vector, self.Set[label].mean_v)
+            Sim_scale += torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
+            Sim_vector += cos(vector, self.Set[label].mean_v)
 
         return Sim_scale, Sim_vector
 
