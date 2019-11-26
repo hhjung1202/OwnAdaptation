@@ -81,7 +81,7 @@ def MNIST_loader(args):
 
     Test_dataset = MNIST(root=root, train=False, transform=transform, download=True)
 
-    Train_loader = torch.utils.data.DataLoader(dataset=All_dataset, batch_size=args.batch_size, shuffle=True)
+    Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True)
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False)
     return Train_loader, Test_loader, 1, 10
 
