@@ -174,6 +174,28 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
     utils.print_log('Type, Epoch, Batch, total, Recon, Noise, Random, Regular')
 
+    # Init Learning
+    for it, (x, y, label) in enumerate(Train_loader):
+
+        x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
+        rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
+
+        state_info.optim_NAE.zero_grad()
+        
+        z, x_h = state_info.forward_NAE(x)
+        with torch.autograd.detect_anomaly():
+            Memory.Batch_Insert(z, y)
+            loss = criterion_BCE(x_h, x)
+            loss.backward()
+
+        state_info.optim_NAE.step()
+
+        if it % 10 == 0:
+            utils.print_log('Init, {}, {:.6f}'
+                  .format(it, loss.item()))
+            print('Init, {}, {:.6f}'
+                  .format(it, loss.item()))
+
     for epoch in range(start_epoch, args.epoch):
 
         # train
