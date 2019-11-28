@@ -268,7 +268,7 @@ def Generation(args, state_info, Memory, epoch):
     ImageSet = []
     for i in range(args.clsN):
         r = Rand[i]
-        z = Memory.Set[i].sigma_v * r + self.Set[i].mean_v + Memory.T
+        z = Memory.Set[i].sigma_v * r + Memory.Set[i].mean_v + Memory.T
         x_h = state_info.test_NAE(z)
         ImageSet.append(x_h.view(1,-1,32,32))
 
