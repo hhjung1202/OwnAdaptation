@@ -223,10 +223,9 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         state_info.optim_NAE.zero_grad()
         
         z, x_h = state_info.forward_NAE(x)
-        with torch.autograd.detect_anomaly():
-            Memory.Batch_Insert(z, y)
-            loss = criterion_BCE(x_h, x)
-            loss.backward(retain_graph=True)
+        Memory.Batch_Insert(z, y)
+        loss = criterion_BCE(x_h, x)
+        loss.backward(retain_graph=True)
 
         state_info.optim_NAE.step()
 
@@ -281,8 +280,16 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
             starttime = print_time_relay(starttime, 'Main : Num 6')
 
-            total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-            total.backward(retain_graph=True)
+            # total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+            # total.backward(retain_graph=True)
+            loss.backward(retain_graph=True)
+            t = print_time_relay(starttime, 'Main : Loss1')
+            loss_N.backward(retain_graph=True)
+            t = print_time_relay(t, 'Main : Loss Noise')
+            loss_R.backward(retain_graph=True)
+            t = print_time_relay(t, 'Main : Loss Random')
+            reg.backward(retain_graph=True)
+            t = print_time_relay(t, 'Main : Regularizer')
 
             starttime = print_time_relay(starttime, 'Main : Num 7')
 
