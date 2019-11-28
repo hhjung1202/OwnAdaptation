@@ -193,6 +193,9 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             print('Init, {}, {:.6f}'
                   .format(it, loss.item()))
 
+        Generation(args, state_info, Memory, epoch)
+
+
     for epoch in range(start_epoch, args.epoch):
 
         # train
@@ -205,14 +208,13 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             state_info.optim_NAE.zero_grad()
             
             z, x_h = state_info.forward_NAE(x)
-            with torch.autograd.detect_anomaly():
-                Memory.Batch_Insert(z, y)
-                loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
-                loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
-                reg = Memory.get_Regularizer()
-                loss = criterion_BCE(x_h, x)
-                total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-                total.backward(retain_graph=True)
+            Memory.Batch_Insert(z, y)
+            loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
+            loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
+            reg = Memory.get_Regularizer()
+            loss = criterion_BCE(x_h, x)
+            total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+            total.backward(retain_graph=True)
 
             state_info.optim_NAE.step()
 
