@@ -215,6 +215,8 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     # Init Learning
     for it, (x, y, label) in enumerate(Train_loader):
 
+        inittime = time.time()
+
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
         rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
 
@@ -234,6 +236,9 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             print('Init, {}, {:.6f}'
                   .format(it, loss.item()))
 
+        print_time(inittime, 'Init main : Num 8')
+
+
         if it>40:
             break;
 
@@ -243,6 +248,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         state_info.NAE.train()
         for it, (x, y, label) in enumerate(Train_loader):
 
+            inittime = time.time()
 
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
             rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
@@ -282,6 +288,8 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
 
             state_info.optim_NAE.step()
+
+            print_time(inittime, 'Main : Num 8')
 
             break;
 
