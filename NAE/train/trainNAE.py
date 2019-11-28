@@ -193,7 +193,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             print('Init, {}, {:.6f}'
                   .format(it, loss.item()))
 
-        Generation(args, state_info, Memory, epoch)
+        Generation(args, state_info, Memory, 0)
 
 
     for epoch in range(start_epoch, args.epoch):
