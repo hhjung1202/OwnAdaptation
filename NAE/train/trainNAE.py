@@ -269,12 +269,11 @@ def Generation(args, state_info, Memory, epoch):
     for i in range(args.clsN):
         r = Rand[i]
         z = Memory.Set[i].sigma_v * r + Memory.Set[i].mean_v + Memory.T
-        print(z.size())
-        x_h = state_info.test_NAE(z)
+        x_h = state_info.test_NAE(z.view(1,-1))
         ImageSet.append(x_h.view(1,-1,32,32))
 
     z = Memory.T
-    x_h = state_info.test_NAE(z)
+    x_h = state_info.test_NAE(z.view(1,-1))
     ImageSet.append(x_h.view(1,-1,32,32))
     ImageSet.append(x_h.view(1,-1,32,32))
 

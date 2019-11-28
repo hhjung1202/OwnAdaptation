@@ -34,7 +34,7 @@ class Decoder(nn.Module):
             nn.ReLU(inplace=True),
             nn.Linear(H, I*I),
             nn.Sigmoid(),
-            UnFlatten(size=32),
+            UnFlatten(size=I),
         )
     def forward(self, x):
         x = self.model(x)
