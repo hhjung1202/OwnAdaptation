@@ -35,7 +35,7 @@ class Memory(object):
         mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
         len_mean = self.vector.clone().pow(2).sum(dim=1).sqrt().mean()
         self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
-        self.sigma_v = self.vector.clone().var(dim=0).clone().sqrt().clone()
+        self.sigma_v = self.vector.var(dim=0).sqrt()
         self.len_v = len_mean.clone()
 
         print_time(starttime, 'Memory : Calc_Vector')
