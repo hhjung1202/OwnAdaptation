@@ -32,7 +32,7 @@ class Memory(object):
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
 
-        mean_len = self.vector.mean(dim=0).pow(2).sum().clone().sqrt().clone() + eps
+        mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt().clone() + eps
         len_mean = self.vector.clone().pow(2).clone().sum(dim=1).clone().sqrt().clone().mean().clone()
         self.mean_v = self.vector.clone().mean(dim=0).clone() * len_mean.clone() / mean_len.clone()
         self.sigma_v = self.vector.clone().var(dim=0).clone().sqrt().clone()
