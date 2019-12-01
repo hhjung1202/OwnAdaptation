@@ -101,9 +101,9 @@ class MemorySet(object):
 
         for i in range(self.clsN):
             self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v.clone()
-            self.len_v_Set[i] = self.Set[i].len_v.clone()
-            self.sigma_v_Set[i] = self.Set[i].sigma_v.clone()
+            self.mean_v_Set[i] = self.Set[i].mean_v.detach()
+            self.len_v_Set[i] = self.Set[i].len_v.detach()
+            self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
         
         starttime = print_time_relay(starttime, 'MemorySet : Batch_Insert, Num 4')
 
@@ -136,17 +136,17 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
 
-        # len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        # Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        # loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
+        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
+        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
+        loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
 
-        loss = torch.tensor(0, device='cuda', dtype=torch.float32)
-        for i in range(z.size(0)):
-            label = y[i]
-            vector = vectorSet[i]
-            len_v = vector.pow(2).sum().sqrt()
-            Dot = torch.sum(vector * self.Set[label].mean_v)
-            loss += len_v * self.Set[label].len_v - Dot
+        # loss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # for i in range(z.size(0)):
+        #     label = y[i]
+        #     vector = vectorSet[i]
+        #     len_v = vector.pow(2).sum().sqrt()
+        #     Dot = torch.sum(vector * self.Set[label].mean_v)
+        #     loss += len_v * self.Set[label].len_v - Dot
 
         print_time(starttime, 'MemorySet : get_DotLoss')
 
@@ -157,16 +157,16 @@ class MemorySet(object):
 
     def get_Regularizer(self):
         starttime = time.time()
-        # s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
-        # ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
-        s = torch.tensor(0, device='cuda', dtype=torch.float32)
-        ss = torch.tensor(0, device='cuda', dtype=torch.float32)
-        for i in range(self.clsN):
-            s += self.Set[i].len_v
-            ss += self.Set[i].len_v.pow(2)
+        s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
+        ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
+        # s = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # ss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # for i in range(self.clsN):
+        #     s += self.Set[i].len_v
+        #     ss += self.Set[i].len_v.pow(2)
 
-        s = (s / self.clsN).pow(2)   # E(X)^2
-        ss = ss / self.clsN # E(X^2)
+        # s = (s / self.clsN).pow(2)   # E(X)^2
+        # ss = ss / self.clsN # E(X^2)
 
         Regularizer = ss - s
         
