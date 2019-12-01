@@ -32,8 +32,8 @@ class Memory(object):
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
 
-        mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
-        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
+        mean_len = self.vector.detach().mean(dim=0).pow(2).sum().sqrt() + eps
+        len_mean = self.vector.detach().pow(2).sum(dim=1).sqrt().mean()
         self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
         self.sigma_v = self.vector.var(dim=0).sqrt()
         self.len_v = len_mean
@@ -136,11 +136,11 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
 
-        loss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # loss = torch.tensor(0, device='cuda', dtype=torch.float32)
 
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
         Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss += torch.sum(len_v * self.len_v_Set[y] - Dot)
+        loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
 
         print_time(starttime, 'MemorySet : get_DotLoss')
 
@@ -151,10 +151,10 @@ class MemorySet(object):
 
     def get_Regularizer(self):
         starttime = time.time()
-        s = torch.tensor(0, device='cuda', dtype=torch.float32)
-        ss = torch.tensor(0, device='cuda', dtype=torch.float32)
-        s += torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
-        ss += torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
+        # s = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # ss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
+        ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
         Regularizer = ss - s
         
         print_time(starttime, 'MemorySet : get_Regularizer')
