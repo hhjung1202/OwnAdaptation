@@ -279,16 +279,16 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
                 starttime = print_time_relay(starttime, 'Main : Num 6')
 
-                total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-                total.backward(retain_graph=True)
-                # loss.backward(retain_graph=True)
-                # t = print_time_relay(starttime, 'Main : Loss1')
-                # loss_N.backward(retain_graph=True)
-                # t = print_time_relay(t, 'Main : Loss Noise')
-                # loss_R.backward(retain_graph=True)
-                # t = print_time_relay(t, 'Main : Loss Random')
-                # reg.backward(retain_graph=True)
-                # t = print_time_relay(t, 'Main : Regularizer')
+                # total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+                # total.backward(retain_graph=True)
+                loss.backward(retain_graph=True)
+                t = print_time_relay(starttime, 'Main : Loss1')
+                loss_N.backward(retain_graph=True)
+                t = print_time_relay(t, 'Main : Loss Noise')
+                loss_R.backward(retain_graph=True)
+                t = print_time_relay(t, 'Main : Loss Random')
+                reg.backward(retain_graph=True)
+                t = print_time_relay(t, 'Main : Regularizer')
 
             starttime = print_time_relay(starttime, 'Main : Num 7')
 
