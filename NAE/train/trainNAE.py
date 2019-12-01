@@ -33,8 +33,8 @@ class Memory(object):
         starttime = time.time()
 
         mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
-        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean().clone()
-        self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len.clone()
+        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
+        self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
         self.sigma_v = self.vector.var(dim=0).sqrt()
         self.len_v = len_mean
 
@@ -101,9 +101,9 @@ class MemorySet(object):
 
         for i in range(self.clsN):
             self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v.clone()
-            self.len_v_Set[i] = self.Set[i].len_v.clone()
-            self.sigma_v_Set[i] = self.Set[i].sigma_v.clone()
+            self.mean_v_Set[i] = self.Set[i].mean_v
+            self.len_v_Set[i] = self.Set[i].len_v
+            self.sigma_v_Set[i] = self.Set[i].sigma_v
         
         starttime = print_time_relay(starttime, 'MemorySet : Batch_Insert, Num 4')
 
@@ -137,8 +137,8 @@ class MemorySet(object):
             vectorSet = -vectorSet
 
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
+        Dot = torch.sum(vectorSet * self.mean_v_Set[y].clone(), dim=1)
+        loss = torch.sum(len_v * self.len_v_Set[y].clone() - Dot)
 
         # loss = torch.tensor(0, device='cuda', dtype=torch.float32)
         # for i in range(z.size(0)):
