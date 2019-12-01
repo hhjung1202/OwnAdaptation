@@ -26,8 +26,8 @@ class Memory(object):
         self.N = args.maxN # size of ALL Buffer
         self.index = 0
         self.index2 = 0
-        self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
-        self.vector = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
+        self.z = torch.randn([self.N, args.z], device="cuda", dtype=torch.float32)
+        self.vector = torch.randn([self.N, args.z], device="cuda", dtype=torch.float32)
 
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
@@ -232,29 +232,29 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     utils.print_log('Type, Epoch, Batch, total, Recon, Noise, Random, Regular')
 
     # Init Learning
-    for it, (x, y, label) in enumerate(Train_loader):
+    # for it, (x, y, label) in enumerate(Train_loader):
 
-        inittime = time.time()
+    #     inittime = time.time()
 
-        x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
-        rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
+    #     x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
+    #     rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
 
-        state_info.optim_NAE.zero_grad()
+    #     state_info.optim_NAE.zero_grad()
         
-        z, x_h = state_info.forward_NAE(x)
-        Memory.Batch_Insert(z, y)
-        loss = criterion_BCE(x_h, x)
-        loss.backward(retain_graph=True)
+    #     z, x_h = state_info.forward_NAE(x)
+    #     Memory.Batch_Insert(z, y)
+    #     loss = criterion_BCE(x_h, x)
+    #     loss.backward(retain_graph=True)
 
-        state_info.optim_NAE.step()
+    #     state_info.optim_NAE.step()
 
-        if it % 10 == 0:
-            utils.print_log('Init, {}, {:.6f}'
-                  .format(it, loss.item()))
-            print('Init, {}, {:.6f}'
-                  .format(it, loss.item()))
+    #     if it % 10 == 0:
+    #         utils.print_log('Init, {}, {:.6f}'
+    #               .format(it, loss.item()))
+    #         print('Init, {}, {:.6f}'
+    #               .format(it, loss.item()))
 
-        print_time(inittime, 'Init main : Num 8')
+    #     print_time(inittime, 'Init main : Num 8')
 
     for epoch in range(start_epoch, args.epoch):
 
