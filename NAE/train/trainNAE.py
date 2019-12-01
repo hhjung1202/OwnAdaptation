@@ -187,8 +187,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         state_info.optim_NAE.step()
 
-        if it>40:
-            break;
+        
 
         if it % 10 == 0:
             utils.print_log('Init, {}, {:.6f}'
