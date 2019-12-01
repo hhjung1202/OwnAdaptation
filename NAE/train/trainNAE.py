@@ -143,7 +143,7 @@ class MemorySet(object):
             vectorSet = -vectorSet
 
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(VectorSet * self.mean_v_Set[y], dim=1)
+        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
         loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
         
         # loss = torch.tensor(0, device='cuda', dtype=torch.float32)
@@ -203,8 +203,8 @@ class MemorySet(object):
         Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
 
         cos = torch.nn.CosineSimilarity(dim=1)
-        Sim_scale = torch.sum((VectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
-        Sim_vector = torch.sum(torch.abs(cos(VectorSet, self.mean_v_Set[y])))
+        Sim_scale = torch.sum((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
+        Sim_vector = torch.sum(torch.abs(cos(vectorSet, self.mean_v_Set[y])))
 
         # for i in range(z.size(0)):
         #     label = y[i]
