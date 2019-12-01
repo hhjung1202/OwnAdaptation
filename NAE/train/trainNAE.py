@@ -32,10 +32,10 @@ class Memory(object):
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
 
-        mean_len = self.vector.clone().mean(dim=0).pow(2).sum().sqrt().clone() + eps
-        len_mean = self.vector.clone().pow(2).sum(dim=1).sqrt().clone().mean()
-        self.mean_v = self.vector.clone().mean(dim=0) * len_mean / mean_len
-        self.sigma_v = self.vector.clone().var(dim=0).sqrt().clone()
+        mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
+        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
+        self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
+        self.sigma_v = self.vector.var(dim=0).sqrt()
         self.len_v = len_mean
 
         print_time(starttime, 'Memory : Calc_Vector')
@@ -43,7 +43,7 @@ class Memory(object):
     def Calc_Memory(self): # After 1 Epoch, it will calculated
         starttime = time.time()
         self.mean = self.z.mean(dim=0)
-        self.sigma = self.z.var(dim=0).sqrt().clone()
+        self.sigma = self.z.var(dim=0).sqrt()
         print_time(starttime, 'Memory : Calc_Memory')
         return self.mean
 
@@ -136,8 +136,8 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
 
-        len_v = vectorSet.clone().pow(2).sum(dim=1).sqrt().clone()
-        Dot = torch.sum(vectorSet.clone() * self.mean_v_Set[y], dim=1)
+        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
+        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
         loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
 
         # loss = torch.tensor(0, device='cuda', dtype=torch.float32)
@@ -248,14 +248,11 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         state_info.optim_NAE.step()
 
-        if it>100:
-            break;
         if it % 10 == 0:
             utils.print_log('Init, {}, {:.6f}'
                   .format(it, loss.item()))
             print('Init, {}, {:.6f}'
                   .format(it, loss.item()))
-
 
         print_time(inittime, 'Init main : Num 8')
 
