@@ -32,8 +32,8 @@ class Memory(object):
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
 
-        mean_len = self.vector.clone().mean(dim=0).pow(2).sum().sqrt() + eps
-        len_mean = self.vector.clone().pow(2).sum(dim=1).sqrt().mean()
+        mean_len = self.vector.clone().mean(dim=0).pow(2).sum().clone().sqrt() + eps
+        len_mean = self.vector.clone().pow(2).sum(dim=1).clone().sqrt().mean()
         self.mean_v = self.vector.clone().mean(dim=0) * len_mean / mean_len
         self.sigma_v = self.vector.clone().var(dim=0).sqrt()
         self.len_v = len_mean
@@ -248,11 +248,14 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         state_info.optim_NAE.step()
 
+        if it>100:
+            break;
         if it % 10 == 0:
             utils.print_log('Init, {}, {:.6f}'
                   .format(it, loss.item()))
             print('Init, {}, {:.6f}'
                   .format(it, loss.item()))
+
 
         print_time(inittime, 'Init main : Num 8')
 
