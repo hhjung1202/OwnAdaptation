@@ -136,9 +136,11 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
 
+        loss = torch.tensor(0, device='cuda', dtype=torch.float32)
+
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
         Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
+        loss += torch.sum(len_v * self.len_v_Set[y] - Dot)
 
         print_time(starttime, 'MemorySet : get_DotLoss')
 
@@ -149,9 +151,10 @@ class MemorySet(object):
 
     def get_Regularizer(self):
         starttime = time.time()
-
-        s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
-        ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
+        s = torch.tensor(0, device='cuda', dtype=torch.float32)
+        ss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        s += torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
+        ss += torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
         Regularizer = ss - s
         
         print_time(starttime, 'MemorySet : get_Regularizer')
