@@ -176,7 +176,8 @@ class MemorySet(object):
         # s = (s / self.clsN).pow(2)   # E(X)^2
         # ss = ss / self.clsN # E(X^2)
 
-        Regularizer = ss - s
+        Regularizer = torch.tensor(0, device='cuda', dtype=torch.float32)
+        Regularizer = Regularizer + ss - s
         
         print_time(starttime, 'MemorySet : get_Regularizer')
 
