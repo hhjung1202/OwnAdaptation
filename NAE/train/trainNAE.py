@@ -136,7 +136,7 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
 
-        len_v = vectorSet.clone().pow(2).sum(dim=1).sqrt()
+        len_v = vectorSet.clone().pow(2).sum(dim=1).clone().sqrt()
         Dot = torch.sum(vectorSet.clone() * self.mean_v_Set[y], dim=1)
         loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
 
