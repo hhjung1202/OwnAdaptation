@@ -32,8 +32,8 @@ class Memory(object):
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
 
-        mean_len = self.vector.detach().mean(dim=0).pow(2).sum().sqrt() + eps
-        len_mean = self.vector.detach().pow(2).sum(dim=1).sqrt().mean()
+        mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
+        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
         self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
         self.sigma_v = self.vector.var(dim=0).sqrt()
         self.len_v = len_mean
@@ -164,8 +164,8 @@ class MemorySet(object):
     def get_Regularizer(self):
         starttime = time.time()
 
-        s = torch.pow(torch.sum(self.len_v_Set.detach()) / self.clsN, 2) # E(X)^2
-        ss = torch.sum(self.len_v_Set.pow(2).detach()) / self.clsN       # E(X^2)
+        s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
+        ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
 
         # s = torch.tensor(0, device='cuda', dtype=torch.float32)
         # ss = torch.tensor(0, device='cuda', dtype=torch.float32)
@@ -315,16 +315,16 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
                 starttime = print_time_relay(starttime, 'Main : Num 6')
 
-                # total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-                # total.backward(retain_graph=True)
-                loss.backward(retain_graph=True)
-                t = print_time_relay(starttime, 'Main : Loss1')
-                loss_N.backward(retain_graph=True)
-                t = print_time_relay(t, 'Main : Loss Noise')
-                loss_R.backward(retain_graph=True)
-                t = print_time_relay(t, 'Main : Loss Random')
-                reg.backward(retain_graph=True)
-                t = print_time_relay(t, 'Main : Regularizer')
+                total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+                total.backward(retain_graph=True)
+                # loss.backward(retain_graph=True)
+                # t = print_time_relay(starttime, 'Main : Loss1')
+                # loss_N.backward(retain_graph=True)
+                # t = print_time_relay(t, 'Main : Loss Noise')
+                # loss_R.backward(retain_graph=True)
+                # t = print_time_relay(t, 'Main : Loss Random')
+                # reg.backward(retain_graph=True)
+                # t = print_time_relay(t, 'Main : Regularizer')
 
             starttime = print_time_relay(starttime, 'Main : Num 7')
 
