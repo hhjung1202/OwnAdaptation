@@ -72,8 +72,13 @@ class MemorySet(object):
     def __init__(self, args):
         self.clsN = args.clsN
         self.Set = []
+        self.size_z = args.z
         for i in range(self.clsN):
             self.Set.append(Memory(args=args))
+
+        self.mean_v_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
+        self.len_v_Set = torch.zeros((self.clsN), device="cuda", dtype=torch.float32)
+        self.sigma_v_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
 
     def Batch_Insert(self, z, y):
 
@@ -96,6 +101,9 @@ class MemorySet(object):
 
         for i in range(self.clsN):
             self.Set[i].Calc_Vector()
+            self.mean_v_Set[i] = self.Set[i].mean_v
+            self.len_v_Set[i] = self.Set[i].len_v
+            self.sigma_v_Set[i] = self.Set[i].sigma_v
         
         starttime = print_time_relay(starttime, 'MemorySet : Batch_Insert, Num 4')
 
@@ -113,16 +121,19 @@ class MemorySet(object):
     def Calc_Center(self):
         starttime = time.time()
 
-        self.T = None
+        self.T = torch.zeros(self.size_z, device='cuda', dtype=torch.float32)
         for i in range(self.clsN):
-            if self.T is None:
-                self.T = self.Set[i].Calc_Memory()
-            else:
-                self.T = self.T + self.Set[i].Calc_Memory()
+            self.T += self.Set[i].Calc_Memory()
 
         self.T = self.T / self.clsN
 
         print_time(starttime, 'MemorySet : Calc_Center')
+
+
+
+
+
+
 
     def get_DotLoss(self, z, y, reduction='mean', reverse=False):
         starttime = time.time()
@@ -130,14 +141,18 @@ class MemorySet(object):
         vectorSet = z - self.T
         if reverse:
             vectorSet = -vectorSet
+
+        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
+        Dot = torch.sum(VectorSet * self.mean_v_Set[y], dim=1)
+        loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
         
-        loss = torch.tensor(0, device='cuda', dtype=torch.float32)
-        for i in range(z.size(0)):
-            label = y[i]
-            vector = vectorSet[i]
-            len_v = vector.pow(2).sum().sqrt()
-            Dot = torch.sum(vector * self.Set[label].mean_v)
-            loss += len_v * self.Set[label].len_v - Dot
+        # loss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # for i in range(z.size(0)):
+        #     label = y[i]
+        #     vector = vectorSet[i]
+        #     len_v = vector.pow(2).sum().sqrt()
+        #     Dot = torch.sum(vector * self.Set[label].mean_v)
+        #     loss += len_v * self.Set[label].len_v - Dot
         
         print_time(starttime, 'MemorySet : get_DotLoss')
 
@@ -149,14 +164,17 @@ class MemorySet(object):
     def get_Regularizer(self):
         starttime = time.time()
 
-        s = torch.tensor(0, device='cuda', dtype=torch.float32)
-        ss = torch.tensor(0, device='cuda', dtype=torch.float32)
-        for i in range(self.clsN):
-            s += self.Set[i].len_v
-            ss += self.Set[i].len_v.pow(2)
+        s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
+        ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
 
-        s = (s / self.clsN).pow(2)   # E(X)^2
-        ss = ss / self.clsN # E(X^2)
+        # s = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # ss = torch.tensor(0, device='cuda', dtype=torch.float32)
+        # for i in range(self.clsN):
+        #     s += self.Set[i].len_v
+        #     ss += self.Set[i].len_v.pow(2)
+
+        # s = (s / self.clsN).pow(2)   # E(X)^2
+        # ss = ss / self.clsN # E(X^2)
 
         Regularizer = ss - s
         
@@ -164,19 +182,36 @@ class MemorySet(object):
 
         return Regularizer
 
+
+    def Test_Init(self):
+
+        starttime = time.time()
+
+        for i in range(self.clsN):
+            self.Set[i].Calc_Vector()
+            self.mean_v_Set[i] = self.Set[i].mean_v
+            self.len_v_Set[i] = self.Set[i].len_v
+            self.sigma_v_Set[i] = self.Set[i].sigma_v
+
+        print_time(starttime, 'MemorySet : Test_Init')
+
     def Calc_Test_Similarity(self, z, y):
         starttime = time.time()
 
         vectorSet = z - self.T
         Sim_scale = torch.tensor(0, device='cuda', dtype=torch.float32)
         Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
-        cos = torch.nn.CosineSimilarity(dim=0)
-        for i in range(z.size(0)):
-            label = y[i]
-            vector = vectorSet[i]
 
-            Sim_scale += torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
-            Sim_vector += cos(vector, self.Set[label].mean_v)
+        cos = torch.nn.CosineSimilarity(dim=1)
+        Sim_scale = torch.sum((VectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
+        Sim_vector = torch.sum(torch.abs(cos(VectorSet, self.mean_v_Set[y])))
+
+        # for i in range(z.size(0)):
+        #     label = y[i]
+        #     vector = vectorSet[i]
+
+        #     Sim_scale += torch.sum((vector - self.Set[label].mean_v) / self.Set[label].sigma_v)
+        #     Sim_vector += cos(vector, self.Set[label].mean_v)
 
         print_time(starttime, 'MemorySet : Calc_Test_Similarity')
 
@@ -312,6 +347,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         # test
         state_info.NAE.eval()
+        Memory.Test_Init()
         for it, (x, y, label) in enumerate(Test_loader):
 
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
