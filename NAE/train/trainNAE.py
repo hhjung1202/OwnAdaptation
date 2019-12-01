@@ -32,10 +32,10 @@ class Memory(object):
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         starttime = time.time()
 
-        mean_len = self.vector.clone().mean(dim=0).pow(2).sum().clone().sqrt() + eps
-        len_mean = self.vector.clone().pow(2).sum(dim=1).clone().sqrt().mean()
+        mean_len = self.vector.clone().mean(dim=0).pow(2).sum().sqrt().clone() + eps
+        len_mean = self.vector.clone().pow(2).sum(dim=1).sqrt().clone().mean()
         self.mean_v = self.vector.clone().mean(dim=0) * len_mean / mean_len
-        self.sigma_v = self.vector.clone().var(dim=0).sqrt()
+        self.sigma_v = self.vector.clone().var(dim=0).sqrt().clone()
         self.len_v = len_mean
 
         print_time(starttime, 'Memory : Calc_Vector')
@@ -43,7 +43,7 @@ class Memory(object):
     def Calc_Memory(self): # After 1 Epoch, it will calculated
         starttime = time.time()
         self.mean = self.z.mean(dim=0)
-        self.sigma = self.z.var(dim=0).sqrt()
+        self.sigma = self.z.var(dim=0).sqrt().clone()
         print_time(starttime, 'Memory : Calc_Memory')
         return self.mean
 
@@ -136,7 +136,7 @@ class MemorySet(object):
         if reverse:
             vectorSet = -vectorSet
 
-        len_v = vectorSet.clone().pow(2).sum(dim=1).clone().sqrt()
+        len_v = vectorSet.clone().pow(2).sum(dim=1).sqrt().clone()
         Dot = torch.sum(vectorSet.clone() * self.mean_v_Set[y], dim=1)
         loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
 
