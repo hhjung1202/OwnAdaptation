@@ -157,7 +157,7 @@ class MemorySet(object):
 
     def get_Regularizer(self):
         starttime = time.time()
-        s = torch.pow(torch.sum(self.len_v_Set.clone()).clone() / self.clsN, 2).clone() # E(X)^2
+        s = torch.pow(torch.sum(self.len_v_Set).clone() / self.clsN, 2).clone() # E(X)^2
         ss = torch.sum(self.len_v_Set.clone().pow(2).clone()).clone() / self.clsN       # E(X^2)
         # s = torch.tensor(0, device='cuda', dtype=torch.float32)
         # ss = torch.tensor(0, device='cuda', dtype=torch.float32)
