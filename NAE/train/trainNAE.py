@@ -23,7 +23,7 @@ class Memory(object):
 
     def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
         mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
-        len_mean = self.vector.clone().pow(2).sum(dim=1).sqrt().mean()
+        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
         self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
         self.sigma_v = self.vector.var(dim=0).sqrt()
         self.len_v = len_mean
@@ -68,9 +68,9 @@ class MemorySet(object):
 
         for i in range(self.clsN):
             self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v
-            self.len_v_Set[i] = self.Set[i].len_v
-            self.sigma_v_Set[i] = self.Set[i].sigma_v
+            self.mean_v_Set[i] = self.Set[i].mean_v.detach()
+            self.len_v_Set[i] = self.Set[i].len_v.detach()
+            self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
 
     def Batch_Vector_Insert(self, z, y):
         vectorSet = z - self.T
@@ -86,7 +86,7 @@ class MemorySet(object):
         self.T = self.T / self.clsN
 
     def get_DotLoss(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         if reverse:
             vectorSet = -vectorSet
 
@@ -99,9 +99,11 @@ class MemorySet(object):
         elif reduction == "sum":
             return loss
 
-    def get_Regularizer(self):
-        s = torch.pow(torch.sum(self.len_v_Set) / self.clsN, 2) # E(X)^2
-        ss = torch.sum(self.len_v_Set.pow(2)) / self.clsN       # E(X^2)
+    def get_Regularizer(self, z):
+        vectorSet = z - self.T.detach()
+        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
+        s = torch.pow(torch.sum(len_v) / z.size(0), 2) # E(X)^2
+        ss = torch.sum(len_v.pow(2)) / z.size(0)       # E(X^2)
         Regularizer = ss - s
         return Regularizer
 
@@ -187,10 +189,10 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             Memory.Batch_Insert(z, y)
             loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
             loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
-            reg = Memory.get_Regularizer()
+            reg = Memory.get_Regularizer(z)
             loss = criterion_BCE(x_h, x)
             total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-            total.backward(retain_graph=True)
+            total.backward()
             state_info.optim_NAE.step()
 
             if it % 10 == 0:
