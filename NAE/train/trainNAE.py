@@ -110,9 +110,9 @@ class MemorySet(object):
     def Test_Init(self):
         for i in range(self.clsN):
             self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v
-            self.len_v_Set[i] = self.Set[i].len_v
-            self.sigma_v_Set[i] = self.Set[i].sigma_v
+            self.mean_v_Set[i] = self.Set[i].mean_v.detach()
+            self.len_v_Set[i] = self.Set[i].len_v.detach()
+            self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
 
     def Calc_Test_Similarity(self, z, y):
         vectorSet = z - self.T
