@@ -185,15 +185,16 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
             state_info.optim_NAE.zero_grad()
             
-            z, x_h = state_info.forward_NAE(x)
-            Memory.Batch_Insert(z, y)
-            loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
-            loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
-            reg = Memory.get_Regularizer(z)
-            loss = criterion_BCE(x_h, x)
-            total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
-            total.backward()
-            state_info.optim_NAE.step()
+            with torch.autograd.set_detect_anomaly(True):
+                z, x_h = state_info.forward_NAE(x)
+                Memory.Batch_Insert(z, y)
+                loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
+                reg = Memory.get_Regularizer(z)
+                loss = criterion_BCE(x_h, x)
+                total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+                total.backward()
+                state_info.optim_NAE.step()
 
             if it % 10 == 0:
                 utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'
