@@ -110,7 +110,6 @@ class MemorySet(object):
 
         _, pseudo_label = cos_result.max(1)
 
-        print("Noise Label과 겹치는 개수", pseudo_label.eq(y).sum())
         return pseudo_label.detach()
 
     def get_Regularizer(self, z):
@@ -198,6 +197,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         correct_Pseudo = torch.tensor(0, dtype=torch.float32)
         correct_Test = torch.tensor(0, dtype=torch.float32)
         train_Size = torch.tensor(0, dtype=torch.float32)
+        Pseudo_Noise = torch.tensor(0, dtype=torch.float32)
 
         # train
         state_info.NAE.train()
@@ -224,16 +224,17 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
                 total.backward()
                 state_info.optim_NAE.step()
 
+            Pseudo_Noise += float(pseudo_label.eq(y).sum())
             _, pred = torch.max(c.data, 1)
             correct_Noise += float(pred.eq(y.data).cpu().sum())
             correct_Pseudo += float(pred.eq(pseudo_label.data).cpu().sum())
             train_Size += float(x.size(0))
 
             if it % 10 == 0:
-                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), 100.*correct_Noise / train_Size, 100.*correct_Pseudo / train_Size))
-                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), 100.*correct_Noise / train_Size, 100.*correct_Pseudo / train_Size))
+                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), 100.*correct_Noise / train_Size, 100.*correct_Pseudo / train_Size, 100.*Pseudo_Noise / train_Size))
+                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), 100.*correct_Noise / train_Size, 100.*correct_Pseudo / train_Size, 100.*Pseudo_Noise / train_Size))
 
         testSize = torch.tensor(0, dtype=torch.float32)
         Similarity_Scale = torch.tensor(0, dtype=torch.float32)
