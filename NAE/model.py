@@ -26,34 +26,45 @@ class Encoder(nn.Module):
         x = self.model(x)
         return x
 
-class Decoder(nn.Module):
-    def __init__(self, I=32, H=400, latent_size=64):
-        super(Decoder, self).__init__()
-        self.model = nn.Sequential(
-            nn.Linear(latent_size, H),
-            nn.ReLU(inplace=True),
-            nn.Linear(H, I*I),
-            nn.Sigmoid(),
-            UnFlatten(size=I),
-        )
-    def forward(self, x):
-        x = self.model(x)
-        return x
+# class Decoder(nn.Module):
+#     def __init__(self, I=32, H=400, latent_size=64):
+#         super(Decoder, self).__init__()
+#         self.model = nn.Sequential(
+#             nn.Linear(latent_size, H),
+#             nn.ReLU(inplace=True),
+#             nn.Linear(H, I*I),
+#             nn.Sigmoid(),
+#             UnFlatten(size=I),
+#         )
+#     def forward(self, x):
+#         x = self.model(x)
+#         return x
 
 class NAE(nn.Module):
-    def __init__(self, I=32, H=400, latent_size=64):
+    def __init__(self, I=32, H=400, latent_size=64, num_classes=10):
         super(NAE, self).__init__()
 
         self.Encoder = Encoder(I=I, H=H, latent_size=latent_size)
-        self.Decoder = Decoder(I=I, H=H, latent_size=latent_size)
+        self.Classifier = Classifier(latent_size=latent_size, num_classes=num_classes)
 
     def forward(self, x, test=False):
-        if test:
-            x = self.Decoder(x)
-            return x
         z = self.Encoder(x)
-        x = self.Decoder(z)
-        return z, x
+        c = self.Classifier(z)
+        return z, c
+
+class Classifier(nn.Module):
+    def __init__(self, latent_size=64, num_classes=10):
+        super(Classifier, self).__init__()
+
+        self.model = nn.Sequential(
+            nn.Linear(latent_size, latent_size),
+            nn.ReLU(inplace=True),
+            nn.Linear(latent_size, num_classes),
+        )
+
+    def forward(self, z):
+        z = self.model(z)
+        return z
 
 
 
