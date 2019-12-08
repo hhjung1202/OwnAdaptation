@@ -264,6 +264,11 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         print('Test, {}, {}, {:.6f}, {:.6f}, {:.3f}'
               .format(epoch, it, Similarity_Scale / testSize, Similarity_Vector / testSize, 100.*correct_Test / testSize))
 
+        if 100.*correct_Test / testSize > best_prec_result:
+            best_prec_result = 100.*correct_Test / testSize
+            filename = 'checkpoint_best.pth.tar'
+            utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
+
         filename = 'latest.pth.tar'
         utils.save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, utils.default_model_dir)
         state_info.lr_NAE.step()

@@ -1,5 +1,8 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/NAE0 --noise-rate 0.0 --gpu 0 1> /dev/null &
-python3 ../main.py --dir /data2/hhjung/NAE1 --noise-rate 0.1 --gpu 1 1> /dev/null &
-python3 ../main.py --dir /data2/hhjung/NAE2 --noise-rate 0.2 --gpu 2 1> /dev/null &
-python3 ../main.py --dir /data2/hhjung/NAE3 --noise-rate 0.3 --gpu 3 1> /dev/null
+python3 ../main.py --dir /data2/hhjung/NAE/noise0 --noise-rate 0.0 --gpu 0 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/NAE/noise1 --noise-rate 0.1 --gpu 1 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/NAE/noise2 --noise-rate 0.2 --gpu 2 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/NAE/noise3 --noise-rate 0.3 --gpu 3 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/NAE/noise4 --noise-rate 0.4 --gpu 4 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/NAE/noise5 --noise-rate 0.5 --gpu 5 1> /dev/null &
+python3 ../main.py --dir /data2/hhjung/NAE/noise6 --noise-rate 0.6 --gpu 6 1> /dev/null
