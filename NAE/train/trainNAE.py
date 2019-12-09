@@ -195,12 +195,15 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         correct_Noise = torch.tensor(0, dtype=torch.float32)
         correct_Pseudo = torch.tensor(0, dtype=torch.float32)
+        correct_Real = torch.tensor(0, dtype=torch.float32)
         correct_Test = torch.tensor(0, dtype=torch.float32)
         train_Size = torch.tensor(0, dtype=torch.float32)
         Pseudo_Noise = torch.tensor(0, dtype=torch.float32)
+        Pseudo_Real = torch.tensor(0, dtype=torch.float32)
 
         # train
         state_info.NAE.train()
+        utils.print_log('Type, Epoch, Batch, total, Cls, Noise_V, Random_V, Regular, Noise%, Pseudo%, Real%, Pseu_Nois%, Pseu_Real%')
         for it, (x, y, label) in enumerate(Train_loader):
 
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
@@ -220,21 +223,33 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
                 pseudo_label = Memory.Calc_Pseudolabel(z, y)
                 loss = criterion(c, pseudo_label)
 
-                total = loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+                total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
                 total.backward()
                 state_info.optim_NAE.step()
 
             Pseudo_Noise += float(pseudo_label.eq(y).sum())
+            Pseudo_Real += float(pseudo_label.eq(label).sum())
             _, pred = torch.max(c.data, 1)
             correct_Noise += float(pred.eq(y.data).cpu().sum())
+            correct_Real += float(pred.eq(label.data).cpu().sum())
             correct_Pseudo += float(pred.eq(pseudo_label.data).cpu().sum())
             train_Size += float(x.size(0))
 
             if it % 10 == 0:
-                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), 100.*correct_Noise / train_Size, 100.*correct_Pseudo / train_Size, 100.*Pseudo_Noise / train_Size))
-                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), 100.*correct_Noise / train_Size, 100.*correct_Pseudo / train_Size, 100.*Pseudo_Noise / train_Size))
+                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item()
+                        , 100.*correct_Noise / train_Size
+                        , 100.*correct_Pseudo / train_Size
+                        , 100.*correct_Real / train_Size
+                        , 100.*Pseudo_Noise / train_Size
+                        , 100.*Pseudo_Real / train_Size))
+                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item()
+                        , 100.*correct_Noise / train_Size
+                        , 100.*correct_Pseudo / train_Size
+                        , 100.*correct_Real / train_Size
+                        , 100.*Pseudo_Noise / train_Size
+                        , 100.*Pseudo_Real / train_Size))
 
         testSize = torch.tensor(0, dtype=torch.float32)
         Similarity_Scale = torch.tensor(0, dtype=torch.float32)

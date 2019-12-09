@@ -38,6 +38,7 @@ parser.add_argument('--h', type=int, default=400, help='hidden size')
 parser.add_argument('--z', type=int, default=64, help='latent feature')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
+parser.add_argument('--t0', type=float, default=1.0, help='Classification loss weight')
 parser.add_argument('--t1', type=float, default=1.0, help='Noise label Vectorization')
 parser.add_argument('--t2', type=float, default=1.0, help='Random label Vectorization')
 parser.add_argument('--t3', type=float, default=1.0, help='Vector length Consistency Regularization')
