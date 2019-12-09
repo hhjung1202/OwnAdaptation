@@ -36,13 +36,15 @@ class Memory(object):
     def Insert_memory(self, z): # Actual Function
         if self.index >= self.N:
             self.index = 0
-        self.z[self.index] = z
+        self.z[self.index] = z.data
+        del(z)
         self.index = self.index + 1
 
     def Insert_vector(self, vector): # Actual Function
         if self.index2 >= self.N:
             self.index2 = 0
-        self.vector[self.index2] = vector
+        self.vector[self.index2] = vector.data
+        del(vector)
         self.index2 = self.index2 + 1
 
 class MemorySet(object):
@@ -224,7 +226,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
             total.backward()
             state_info.optim_NAE.step()
-                
+
             Pseudo_Noise += float(pseudo_label.eq(y).sum())
             Pseudo_Real += float(pseudo_label.eq(label).sum())
             _, pred = torch.max(c.data, 1)
