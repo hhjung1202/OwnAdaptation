@@ -135,7 +135,7 @@ class MemorySet(object):
         Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
 
         cos = torch.nn.CosineSimilarity(dim=1)
-        Sim_scale = torch.sum((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
+        Sim_scale = torch.sum(torch.abs((vectorSet - self.mean_v_Set[y]))/self.sigma_v_Set[y]) / z.size(0)
         Sim_vector = torch.sum(torch.abs(cos(vectorSet, self.mean_v_Set[y])))
 
         return Sim_scale, Sim_vector

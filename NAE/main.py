@@ -57,7 +57,8 @@ def main():
     Train_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
     args.chIn = chIn
     args.clsN = clsN
-    args.milestones = [80,120]
+    args.milestones = [200,300]
+    # args.milestones = [80,120]
     args.Dmilestones = [30,60]
     if args.t2 == -1:
         args.t2 = args.t1
