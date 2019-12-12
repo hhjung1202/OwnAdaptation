@@ -50,7 +50,7 @@ class Memory(object):
 
 class MemorySet(object):
     def __init__(self, args):
-        self.Normal
+        self.Normal_Gaussian = normal.Normal(0,1) # mean 0, var 1
         self.clsN = args.clsN
         self.Set = []
         self.size_z = args.z
@@ -113,8 +113,7 @@ class MemorySet(object):
 
     def get_Gaussian_Percentage(self, Zn):
         # Scale.size = (Batch_size)
-        Normal_Gaussian = normal.Normal(0,1) # mean 0, var 1
-        P = torch.mean(Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
+        P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
         return 2-2*P
 
     def Calc_Pseudolabel(self, z, y):
