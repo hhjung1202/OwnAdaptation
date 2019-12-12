@@ -9,6 +9,7 @@ import time
 import utils
 import dataset
 import math
+import torch.distributions.normal as normal
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))
@@ -49,6 +50,7 @@ class Memory(object):
 
 class MemorySet(object):
     def __init__(self, args):
+        self.Normal
         self.clsN = args.clsN
         self.Set = []
         self.size_z = args.z
@@ -94,12 +96,26 @@ class MemorySet(object):
 
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
         Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = torch.sum(len_v * self.len_v_Set[y] - Dot)
+        Cosine = Dot/(len_v * self.len_v_Set[y])
+
+        Zn = torch.abs((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
+        P = self.get_Gaussian_Percentage(Zn)
+        
+        if reverse:
+            P = 1 - P
+
+        loss = torch.sum((1 - Cosine) * P)
 
         if reduction == "mean":
             return loss / z.size(0)
         elif reduction == "sum":
             return loss
+
+    def get_Gaussian_Percentage(self, Zn):
+        # Scale.size = (Batch_size)
+        Normal_Gaussian = normal.Normal(0,1) # mean 0, var 1
+        P = torch.mean(Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
+        return 2-2*P
 
     def Calc_Pseudolabel(self, z, y):
         vectorSet = z - self.T
