@@ -1,6 +1,6 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.0 --lr 0.01 --noise-rate 0.0 --gpu 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.1 --lr 0.01 --noise-rate 0.1 --gpu 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.2 --lr 0.01 --noise-rate 0.2 --gpu 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.3 --lr 0.01 --noise-rate 0.3 --gpu 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.4 --lr 0.01 --noise-rate 0.4 --gpu 0 1> /dev/null 2> /dev/null
+python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.0/M --lr 0.01 --noise-rate 0.0 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.1/M --lr 0.01 --noise-rate 0.1 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.2/M --lr 0.01 --noise-rate 0.2 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.3/M --lr 0.01 --noise-rate 0.3 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/lr0.01/n0.4/M --lr 0.01 --noise-rate 0.4 --gpu 0 1> /dev/null 2> /dev/null
