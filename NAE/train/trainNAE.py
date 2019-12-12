@@ -231,8 +231,8 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             z, c = state_info.forward_NAE(x)
             Memory.Batch_Insert(z, y)
             
-            loss_N = Memory.get_DotLoss(z, y, reduction="sum", reverse=False)
-            loss_R = Memory.get_DotLoss(z, rand_y, reduction="sum", reverse=True)
+            loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
+            loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
             reg = Memory.get_Regularizer(z)
 
             pseudo_label = Memory.Calc_Pseudolabel(z, y)
