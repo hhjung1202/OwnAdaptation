@@ -87,6 +87,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         train_Size = torch.tensor(0, dtype=torch.float32)
         Pseudo_Noise = torch.tensor(0, dtype=torch.float32)
         Pseudo_Real = torch.tensor(0, dtype=torch.float32)
+        Neg_loss = torch.tensor(0, dtype=torch.float32)
 
         # train
         state_info.NAE.train()
@@ -102,24 +103,31 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             Memory.Batch_Insert(z, y)
 
             if args.gpu == '0':
+                print('0')
                 loss_N = Memory.get_DotLoss1(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss1(z, rand_y, reduction="mean", reverse=True)    
             elif args.gpu == '1':
+                print('1')
                 loss_N = Memory.get_DotLoss2(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss2(z, rand_y, reduction="mean", reverse=True)    
             elif args.gpu == '2':
+                print('2')
                 loss_N = Memory.get_DotLoss3(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss3(z, rand_y, reduction="mean", reverse=True)    
             elif args.gpu == '3':
+                print('3')
                 loss_N = Memory.get_DotLoss4(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss4(z, rand_y, reduction="mean", reverse=True)    
             elif args.gpu == '4':
+                print('4')
                 loss_N = Memory.get_DotLoss5(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss5(z, rand_y, reduction="mean", reverse=True)    
             elif args.gpu == '5':
+                print('5')
                 loss_N = Memory.get_DotLoss6(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss6(z, rand_y, reduction="mean", reverse=True)    
             else:
+                print('6')
                 loss_N = Memory.get_DotLoss_BASE(z, y, reduction="mean", reverse=False)
                 loss_R = Memory.get_DotLoss_BASE(z, rand_y, reduction="mean", reverse=True)    
             
@@ -129,6 +137,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             loss = criterion(c, pseudo_label)
 
             if args.gpu == '6':
+                print('6')
                 Neg_loss = Neg_criterion(c, rand_y)                
                 total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg + args.t0 * Neg_loss
             else:
@@ -146,15 +155,15 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             train_Size += float(x.size(0))
 
             if it % 10 == 0:
-                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item()
+                utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), Neg_loss.item()
                         , 100.*correct_Noise / train_Size
                         , 100.*correct_Pseudo / train_Size
                         , 100.*correct_Real / train_Size
                         , 100.*Pseudo_Noise / train_Size
                         , 100.*Pseudo_Real / train_Size))
-                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'
-                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item()
+                print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'
+                      .format(epoch, it, total.item(), loss.item(), loss_N.item(), loss_R.item(), reg.item(), Neg_loss.item()
                         , 100.*correct_Noise / train_Size
                         , 100.*correct_Pseudo / train_Size
                         , 100.*correct_Real / train_Size
