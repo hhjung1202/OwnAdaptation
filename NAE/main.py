@@ -42,6 +42,7 @@ parser.add_argument('--t0', type=float, default=1.0, help='Classification loss w
 parser.add_argument('--t1', type=float, default=1.0, help='Noise label Vectorization')
 parser.add_argument('--t2', type=float, default=1.0, help='Random label Vectorization')
 parser.add_argument('--t3', type=float, default=1.0, help='Vector length Consistency Regularization')
+parser.add_argument('--t4', type=float, default=1.0, help='Vector length Consistency Regularization')
 # parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)

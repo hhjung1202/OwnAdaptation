@@ -9,152 +9,20 @@ import time
 import utils
 import dataset
 import math
+import torch.nn.functional as F
 import torch.distributions.normal as normal
+from .Memory import MemorySet
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
-class Memory(object):
-    def __init__(self, args):
-        self.N = args.maxN # size of ALL Buffer
-        self.index = 0
-        self.index2 = 0
-        self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
-        self.vector = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
-
-    def Calc_Vector(self, eps=1e-9): # After 1 Epoch, it will calculated
-        mean_len = self.vector.mean(dim=0).pow(2).sum().sqrt() + eps
-        len_mean = self.vector.pow(2).sum(dim=1).sqrt().mean()
-        self.mean_v = self.vector.mean(dim=0) * len_mean / mean_len
-        self.sigma_v = self.vector.var(dim=0).sqrt()
-        self.len_v = len_mean
-
-    def Calc_Memory(self): # After 1 Epoch, it will calculated
-        self.mean = self.z.mean(dim=0)
-        self.sigma = self.z.var(dim=0).sqrt()
-        return self.mean
-
-    def Insert_memory(self, z): # Actual Function
-        if self.index >= self.N:
-            self.index = 0
-        self.z[self.index] = z.data
-        del(z)
-        self.index = self.index + 1
-
-    def Insert_vector(self, vector): # Actual Function
-        if self.index2 >= self.N:
-            self.index2 = 0
-        self.vector[self.index2] = vector.data
-        del(vector)
-        self.index2 = self.index2 + 1
-
-class MemorySet(object):
-    def __init__(self, args):
-        self.Normal_Gaussian = normal.Normal(0,1) # mean 0, var 1
-        self.clsN = args.clsN
-        self.Set = []
-        self.size_z = args.z
-        for i in range(self.clsN):
-            self.Set.append(Memory(args=args))
-
-        self.mean_v_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
-        self.len_v_Set = torch.zeros((self.clsN), device="cuda", dtype=torch.float32)
-        self.sigma_v_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
-
-    def Batch_Insert(self, z, y):
-        for i in range(z.size(0)):
-            Noise_label = y[i]
-            data = z[i]
-            self.Set[Noise_label].Insert_memory(data)
-
-        self.Calc_Center()
-        self.Batch_Vector_Insert(z, y)
-
-        for i in range(self.clsN):
-            self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v.detach()
-            self.len_v_Set[i] = self.Set[i].len_v.detach()
-            self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
-
-    def Batch_Vector_Insert(self, z, y):
-        vectorSet = z - self.T
-        for i in range(vectorSet.size(0)):
-            Noise_label = y[i]
-            vector = vectorSet[i]
-            self.Set[Noise_label].Insert_vector(vector)
-
-    def Calc_Center(self):
-        self.T = torch.zeros(self.size_z, device='cuda', dtype=torch.float32)
-        for i in range(self.clsN):
-            self.T += self.Set[i].Calc_Memory()
-        self.T = (self.T / self.clsN).detach()
-
-    def get_DotLoss(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
-        if reverse:
-            vectorSet = -vectorSet
-
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        Cosine = Dot/(len_v * self.len_v_Set[y])
-
-        Zn = torch.abs((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
-        P = self.get_Gaussian_Percentage(Zn)
-        
-        if reverse:
-            P = 1 - P
-
-        loss = torch.sum((1 - Cosine) * P)
-
-        if reduction == "mean":
-            return loss / z.size(0)
-        elif reduction == "sum":
-            return loss
-
-    def get_Gaussian_Percentage(self, Zn):
-        # Scale.size = (Batch_size)
-        P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
-        return 2-2*P
-
-    def Calc_Pseudolabel(self, z, y):
-        vectorSet = z - self.T
-        cos = torch.nn.CosineSimilarity(dim=1)
-        cos_result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)
-
-        for i in range(self.clsN):
-            mean_vector = self.mean_v_Set[i].unsqueeze(0).repeat(z.size(0), 1)
-            cos_result[:, i] = cos(vectorSet, mean_vector)
-
-        _, pseudo_label = cos_result.max(1)
-
-        return pseudo_label.detach()
-
-    def get_Regularizer(self, z):
-        vectorSet = z - self.T
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        s = torch.pow(torch.sum(len_v) / z.size(0), 2) # E(X)^2
-        ss = torch.sum(len_v.pow(2)) / z.size(0)       # E(X^2)
-        Regularizer = ss - s
-        return Regularizer
-
-    def Test_Init(self):
-        for i in range(self.clsN):
-            self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v.detach()
-            self.len_v_Set[i] = self.Set[i].len_v.detach()
-            self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
-
-    def Calc_Test_Similarity(self, z, y):
-        vectorSet = z - self.T
-        Sim_scale = torch.tensor(0, device='cuda', dtype=torch.float32)
-        Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
-
-        cos = torch.nn.CosineSimilarity(dim=1)
-        Sim_scale = torch.sum(torch.abs((vectorSet - self.mean_v_Set[y]))/self.sigma_v_Set[y]) / z.size(0)
-        Sim_vector = torch.sum(torch.abs(cos(vectorSet, self.mean_v_Set[y])))
-
-        return Sim_scale, Sim_vector
-
+class NegativeCrossEntropyLoss(torch.nn.Module):
+    def __init__(self):
+        super(NegativeCrossEntropyLoss, self).__init__()
+        self.softmax = torch.nn.Softmax(dim=1)
+    def forward(self, Out, y):
+        Negative_log_P = torch.log(1 - self.softmax(Out))
+        return F.nll_loss(Negative_log_P, y) # y is Random label    
 
 def train_NAE(args, state_info, Train_loader, Test_loader): # all 
 
@@ -170,6 +38,8 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     
     # criterion_BCE = torch.nn.BCELoss(reduction='mean')
     criterion = torch.nn.CrossEntropyLoss()
+    softmax = torch.nn.Softmax(dim=1)
+    Neg_criterion = NegativeCrossEntropyLoss()
 
     start_epoch = 0
     checkpoint = utils.load_checkpoint(utils.default_model_dir)    
@@ -230,15 +100,40 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             # with torch.autograd.set_detect_anomaly(True):
             z, c = state_info.forward_NAE(x)
             Memory.Batch_Insert(z, y)
+
+            if args.gpu == '0':
+                loss_N = Memory.get_DotLoss1(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss1(z, rand_y, reduction="mean", reverse=True)    
+            elif args.gpu == '1':
+                loss_N = Memory.get_DotLoss2(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss2(z, rand_y, reduction="mean", reverse=True)    
+            elif args.gpu == '2':
+                loss_N = Memory.get_DotLoss3(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss3(z, rand_y, reduction="mean", reverse=True)    
+            elif args.gpu == '3':
+                loss_N = Memory.get_DotLoss4(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss4(z, rand_y, reduction="mean", reverse=True)    
+            elif args.gpu == '4':
+                loss_N = Memory.get_DotLoss5(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss5(z, rand_y, reduction="mean", reverse=True)    
+            elif args.gpu == '5':
+                loss_N = Memory.get_DotLoss6(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss6(z, rand_y, reduction="mean", reverse=True)    
+            else:
+                loss_N = Memory.get_DotLoss_BASE(z, y, reduction="mean", reverse=False)
+                loss_R = Memory.get_DotLoss_BASE(z, rand_y, reduction="mean", reverse=True)    
             
-            loss_N = Memory.get_DotLoss(z, y, reduction="mean", reverse=False)
-            loss_R = Memory.get_DotLoss(z, rand_y, reduction="mean", reverse=True)
             reg = Memory.get_Regularizer(z)
 
             pseudo_label = Memory.Calc_Pseudolabel(z, y)
             loss = criterion(c, pseudo_label)
 
-            total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg
+            if args.gpu == '6':
+                Neg_loss = Neg_criterion(c, rand_y)                
+                total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg + args.t0 * Neg_loss
+            else:
+                total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg    
+            
             total.backward()
             state_info.optim_NAE.step()
 
