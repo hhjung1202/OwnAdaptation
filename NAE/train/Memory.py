@@ -77,91 +77,9 @@ class MemorySet(object):
         self.T = (self.T / self.clsN).detach()
 
 # --------------------------
-    def get_DotLoss1(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
-        if reverse:
-            vectorSet = -vectorSet
 
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = len_v * self.len_v_Set[y] - Dot
-        # Cosine = Dot/(len_v * self.len_v_Set[y])
-
-        Zn = torch.abs((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
-        P = self.get_Gaussian_Percentage(Zn)
-        
-        if reverse:
-            P = 1 - P
-
-        loss = torch.sum(loss * P)
-
-        if reduction == "mean":
-            return loss / z.size(0)
-        elif reduction == "sum":
-            return loss
-
-    def get_DotLoss2(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
-        if reverse:
-            vectorSet = -vectorSet
-
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = len_v - Dot / self.len_v_Set[y]
-        # Cosine = Dot/(len_v * self.len_v_Set[y])
-
-        Zn = torch.abs((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
-        P = self.get_Gaussian_Percentage(Zn)
-        
-        if reverse:
-            P = 1 - P
-
-        loss = torch.sum(loss * P)
-
-        if reduction == "mean":
-            return loss / z.size(0)
-        elif reduction == "sum":
-            return loss
-
-    def get_DotLoss3(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
-        if reverse:
-            vectorSet = -vectorSet
-
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = self.len_v_Set[y] - Dot / len_v
-        # Cosine = Dot/(len_v * self.len_v_Set[y])
-
-        Zn = torch.abs((vectorSet - self.mean_v_Set[y])/self.sigma_v_Set[y])
-        P = self.get_Gaussian_Percentage(Zn)
-        
-        if reverse:
-            P = 1 - P
-
-        loss = torch.sum(loss * P)
-
-        if reduction == "mean":
-            return loss / z.size(0)
-        elif reduction == "sum":
-            return loss
-
-    def get_DotLoss4(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
-        if reverse:
-            vectorSet = -vectorSet
-
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = torch.sum(len_v - Dot / self.len_v_Set[y])
-        # Cosine = Dot/(len_v * self.len_v_Set[y])
-
-        if reduction == "mean":
-            return loss / z.size(0)
-        elif reduction == "sum":
-            return loss
-
-    def get_DotLoss5(self, z, y, reduction='mean', reverse=False):
+    def get_DotLoss_Noise(self, z, y, reduction='mean', reverse=False):
+        # Y(1-cos)
         vectorSet = z - self.T
         if reverse:
             vectorSet = -vectorSet
@@ -169,21 +87,6 @@ class MemorySet(object):
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
         Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
         loss = torch.sum(self.len_v_Set[y] - Dot / len_v)
-        # Cosine = Dot/(len_v * self.len_v_Set[y])
-
-        if reduction == "mean":
-            return loss / z.size(0)
-        elif reduction == "sum":
-            return loss
-
-    def get_DotLoss6(self, z, y, reduction='mean', reverse=False):
-        vectorSet = z - self.T
-        if reverse:
-            vectorSet = -vectorSet
-
-        len_v = vectorSet.pow(2).sum(dim=1).sqrt()
-        Dot = torch.sum(vectorSet * self.mean_v_Set[y], dim=1)
-        loss = torch.sum(1 - Dot/(len_v * self.len_v_Set[y]))
 
         if reduction == "mean":
             return loss / z.size(0)
@@ -191,6 +94,7 @@ class MemorySet(object):
             return loss
 
     def get_DotLoss_BASE(self, z, y, reduction='mean', reverse=False):
+        # XY(1-cos)
         vectorSet = z - self.T
         if reverse:
             vectorSet = -vectorSet
@@ -206,10 +110,10 @@ class MemorySet(object):
 
 # --------------------------
 
-    def get_Gaussian_Percentage(self, Zn):
-        # Scale.size = (Batch_size)
-        P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
-        return 2-2*P
+    # def get_Gaussian_Percentage(self, Zn):
+    #     # Scale.size = (Batch_size)
+    #     P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
+    #     return 2-2*P
 
     def Calc_Pseudolabel(self, z, y):
         vectorSet = z - self.T
