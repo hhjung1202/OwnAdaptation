@@ -105,9 +105,9 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             train_Size += float(x.size(0))
             
             if it % 10 == 0:
-                utils.print_log('Init, {}, {:.6f}, {:.3f}, {:.3f}'
+                utils.print_log('Init, {}, {:.6f}, {:.3f}, {:.3f}, {:.3f}'
                       .format(epoch, it, loss.item(), 100.*correct_Real / train_Size, 100.*correct_Noise / train_Size))
-                print('Init, {}, {:.6f}, {:.3f}, {:.3f}'
+                print('Init, {}, {:.6f}, {:.3f}, {:.3f}, {:.3f}'
                       .format(epoch, it, loss.item(), 100.*correct_Real / train_Size, 100.*correct_Noise / train_Size))
 
         # train
