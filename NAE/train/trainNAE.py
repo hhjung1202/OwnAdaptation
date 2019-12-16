@@ -131,7 +131,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
             if args.gpu == '6':
                 Neg_loss = Neg_criterion(c, rand_y)                
-                total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg + args.t0 * Neg_loss
+                total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg + args.t0 * Neg_loss #
             else:
                 total = args.t0 * loss + args.t1 * loss_N + args.t2 * loss_R + args.t3 * reg    
             
