@@ -2,6 +2,7 @@ import torch
 from torchvision import datasets, transforms
 import random
 from PIL import Image
+import numpy as np
 
 
 class MNIST(datasets.MNIST):
@@ -84,6 +85,68 @@ def MNIST_loader(args):
     Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True)
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False)
     return Train_loader, Test_loader, 1, 10
+
+
+class Symetric_Noise:
+    def __init__(self, probablity=.1, sym=True):
+        self.prob = probablity
+        self.sym = sym
+
+    def __call__(self, x):
+        # Symmetric
+        if self.sym:
+            item = torch.randint(0, 9, [1])
+            if self.prob >= np.random.rand(1):
+                return item, x
+            else:
+                return torch.tensor([x]), x
+
+        # ASymmetric
+        else:
+            if self.prob >= np.random.rand(1):
+                if x == 9:
+                    return torch.tensor([1]), x
+                    # bird -> airplane
+                elif x == 2:
+                    return torch.tensor([0]), x
+                    # cat -> dog
+                elif x == 3:
+                    return torch.tensor([5]), x
+                    # dog -> cat
+                elif x == 5:
+                    return torch.tensor([3]), x
+                    # deer -> horse
+                elif x == 4:
+                    return torch.tensor([7]), x
+                else:
+                    return torch.tensor([x]), x
+            else:
+                return torch.tensor([x]), x
+
+
+class Noise_CIFAR10:
+    def __init__(self, root, train=True, transforms=None, down=True, noise_rate=.1, sym=True):
+        self.dataset = datasets.CIFAR10(root, train=train, transform=transforms, target_transform=Symetric_Noise(noise_rate, sym), download=down)
+
+    def get_loader(self, **kwargs):
+        return torch.utils.data.DataLoader(self.dataset, **kwargs)
+
+
+trans = transforms.Compose([transforms.ToTensor()])
+data = Noise_CIFAR10('/disk1/', transforms=trans, noise_rate=.2, sym=False)
+loader = data.get_loader(batch_size=100, num_workers=2, shuffle=True)
+print('load done')
+
+
+acc = 0
+print(len(loader.dataset))
+for x, (noise, real) in loader:
+    noise = noise.view(-1)
+    acc += (noise == real).sum()
+print(float(acc) / len(loader.dataset))
+
+
+
 
 if __name__=='__main__':
     class e():
