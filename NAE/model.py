@@ -68,7 +68,6 @@ class Classifier(nn.Module):
 
 
 
-
 # class Encoder(nn.Module):
 #     def __init__(self, chIn=1, feature=64):
 #         super(Encoder, self).__init__()
