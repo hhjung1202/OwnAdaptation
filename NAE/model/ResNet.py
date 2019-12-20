@@ -61,14 +61,14 @@ class ResNet(nn.Module):
         for i, layer in enumerate(self._forward):
             out = layer(out)
             if i == self.memory:
-                c = self.flatten(self.avgpool(x))
+                c = self.flatten(self.avgpool(out))
 
         out = self.avgpool(out)
         out = self.flatten(out)
         if c is None:
-            c = x
+            c = out
         out = self.linear(out)
-        return out
+        return out, c
 
 
 def ResNet18():
