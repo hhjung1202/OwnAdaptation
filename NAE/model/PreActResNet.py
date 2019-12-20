@@ -88,7 +88,7 @@ class PreActResNet(nn.Module):
             self._forward.append('layer3_%d' % (i))
 
         self.bn = nn.BatchNorm2d(filters[3])
-        self.avgpool = nn.AvgPool2d(kernel_size=8, stride=1)
+        self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.fc = nn.Linear(filters[3], num_classes)
 
         self.flatten = Flatten()
@@ -99,7 +99,7 @@ class PreActResNet(nn.Module):
             layer = getattr(self, name)
             x = layer(x)
             if i == self.memory:
-                c = self.flatten(x)
+                c = self.flatten(self.avgpool(x))
 
         x = F.relu(self.bn(x))
         x = self.avgpool(x)
