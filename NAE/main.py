@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
 parser.add_argument('--db', default='mnist', type=str, help='dataset selection')
 parser.add_argument('--noise-rate', default=.0, type=float, help='Noise rate')
+parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 parser.add_argument('--maxN', default=500, type=int, help='Max Buffer Size')
@@ -61,6 +62,11 @@ def main():
     args.milestones = [200,300]
     # args.milestones = [80,120]
     args.Dmilestones = [30,60]
+    if args.noise_type == "sym":
+        args.sym = True
+    else:
+        args.sym = False
+
     if args.t2 == -1:
         args.t2 = args.t1
 

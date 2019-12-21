@@ -126,27 +126,41 @@ class Symetric_Noise:
 
 class Noise_CIFAR10:
     def __init__(self, root, train=True, transforms=None, down=True, noise_rate=.1, sym=True):
-        self.dataset = datasets.CIFAR10(root, train=train, transform=transforms, target_transform=Symetric_Noise(noise_rate, sym), download=down)
+        self.dataset = 
 
     def get_loader(self, **kwargs):
         return torch.utils.data.DataLoader(self.dataset, **kwargs)
 
+def Cifar10_loader(args):
+    
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    
+    print("Cifar10 Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
+    
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
 
-trans = transforms.Compose([transforms.ToTensor()])
-data = Noise_CIFAR10('/disk1/', transforms=trans, noise_rate=.2, sym=False)
-loader = data.get_loader(batch_size=100, num_workers=2, shuffle=True)
-print('load done')
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+    
+    # Baseline result
+    Train_dataset = datasets.CIFAR10(root, train=True, transform=transform_train
+                    , target_transform=Symetric_Noise(args.noise_rate, args.sym), download=True)
+    Test_dataset = datasets.CIFAR10(root, train=False, transform=transform_test, download=True)
 
-
-acc = 0
-print(len(loader.dataset))
-for x, (noise, real) in loader:
-    noise = noise.view(-1)
-    acc += (noise == real).sum()
-print(float(acc) / len(loader.dataset))
-
-
-
+    Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.j)
+    Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.j)
+    return Train_loader, Test_loader, 3, 10
 
 if __name__=='__main__':
     class e():
@@ -163,15 +177,3 @@ if __name__=='__main__':
     args.seed = 1234
 
     True_loader, Fake_loader, Noise_loader, All_loader, test_loader = MNIST_loader(args)
-
-    # # train, test, _, _ = Pascal_loader(args)
-    # # train, test, _, _ = Cityscapes_loader_gtCoarse(args)
-    # for it, (x,y,realy) in enumerate(train):
-    #     print(x,y,realy)
-    #     break;
-
-    # for it, (x,(y1,y2)) in enumerate(train):
-    #     print(x)
-    #     print('y', y1)
-    #     print('y', y2)
-    #     break;
