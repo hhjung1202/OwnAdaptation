@@ -16,6 +16,13 @@ from .Memory import MemorySet
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
+'''
+    2가지 과정이 필요해보인다
+    1. 초기 방식
+    2. Pseudo label을 가지고 모든것 학습(random label 사용?)
+    3. 최종 Pseudo label 어떻게 사용할지 결정??
+'''
+
 def train_NAE(args, state_info, Train_loader, Test_loader): # all 
 
     Memory = MemorySet(args=args)

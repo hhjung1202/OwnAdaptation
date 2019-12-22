@@ -95,41 +95,34 @@ class Symetric_Noise:
     def __call__(self, x):
         # Symmetric
         if self.sym:
-            item = torch.randint(0, 9, [1])
+            item = torch.randint(0, 9, size=x.size(), dtype=x.dtype)
             if self.prob >= np.random.rand(1):
                 return item, x
             else:
-                return torch.tensor([x]), x
+                return x, x
 
         # ASymmetric
         else:
             if self.prob >= np.random.rand(1):
                 if x == 9:
-                    return torch.tensor([1]), x
+                    return 1, x
                     # bird -> airplane
                 elif x == 2:
-                    return torch.tensor([0]), x
+                    return 0, x
                     # cat -> dog
                 elif x == 3:
-                    return torch.tensor([5]), x
+                    return 5, x
                     # dog -> cat
                 elif x == 5:
-                    return torch.tensor([3]), x
+                    return 3, x
                     # deer -> horse
                 elif x == 4:
-                    return torch.tensor([7]), x
+                    return 7, x
                 else:
-                    return torch.tensor([x]), x
+                    return x, x
             else:
-                return torch.tensor([x]), x
+                return x, x
 
-
-class Noise_CIFAR10:
-    def __init__(self, root, train=True, transforms=None, down=True, noise_rate=.1, sym=True):
-        self.dataset = 
-
-    def get_loader(self, **kwargs):
-        return torch.utils.data.DataLoader(self.dataset, **kwargs)
 
 def Cifar10_loader(args):
     
@@ -158,8 +151,8 @@ def Cifar10_loader(args):
                     , target_transform=Symetric_Noise(args.noise_rate, args.sym), download=True)
     Test_dataset = datasets.CIFAR10(root, train=False, transform=transform_test, download=True)
 
-    Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.j)
-    Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.j)
+    Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
+    Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
     return Train_loader, Test_loader, 3, 10
 
 if __name__=='__main__':
@@ -168,12 +161,18 @@ if __name__=='__main__':
 
     args = e()
 
-    args.batch_size = 64
+    args.batch_size = 128
     args.workers = 4
-    args.img_size = 32
 
     args.noise_rate = 0.1
-    args.sample = 5000
+    args.sym = True
     args.seed = 1234
 
-    True_loader, Fake_loader, Noise_loader, All_loader, test_loader = MNIST_loader(args)
+    Train_loader, Test_loader, 3, 10 = Cifar10_loader(args)
+    for i, (x,n,l) in enumerate(Train_loader):
+        print()
+        print(i)
+        print(x.size())
+        print(n)
+        print(l)
+        print()

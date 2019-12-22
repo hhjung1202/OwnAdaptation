@@ -9,7 +9,7 @@ from train import *
 
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
-parser.add_argument('--db', default='mnist', type=str, help='dataset selection')
+parser.add_argument('--db', default='cifar10', type=str, help='dataset selection')
 parser.add_argument('--noise-rate', default=.0, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-sample', default=5000, type=int, help='Known Sample size')
@@ -90,6 +90,8 @@ def dataset_selector(data):
         return dataset.MNIST_loader(args)
     elif data == 'svhn':
         return dataset.SVHN_loader(img_size=args.img_size)
+    elif data == 'cifar10':
+        return dataset.Cifar10_loader(args)
 
 if __name__=='__main__':
     main()
