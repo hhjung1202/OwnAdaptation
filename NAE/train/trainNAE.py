@@ -87,7 +87,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         # state_info.NAE.train()
         # utils.print_log('Type, Epoch, Batch, loss, Real%, Noise%')
-        # for it, (x, y, label) in enumerate(Train_loader):
+        # for it, (x, (y, label)) in enumerate(Train_loader):
         #     x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
         #     state_info.optim_NAE.zero_grad()
@@ -110,7 +110,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         # train
         state_info.NAE.train()
         utils.print_log('Type, Epoch, Batch, total, Cls, Noise_V, Random_V, Regular, Noise%, Pseudo%, Real%, Pseu_Nois%, Pseu_Real%')
-        for it, (x, y, label) in enumerate(Train_loader):
+        for it, (x, (y, label)) in enumerate(Train_loader):
 
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
             rand_y = torch.randint_like(y, low=0, high=10, device="cuda")
@@ -164,7 +164,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         # test
         state_info.NAE.eval()
         Memory.Test_Init()
-        for it, (x, y, label) in enumerate(Test_loader):
+        for it, (x, (y, label)) in enumerate(Test_loader):
 
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
