@@ -93,7 +93,6 @@ class Symetric_Noise:
         self.sym = sym
 
     def __call__(self, x):
-        print(x)
         # Symmetric
         if self.sym:
             item = torch.randint(0, 9, size=[])
@@ -170,7 +169,7 @@ if __name__=='__main__':
     args.seed = 1234
 
     Train_loader, Test_loader, i,j = Cifar10_loader(args)
-    for i, (x,n,l) in enumerate(Train_loader):
+    for i in enumerate(Train_loader):
         print()
         print(i)
         print(x.size())
