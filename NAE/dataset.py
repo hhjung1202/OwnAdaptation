@@ -10,7 +10,6 @@ class MNIST(datasets.MNIST):
         super(MNIST, self).__init__(root, train=train
             , transform=transform, target_transform=None, download=download)
 
-        self.sample = sample
         self.noise_rate = noise_rate
         self.Task = Task
 
