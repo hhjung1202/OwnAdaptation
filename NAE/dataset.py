@@ -50,7 +50,7 @@ class MNIST(datasets.MNIST):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        return img, target, real_target
+        return img, (target, real_target)
 
     def Intended_Random_Noise_Label(self, label):
         item = torch.randint(0,9, size=label.size(), dtype=label.dtype)
@@ -163,7 +163,7 @@ if __name__=='__main__':
 
     args.batch_size = 128
     args.workers = 4
-
+    args.img_size = 32
     args.noise_rate = 0.1
     args.sym = True
     args.seed = 1234
