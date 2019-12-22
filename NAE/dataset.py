@@ -168,8 +168,8 @@ if __name__=='__main__':
     args.sym = True
     args.seed = 1234
 
-    Train_loader, Test_loader, i,j = Cifar10_loader(args)
-    for i, (x, (n, l)) in enumerate(MNIST_loader):
+    Train_loader, Test_loader, i,j = MNIST_loader(args)
+    for i, (x, (n, l)) in enumerate(Train_loader):
         print(i)
         print(x)
         print(x.size())
