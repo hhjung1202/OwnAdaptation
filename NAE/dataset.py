@@ -93,9 +93,10 @@ class Symetric_Noise:
         self.sym = sym
 
     def __call__(self, x):
+        print(x)
         # Symmetric
         if self.sym:
-            item = torch.randint(0, 9, size=[], dtype=x.dtype)
+            item = torch.randint(0, 9, size=[])
             if self.prob >= np.random.rand(1):
                 return item, x
             else:
