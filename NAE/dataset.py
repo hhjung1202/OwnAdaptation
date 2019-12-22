@@ -6,7 +6,7 @@ import numpy as np
 
 
 class MNIST(datasets.MNIST):
-    def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, sample=5000, seed=1234, Task='True'):
+    def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, seed=1234, Task='True'):
         super(MNIST, self).__init__(root, train=train
             , transform=transform, target_transform=None, download=download)
 
@@ -77,7 +77,7 @@ def MNIST_loader(args):
                                   ])
     # Baseline result
     Train_dataset = MNIST(root=root, train=True, transform=transform, download=True, 
-                                        noise_rate=args.noise_rate, sample=args.sample, seed=args.seed)
+                                        noise_rate=args.noise_rate, seed=args.seed)
 
 
     Test_dataset = MNIST(root=root, train=False, transform=transform, download=True)
