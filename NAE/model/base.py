@@ -49,5 +49,5 @@ class NAE(nn.Module):
 
     def forward(self, x, test=False):
         z = self.Encoder(x)
-        c = self.Classifier(z)
-        return z, c
+        out = self.Classifier(z)
+        return out, z

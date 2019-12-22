@@ -94,19 +94,19 @@ class PreActResNet(nn.Module):
         self.flatten = Flatten()
 
     def forward(self, x):
-        c = None
+        z = None
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
             x = layer(x)
             if i == self.memory:
-                c = self.flatten(self.avgpool(x))
+                z = self.flatten(self.avgpool(x))
 
         x = F.relu(self.bn(x))
         x = self.avgpool(x)
         x = self.flatten(x)
 
-        if c is None:
-            c = x
+        if z is None:
+            z = x
 
-        x = self.fc(x)
-        return x, c
+        out = self.fc(x)
+        return out, z

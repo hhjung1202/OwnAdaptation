@@ -19,22 +19,30 @@ class model_optim_state_info(object):
         torch.cuda.manual_seed(args.seed)
         
         self.init_lr = args.lr
-        self.NAE = NAE(I=args.img_size, H=args.h, latent_size=args.z, num_classes=args.clsN)
-        
-    def forward_NAE(self, image):
-        z, c = self.NAE(image)
-        return z, c
+        if args.model == "NAE":
+            self.model = NAE(I=args.img_size, H=args.h, latent_size=64, num_classes=args.clsN)
+        elif args.model == "ResNet18":
+            self.model = ResNet18(memory=args.z, num_classes=args.clsN)
+        elif args.model == "ResNet34":
+            self.model = ResNet34(memory=args.z, num_classes=args.clsN)
+        elif args.model == "PreActResNet32":
+            self.model = PreActResNet(num_classes=args.clsN, resnet_layer=32, memory=args.z)
+
+    def forward(self, image):
+        out, z = self.model(image)
+        return out, z
 
     def model_cuda_init(self):
         if torch.cuda.is_available():
-            self.NAE = nn.DataParallel(self.NAE).cuda()
+            self.model = nn.DataParallel(self.model).cuda()
 
     def weight_cuda_init(self):
-        self.NAE.apply(self.weights_init_normal)
+        self.model.apply(self.weights_init_normal)
         
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
             torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
+            # torch.nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
             # if init_type == 'normal':
             #     torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
             # elif init_type == 'xavier':
@@ -46,43 +54,33 @@ class model_optim_state_info(object):
             torch.nn.init.constant_(m.bias.data, 0.0)
 
     def optimizer_init(self, args):
-        self.optim_NAE = optim.Adam(self.NAE.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay) # lr, b1, b2, weight_decay
-        # self.optim_NAE = optim.SGD(self.NAE.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+        # self.optim_model = optim.Adam(self.model.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay) # lr, b1, b2, weight_decay
+        self.optim_model = optim.SGD(self.model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
-    def learning_scheduler_init(self, args, mode):
-        if mode == "NAE":
-            self.lr_NAE = optim.lr_scheduler.MultiStepLR(self.optim_NAE, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
+    def learning_scheduler_init(self, args, mode=None):
+        # if mode == "NAE":
+        self.lr_model = optim.lr_scheduler.MultiStepLR(self.optim_model, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
-    def load_state_dict(self, checkpoint, mode):
-        if mode == "NAE":
-            self.NAE.load_state_dict(checkpoint['weight'])
-            self.optim_NAE.load_state_dict(checkpoint['optim'])
+    def load_state_dict(self, checkpoint, mode=None):
+        # if mode == "NAE":
+        self.model.load_state_dict(checkpoint['weight'])
+        self.optim_model.load_state_dict(checkpoint['optim'])
 
-
-class LambdaLR():
-    def __init__(self, n_epochs, offset, decay_start_epoch):
-        assert ((n_epochs - decay_start_epoch) > 0), "Decay must start before the training session ends!"
-        self.n_epochs = n_epochs
-        self.offset = offset
-        self.decay_start_epoch = decay_start_epoch
-
-    def step(self, epoch):
-        return 1.0 - max(0, epoch + self.offset - self.decay_start_epoch)/(self.n_epochs - self.decay_start_epoch)
 
 def make_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
     return directory
 
-def save_state_checkpoint(state_info, best_prec_result, epoch, mode, filename, directory):
-    if mode == "NAE":
-        save_checkpoint({
-            'epoch': epoch,
-            'Best_Prec': best_prec_result,
-            'model': state_info.NAE,
-            'weight': state_info.NAE.state_dict(),
-            'optim': state_info.optim_NAE.state_dict(),
-        }, filename, directory)
+def save_state_checkpoint(state_info, best_prec_result, epoch, filename, directory, mode==None):
+    # if mode == "NAE":
+    save_checkpoint({
+        'epoch': epoch,
+        'Best_Prec': best_prec_result,
+        'model': state_info.model,
+        'weight': state_info.model.state_dict(),
+        'optim': state_info.optim_model.state_dict(),
+    }, filename, directory)
 
     # print(state_info.optim_Disc.state_dict()['param_groups'])
     # optim = state_info.optim_Disc.state_dict()
@@ -97,8 +95,6 @@ def save_checkpoint(state, filename, model_dir):
 
     torch.save(state, model_filename)
     print("=> saving checkpoint '{}'".format(model_filename))
-
-    return
 
 def load_checkpoint(directory, is_last=True):
 

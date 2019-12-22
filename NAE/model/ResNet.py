@@ -32,47 +32,65 @@ class BasicBlock(nn.Module):
         return out
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, memory, num_classes=10):
+    def __init__(self, block, num_blocks, memory=1, num_classes=10):
         super(ResNet, self).__init__()
         self.in_planes = 64
         self.memory = memory
-        self._forward = []
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
-        self._make_layer(block, 64, num_blocks[0], stride=1)
-        self._make_layer(block, 128, num_blocks[1], stride=2)
-        self._make_layer(block, 256, num_blocks[2], stride=2)
-        self._make_layer(block, 512, num_blocks[3], stride=2)
-        self.linear = nn.Linear(512*block.expansion, num_classes)
+        self.init = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+        )
+
+        self._forward = ['init']
+
+        setattr(self, 'layer1_0', block(64, 64, 1))
+        self._forward.append('layer1_0')
+        for i in range(1, num_blocks[0]):
+            setattr(self, 'layer1_%d' % (i), block(64, 64))
+            self._forward.append('layer1_%d' % (i))
+
+        setattr(self, 'layer2_0', block(64, 128, 2))
+        self._forward.append('layer2_0')
+        for i in range(1, num_blocks[1]):
+            setattr(self, 'layer2_%d' % (i), block(128, 128))
+            self._forward.append('layer2_%d' % (i))
+
+        setattr(self, 'layer3_0', block(128, 256, 2))
+        self._forward.append('layer3_0')
+        for i in range(1, num_blocks[2]):
+            setattr(self, 'layer3_%d' % (i), block(256, 256))
+            self._forward.append('layer3_%d' % (i))
+
+        setattr(self, 'layer4_0', block(256, 512, 2))
+        self._forward.append('layer4_0')
+        for i in range(1, num_blocks[3]):
+            setattr(self, 'layer4_%d' % (i), block(512, 512))
+            self._forward.append('layer4_%d' % (i))
+
+        self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
 
-    def _make_layer(self, block, planes, num_blocks, stride):
-        strides = [stride] + [1]*(num_blocks-1)
-        for stride in strides:
-            self._forward.append(block(self.in_planes, planes, stride))
-            self.in_planes = planes * block.expansion
-
     def forward(self, x):
-        c = None
-        out = F.relu(self.bn1(self.conv1(x)))
-        
-        for i, layer in enumerate(self._forward):
-            out = layer(out)
+        z = None
+        for i, name in enumerate(self._forward):
+            layer = getattr(self, name)
+            x = layer(x)
             if i == self.memory:
-                c = self.flatten(self.avgpool(out))
+                z = self.flatten(self.avgpool(x))
 
-        out = self.avgpool(out)
-        out = self.flatten(out)
-        if c is None:
-            c = out
-        out = self.linear(out)
-        return out, c
+        x = self.avgpool(x)
+        x = self.flatten(x)
+        if z is None:
+            z = x
+        out = self.linear(x)
+        return out, z
 
 
-def ResNet18():
-    return ResNet(BasicBlock, [2,2,2,2])
+def ResNet18(memory=1, num_classes=10):
+    return ResNet(BasicBlock, [2,2,2,2], memory=memory, num_classes=num_classes)
 
-def ResNet34():
-    return ResNet(BasicBlock, [3,4,6,3])
+def ResNet34(memory=1, num_classes=10):
+    return ResNet(BasicBlock, [3,4,6,3], memory=memory, num_classes=num_classes)

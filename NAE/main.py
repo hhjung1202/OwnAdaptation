@@ -13,7 +13,8 @@ parser.add_argument('--db', default='cifar10', type=str, help='dataset selection
 parser.add_argument('--noise-rate', default=.0, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
-parser.add_argument('--maxN', default=500, type=int, help='Max Buffer Size')
+parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
+parser.add_argument('--model', default='ResNet18', type=str, help='NAE, ResNet18, ResNet34, PreActResNet32')
 # parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
 # parser.add_argument('--low', default=-1., type=float, help='Weighted Gradient Gamma Low value')
 # parser.add_argument('--high', default=1., type=float, help='Weighted Gradient Gamma High value')
@@ -35,7 +36,7 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--h', type=int, default=400, help='hidden size')
-parser.add_argument('--z', type=int, default=64, help='latent feature')
+parser.add_argument('--z', type=int, default=0, help='latent selection(0 to n)')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
 parser.add_argument('--t0', type=float, default=1.0, help='Classification loss weight')
@@ -65,9 +66,6 @@ def main():
         args.sym = True
     else:
         args.sym = False
-
-    if args.t2 == -1:
-        args.t2 = args.t1
 
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)

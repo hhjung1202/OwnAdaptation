@@ -4,64 +4,6 @@ import random
 from PIL import Image
 import numpy as np
 
-
-# class MNIST(datasets.MNIST):
-#     def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, seed=1234, Task='True'):
-#         super(MNIST, self).__init__(root, train=train
-#             , transform=transform, target_transform=None, download=download)
-
-#         self.noise_rate = noise_rate
-#         self.Task = Task
-
-#         self.data_shuffle = list(zip(self.data, self.targets))
-
-#         random.seed(seed)
-#         random.shuffle(self.data_shuffle)
-
-#         if self.train is True:
-#             self.Set = self.data_shuffle
-#         else:
-#             self.Set = self.data_shuffle
-
-#     def __getitem__(self, index):
-
-#         if self.train is True:
-#             img, real_target = self.Set[index]
-#             noise_sample = self.noise_rate * len(self.data_shuffle)
-#             if index < noise_sample:
-#                 target = self.Intended_Random_Noise_Label(real_target)
-#             else:
-#                 target = real_target
-#         else:
-#             img, real_target = self.Set[index]
-#             target = real_target
-            
-#         target = int(target)
-#         real_target = int(real_target)
-
-#         # doing this so that it is consistent with all other datasets
-#         # to return a PIL Image
-#         img = Image.fromarray(img.numpy(), mode='L')
-
-#         if self.transform is not None:
-#             img = self.transform(img)
-
-#         if self.target_transform is not None:
-#             target = self.target_transform(target)
-
-#         return img, (target, real_target)
-
-#     def Intended_Random_Noise_Label(self, label):
-#         item = torch.randint(0,9, size=label.size(), dtype=label.dtype)
-#         if item >= label:
-#             return item + 1
-#         else:
-#             return item
-
-#     def __len__(self):
-#         """Return the number of images."""
-#         return len(self.Set)
-
 def MNIST_loader(args):
     
     torch.manual_seed(args.seed)
