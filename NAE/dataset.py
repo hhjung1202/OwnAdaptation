@@ -97,31 +97,31 @@ class Symetric_Noise:
         if self.sym:
             item = torch.randint(0, 9, size=[])
             if self.prob >= np.random.rand(1):
-                return item, x
+                return torch.tensor(item), torch.tensor(x)
             else:
-                return x, x
+                return torch.tensor(x), torch.tensor(x)
 
         # ASymmetric
         else:
             if self.prob >= np.random.rand(1):
                 if x == 9:
-                    return 1, x
+                    return torch.tensor(1), torch.tensor(x)
                     # bird -> airplane
                 elif x == 2:
-                    return 0, x
+                    return torch.tensor(0), torch.tensor(x)
                     # cat -> dog
                 elif x == 3:
-                    return 5, x
+                    return torch.tensor(5), torch.tensor(x)
                     # dog -> cat
                 elif x == 5:
-                    return 3, x
+                    return torch.tensor(3), torch.tensor(x)
                     # deer -> horse
                 elif x == 4:
-                    return 7, x
+                    return torch.tensor(7), torch.tensor(x)
                 else:
-                    return x, x
+                    return torch.tensor(x), torch.tensor(x)
             else:
-                return x, x
+                return torch.tensor(x), torch.tensor(x)
 
 
 def Cifar10_loader(args):
