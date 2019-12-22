@@ -168,7 +168,7 @@ if __name__=='__main__':
     args.sym = True
     args.seed = 1234
 
-    Train_loader, Test_loader, 3, 10 = Cifar10_loader(args)
+    Train_loader, Test_loader, i,j = Cifar10_loader(args)
     for i, (x,n,l) in enumerate(Train_loader):
         print()
         print(i)
