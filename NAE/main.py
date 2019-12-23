@@ -13,7 +13,6 @@ parser.add_argument('--db', default='cifar10', type=str, help='dataset selection
 parser.add_argument('--noise-rate', default=.0, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
-parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 parser.add_argument('--model', default='ResNet18', type=str, help='NAE, ResNet18, ResNet34, PreActResNet32')
 # parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
 # parser.add_argument('--low', default=-1., type=float, help='Weighted Gradient Gamma Low value')
