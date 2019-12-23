@@ -142,7 +142,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         # test
         state_info.model.eval()
         Memory.Test_Init()
-        for it, (x, (y, label)) in enumerate(Test_loader):
+        for it, (x, y, label) in enumerate(Test_loader):
 
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
