@@ -53,9 +53,9 @@ cuda = True if torch.cuda.is_available() else False
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed(args.seed)
 if args.noise_type == "sym":
-        args.sym = True
-    else:
-        args.sym = False
+    args.sym = True
+else:
+    args.sym = False
 
 def main():
     global args, best_prec_result
