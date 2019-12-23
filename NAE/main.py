@@ -52,6 +52,10 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 cuda = True if torch.cuda.is_available() else False
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed(args.seed)
+if args.noise_type == "sym":
+        args.sym = True
+    else:
+        args.sym = False
 
 def main():
     global args, best_prec_result
@@ -62,11 +66,7 @@ def main():
     args.milestones = [200,300]
     # args.milestones = [80,120]
     args.Dmilestones = [30,60]
-    if args.noise_type == "sym":
-        args.sym = True
-    else:
-        args.sym = False
-
+    
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
     state_info.model_cuda_init()
