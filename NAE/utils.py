@@ -17,16 +17,23 @@ class model_optim_state_info(object):
     def model_init(self, args):
         torch.manual_seed(args.seed)
         torch.cuda.manual_seed(args.seed)
+        z_ResNet18 = [64, 64, 64, 128, 128, 256, 256, 512, 512,] # 0 to 8
+        z_PreActResNet = [32, 32, 32, 32, 32, 32, 64, 64, 64, 64, 64, 128, 128, 128, 128, 128,] # 0 to 15
+        z_ResNet34 = [64, 64, 64, 64, 128, 128, 128, 128, 256, 256, 256, 256, 256, 256, 512, 512, 512] # 0 to 16
         
         self.init_lr = args.lr
         if args.model == "NAE":
             self.model = NAE(I=args.img_size, H=args.h, latent_size=64, num_classes=args.clsN)
+            args.z = 64
         elif args.model == "ResNet18":
-            self.model = ResNet18(memory=args.z, num_classes=args.clsN)
+            self.model = ResNet18(memory=args.m, num_classes=args.clsN)
+            args.z = z_ResNet18[args.m]
         elif args.model == "ResNet34":
-            self.model = ResNet34(memory=args.z, num_classes=args.clsN)
+            self.model = ResNet34(memory=args.m, num_classes=args.clsN)
+            args.z = z_ResNet34[args.m]
         elif args.model == "PreActResNet32":
-            self.model = PreActResNet(num_classes=args.clsN, resnet_layer=32, memory=args.z)
+            self.model = PreActResNet(num_classes=args.clsN, resnet_layer=32, memory=args.m)
+            args.z = z_PreActResNet[args.m]
 
     def forward(self, image):
         out, z = self.model(image)

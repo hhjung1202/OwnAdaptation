@@ -36,7 +36,8 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--h', type=int, default=400, help='hidden size')
-parser.add_argument('--z', type=int, default=0, help='latent selection(0 to n)')
+parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
+# parser.add_argument('--z', type=int, default=64, help='latent size')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
 parser.add_argument('--t0', type=float, default=1.0, help='Classification loss weight')
@@ -70,6 +71,7 @@ def main():
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
     state_info.model_cuda_init()
+    print(args.z)
 
     if cuda:
         # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
