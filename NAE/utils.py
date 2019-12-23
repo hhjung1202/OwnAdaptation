@@ -79,7 +79,7 @@ def make_directory(directory):
         os.makedirs(directory)
     return directory
 
-def save_state_checkpoint(state_info, best_prec_result, epoch, filename, directory, mode==None):
+def save_state_checkpoint(state_info, best_prec_result, epoch, filename, directory, mode=None):
     # if mode == "NAE":
     save_checkpoint({
         'epoch': epoch,
