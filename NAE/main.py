@@ -14,6 +14,7 @@ parser.add_argument('--noise-rate', default=.0, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 parser.add_argument('--model', default='ResNet18', type=str, help='NAE, ResNet18, ResNet34, PreActResNet32')
+parser.add_argument('--maxN', default=500, type=int, help='Max Buffer Size')
 # parser.add_argument('--grad', default='T', type=str, help='Weight Gradient T(True)/F(False)')
 # parser.add_argument('--low', default=-1., type=float, help='Weighted Gradient Gamma Low value')
 # parser.add_argument('--high', default=1., type=float, help='Weighted Gradient Gamma High value')
@@ -70,7 +71,6 @@ def main():
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
     state_info.model_cuda_init()
-    print(args.z)
 
     if cuda:
         # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
