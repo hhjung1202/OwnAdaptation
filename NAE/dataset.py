@@ -176,7 +176,7 @@ def Cifar10_loader(args):
     ])
     
     # Baseline result
-    Train_dataset = CIFAR10(noise_type=args.noise_type, noise_rate=args.noise_rate, seed=args.seed
+    Train_dataset = cifar10(noise_type=args.noise_type, noise_rate=args.noise_rate, seed=args.seed
                                     , root=root, train=True, transform=transform_train, download=True)
     Test_dataset = datasets.CIFAR10(root=root, train=False, transform=transform_test, download=True)
 
