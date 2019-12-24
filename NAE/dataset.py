@@ -88,7 +88,7 @@ def MNIST_loader(args):
 
 class cifar10(datasets.CIFAR10):
     def __init__(self, noise_type='sym', noise_rate=0.0, seed=1234, **kwargs):
-        super(CIFAR10NoisyLabels, self).__init__(**kwargs)
+        super(cifar10, self).__init__(**kwargs)
         self.seed = seed
         self.num_classes = 10
         self.flip_pairs = np.asarray([[9, 1], [2, 0], [4, 7], [3, 5], [5, 3]])
