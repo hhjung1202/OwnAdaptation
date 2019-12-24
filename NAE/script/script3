@@ -1,6 +1,40 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/func_2/n0.0 --noise-rate 0.0 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/func_2/n0.1 --noise-rate 0.1 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/func_2/n0.2 --noise-rate 0.2 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/func_2/n0.3 --noise-rate 0.3 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_Gaussian/func_2/n0.4 --noise-rate 0.4 --gpu 2 1> /dev/null 2> /dev/null
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m0/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 0 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m1/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 1 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m2/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 2 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m3/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 3 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m4/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 4 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m5/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 5 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m6/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 6 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m7/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 7 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.1/m8/n0.2 --noise-rate 0.2 --lr 0.1 --noise-type sym --m 8 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m0/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 0 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m1/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 1 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m2/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 2 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m3/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 3 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m4/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 4 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m5/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 5 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m6/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 6 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m7/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 7 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.01/m8/n0.2 --noise-rate 0.2 --lr 0.01 --noise-type sym --m 8 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m0/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 0 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m1/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 1 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m2/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 2 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m3/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 3 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m4/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 4 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m5/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 5 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m6/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 6 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m7/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 7 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.2/m8/n0.2 --noise-rate 0.2 --lr 0.2 --noise-type sym --m 8 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m0/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 0 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m1/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 1 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m2/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 2 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m3/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 3 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m4/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 4 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m5/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 5 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m6/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 6 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m7/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 7 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Sym/lr0.02/m8/n0.2 --noise-rate 0.2 --lr 0.02 --noise-type sym --m 8 --model ResNet18 --gpu 2 1> /dev/null 2> /dev/null 
