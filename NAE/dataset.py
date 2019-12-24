@@ -113,13 +113,13 @@ class cifar10(datasets.CIFAR10):
         np.random.seed(self.seed)
         targets = np.array(self.targets)
         mask = np.random.rand(len(targets)) <= noise_rate
-        print(mask)
         rnd_targets = np.random.choice(self.num_classes, mask.sum())
         print(rnd_targets)
         targets[mask] = rnd_targets
         print(targets[mask])
         targets = [int(target) for target in targets]
         print(targets)
+        print(self.targets)
         self.targets = targets
 
     def asymmetric_noise(self, noise_rate):
@@ -143,7 +143,7 @@ class cifar10(datasets.CIFAR10):
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
-        img = Image.fromarray(img.numpy(), mode='L')
+        img = Image.fromarray(img)
 
         if self.transform is not None:
             img = self.transform(img)
