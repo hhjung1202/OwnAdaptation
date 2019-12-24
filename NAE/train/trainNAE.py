@@ -55,25 +55,26 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     correct = torch.tensor(0, dtype=torch.float32)
     total_Size = torch.tensor(0, dtype=torch.float32)
 
-    for it, (x, y, label) in enumerate(Train_loader):
-        x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
+    for ep in range(10):
+        for it, (x, y, label) in enumerate(Train_loader):
+            x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
-        state_info.optim_model.zero_grad()
-        out, z = state_info.forward(x)
-        Memory.Batch_Insert(z, y)
-        loss = criterion(out, y)
-        loss.backward(retain_graph=True)
-        state_info.optim_model.step()
+            state_info.optim_model.zero_grad()
+            out, z = state_info.forward(x)
+            Memory.Batch_Insert(z, y)
+            loss = criterion(out, y)
+            loss.backward(retain_graph=True)
+            state_info.optim_model.step()
 
-        _, pred = torch.max(out.data, 1)
-        correct += float(pred.eq(y.data).cpu().sum())
-        total_Size += float(x.size(0))
-        
-        if it % 10 == 0:
-            utils.print_log('Init, {}, {:.6f}, {:.3f}'
-                  .format(it, loss.item(), 100.*correct / total_Size))
-            print('Init, {}, {:.6f}, {:.3f}'
-                  .format(it, loss.item(), 100.*correct / total_Size))
+            _, pred = torch.max(out.data, 1)
+            correct += float(pred.eq(y.data).cpu().sum())
+            total_Size += float(x.size(0))
+            
+            if it % 10 == 0:
+                utils.print_log('Init, {}, {}, {:.6f}, {:.3f}'
+                      .format(it, ep, loss.item(), 100.*correct / total_Size))
+                print('Init, {}, {}, {:.6f}, {:.3f}'
+                      .format(it, ep, loss.item(), 100.*correct / total_Size))
 
     for epoch in range(start_epoch, args.epoch):
 
