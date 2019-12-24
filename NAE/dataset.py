@@ -200,7 +200,7 @@ if __name__=='__main__':
     args.seed = 1234
 
     Train_loader, Test_loader, i,j = Cifar10_loader(args)
-    for i, (x, (n, l)) in enumerate(Train_loader):
+    for i, (x, n, l) in enumerate(Train_loader):
         print(i)
         print(x)
         print(x.size())
