@@ -195,7 +195,7 @@ if __name__=='__main__':
     args.workers = 4
     args.img_size = 32
     args.noise_rate = 0.1
-    args.noise_type = "sym"
+    args.noise_type = "Asym"
     args.sym = True
     args.seed = 1234
 
