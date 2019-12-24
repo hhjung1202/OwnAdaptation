@@ -114,12 +114,8 @@ class cifar10(datasets.CIFAR10):
         targets = np.array(self.targets)
         mask = np.random.rand(len(targets)) <= noise_rate
         rnd_targets = np.random.choice(self.num_classes, mask.sum())
-        print(rnd_targets)
         targets[mask] = rnd_targets
-        print(targets[mask])
         targets = [int(target) for target in targets]
-        print(targets)
-        print(self.targets)
         self.targets = targets
 
     def asymmetric_noise(self, noise_rate):
@@ -132,7 +128,7 @@ class cifar10(datasets.CIFAR10):
                     idx = int(np.where(self.flip_pairs[:, 0] == target)[0])
                     targets[i] = self.flip_pairs[idx, 1]
         targets = [int(x) for x in targets]
-        self.targets = target_transform
+        self.targets = targets
 
     def __getitem__(self, index):
 
