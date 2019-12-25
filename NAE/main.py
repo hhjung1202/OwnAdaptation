@@ -19,7 +19,7 @@ parser.add_argument('--maxN', default=500, type=int, help='Max Buffer Size')
 # parser.add_argument('--low', default=-1., type=float, help='Weighted Gradient Gamma Low value')
 # parser.add_argument('--high', default=1., type=float, help='Weighted Gradient Gamma High value')
 
-parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
+parser.add_argument('-j', '--workers', default=1, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
