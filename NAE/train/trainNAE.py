@@ -99,11 +99,11 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             out, z = state_info.forward(x)
             Memory.Batch_Insert(z, y)
 
-            # loss_N = Memory.get_DotLoss_Noise(z, y, reduction="mean", reverse=False)
-            # loss_R = Memory.get_DotLoss_Noise(z, rand_y, reduction="mean", reverse=True)    
+            loss_N = Memory.get_DotLoss_Noise(z, y, reduction="mean", reverse=False)
+            loss_R = Memory.get_DotLoss_Noise(z, rand_y, reduction="mean", reverse=True)    
 
-            loss_N = torch.tensor(0., device="cuda", dtype=torch.float32)
-            loss_R = torch.tensor(0., device="cuda", dtype=torch.float32)
+            # loss_N = torch.tensor(0., device="cuda", dtype=torch.float32)
+            # loss_R = torch.tensor(0., device="cuda", dtype=torch.float32)
             
             # loss_N = Memory.get_DotLoss_BASE(z, y, reduction="mean", reverse=False)
             # loss_R = Memory.get_DotLoss_BASE(z, rand_y, reduction="mean", reverse=True)    

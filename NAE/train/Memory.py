@@ -144,7 +144,7 @@ class MemorySet(object):
             self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
 
     def Calc_Test_Similarity(self, z, y):
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         Sim_scale = torch.tensor(0, device='cuda', dtype=torch.float32)
         Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
 
