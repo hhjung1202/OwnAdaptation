@@ -136,20 +136,20 @@ class MemorySet(object):
         Regularizer = ss - s
         return Regularizer
 
-    def Test_Init(self):
-        for i in range(self.clsN):
-            self.Set[i].Calc_Vector()
-            self.mean_v_Set[i] = self.Set[i].mean_v.detach()
-            self.len_v_Set[i] = self.Set[i].len_v.detach()
-            self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
+    # def Test_Init(self):
+    #     for i in range(self.clsN):
+    #         self.Set[i].Calc_Vector()
+    #         self.mean_v_Set[i] = self.Set[i].mean_v.detach()
+    #         self.len_v_Set[i] = self.Set[i].len_v.detach()
+    #         self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
 
-    def Calc_Test_Similarity(self, z, y):
-        vectorSet = z - self.T.detach()
-        Sim_scale = torch.tensor(0, device='cuda', dtype=torch.float32)
-        Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
+    # def Calc_Test_Similarity(self, z, y):
+    #     vectorSet = z - self.T.detach()
+    #     Sim_scale = torch.tensor(0, device='cuda', dtype=torch.float32)
+    #     Sim_vector = torch.tensor(0, device='cuda', dtype=torch.float32)
 
-        cos = torch.nn.CosineSimilarity(dim=1)
-        Sim_scale = torch.sum(torch.abs((vectorSet - self.mean_v_Set[y]))/self.sigma_v_Set[y]) / z.size(0)
-        Sim_vector = torch.sum(torch.abs(cos(vectorSet, self.mean_v_Set[y])))
+    #     cos = torch.nn.CosineSimilarity(dim=1)
+    #     Sim_scale = torch.sum(torch.abs((vectorSet - self.mean_v_Set[y]))/self.sigma_v_Set[y]) / z.size(0)
+    #     Sim_vector = torch.sum(torch.abs(cos(vectorSet, self.mean_v_Set[y])))
 
-        return Sim_scale, Sim_vector
+    #     return Sim_scale, Sim_vector

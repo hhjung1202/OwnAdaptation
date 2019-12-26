@@ -102,12 +102,6 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             loss_N = Memory.get_DotLoss_Noise(z, y, reduction="mean", reverse=False)
             loss_R = Memory.get_DotLoss_Noise(z, rand_y, reduction="mean", reverse=True)    
 
-            # loss_N = torch.tensor(0., device="cuda", dtype=torch.float32)
-            # loss_R = torch.tensor(0., device="cuda", dtype=torch.float32)
-            
-            # loss_N = Memory.get_DotLoss_BASE(z, y, reduction="mean", reverse=False)
-            # loss_R = Memory.get_DotLoss_BASE(z, rand_y, reduction="mean", reverse=True)    
-            
             reg = Memory.get_Regularizer(z)
             pseudo_label = Memory.Calc_Pseudolabel(z, y)
             loss = criterion(out, pseudo_label)
@@ -146,22 +140,17 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         # test
         state_info.model.eval()
-        Memory.Test_Init()
         for it, (x, y) in enumerate(Test_loader):
 
             x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
 
             out, z = state_info.forward(x)
-            # Sim_scale, Sim_vector = Memory.Calc_Test_Similarity(z, y)
             
-            # Similarity_Scale += Sim_scale
-            # Similarity_Vector += Sim_vector
-
             _, pred = torch.max(out.data, 1)
             correct_Test += float(pred.eq(y.data).cpu().sum())
             testSize += float(x.size(0))
 
-        utils.print_log('Type, Epoch, Batch, Scale, Vector, Percentage')
+        utils.print_log('Type, Epoch, Batch, Percentage')
 
         utils.print_log('Test, {}, {}, {:.3f}'
               .format(epoch, it, 100.*correct_Test / testSize))
