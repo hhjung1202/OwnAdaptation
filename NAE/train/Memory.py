@@ -64,7 +64,7 @@ class MemorySet(object):
             self.sigma_v_Set[i] = self.Set[i].sigma_v.detach()
 
     def Batch_Vector_Insert(self, z, y):
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         for i in range(vectorSet.size(0)):
             Noise_label = y[i]
             vector = vectorSet[i]
@@ -74,13 +74,13 @@ class MemorySet(object):
         self.T = torch.zeros(self.size_z, device='cuda', dtype=torch.float32)
         for i in range(self.clsN):
             self.T += self.Set[i].Calc_Memory()
-        self.T = (self.T / self.clsN).detach()
+        self.T = (self.T / self.clsN)
 
 # --------------------------
 
     def get_DotLoss_Noise(self, z, y, reduction='mean', reverse=False):
         # Y(1-cos)
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         if reverse:
             vectorSet = -vectorSet
 
@@ -95,7 +95,7 @@ class MemorySet(object):
 
     def get_DotLoss_BASE(self, z, y, reduction='mean', reverse=False):
         # XY(1-cos)
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         if reverse:
             vectorSet = -vectorSet
 
@@ -116,7 +116,7 @@ class MemorySet(object):
     #     return 2-2*P
 
     def Calc_Pseudolabel(self, z, y):
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         cos = torch.nn.CosineSimilarity(dim=1)
         cos_result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)
 
@@ -129,7 +129,7 @@ class MemorySet(object):
         return pseudo_label.detach()
 
     def get_Regularizer(self, z):
-        vectorSet = z - self.T
+        vectorSet = z - self.T.detach()
         len_v = vectorSet.pow(2).sum(dim=1).sqrt()
         s = torch.pow(torch.sum(len_v) / z.size(0), 2) # E(X)^2
         ss = torch.sum(len_v.pow(2)) / z.size(0)       # E(X^2)

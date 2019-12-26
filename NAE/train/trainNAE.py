@@ -55,7 +55,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     correct = torch.tensor(0, dtype=torch.float32)
     total_Size = torch.tensor(0, dtype=torch.float32)
 
-    for ep in range(10):
+    for ep in range(1):
         for it, (x, y, label) in enumerate(Train_loader):
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
@@ -99,8 +99,12 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             out, z = state_info.forward(x)
             Memory.Batch_Insert(z, y)
 
-            loss_N = Memory.get_DotLoss_Noise(z, y, reduction="mean", reverse=False)
-            loss_R = Memory.get_DotLoss_Noise(z, rand_y, reduction="mean", reverse=True)    
+            # loss_N = Memory.get_DotLoss_Noise(z, y, reduction="mean", reverse=False)
+            # loss_R = Memory.get_DotLoss_Noise(z, rand_y, reduction="mean", reverse=True)    
+
+            loss_N = torch.tensor(0., device="cuda", dtype=torch.float32)
+            loss_R = torch.tensor(0., device="cuda", dtype=torch.float32)
+            
             # loss_N = Memory.get_DotLoss_BASE(z, y, reduction="mean", reverse=False)
             # loss_R = Memory.get_DotLoss_BASE(z, rand_y, reduction="mean", reverse=True)    
             
