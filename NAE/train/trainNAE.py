@@ -152,10 +152,10 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
 
             out, z = state_info.forward(x)
-            Sim_scale, Sim_vector = Memory.Calc_Test_Similarity(z, y)
+            # Sim_scale, Sim_vector = Memory.Calc_Test_Similarity(z, y)
             
-            Similarity_Scale += Sim_scale
-            Similarity_Vector += Sim_vector
+            # Similarity_Scale += Sim_scale
+            # Similarity_Vector += Sim_vector
 
             _, pred = torch.max(out.data, 1)
             correct_Test += float(pred.eq(y.data).cpu().sum())
@@ -163,15 +163,15 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
 
         utils.print_log('Type, Epoch, Batch, Scale, Vector, Percentage')
 
-        # utils.print_log('Test, {}, {}, {:.3f}'
-        #       .format(epoch, it, 100.*correct_Test / testSize))
-        # print('Test, {}, {}, {:.3f}'
-        #       .format(epoch, it, 100.*correct_Test / testSize))
+        utils.print_log('Test, {}, {}, {:.3f}'
+              .format(epoch, it, 100.*correct_Test / testSize))
+        print('Test, {}, {}, {:.3f}'
+              .format(epoch, it, 100.*correct_Test / testSize))
 
-        utils.print_log('Test, {}, {}, {:.6f}, {:.6f}, {:.3f}'
-              .format(epoch, it, Similarity_Scale / testSize, Similarity_Vector / testSize, 100.*correct_Test / testSize))
-        print('Test, {}, {}, {:.6f}, {:.6f}, {:.3f}'
-              .format(epoch, it, Similarity_Scale / testSize, Similarity_Vector / testSize, 100.*correct_Test / testSize))
+        # utils.print_log('Test, {}, {}, {:.6f}, {:.6f}, {:.3f}'
+        #       .format(epoch, it, Similarity_Scale / testSize, Similarity_Vector / testSize, 100.*correct_Test / testSize))
+        # print('Test, {}, {}, {:.6f}, {:.6f}, {:.3f}'
+        #       .format(epoch, it, Similarity_Scale / testSize, Similarity_Vector / testSize, 100.*correct_Test / testSize))
 
         if 100.*correct_Test / testSize > best_prec_result:
             best_prec_result = 100.*correct_Test / testSize
