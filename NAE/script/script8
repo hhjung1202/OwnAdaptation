@@ -1,5 +1,4 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Asym/lr0.1/m0/n0.4 --noise-rate 0.8 --lr 0.1 --noise-type Asym --m 0 --model ResNet18 --gpu 7 1> /dev/null 2> /dev/null &&
 python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Asym/lr0.1/m1/n0.4 --noise-rate 0.8 --lr 0.1 --noise-type Asym --m 1 --model ResNet18 --gpu 7 1> /dev/null 2> /dev/null &&
 python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Asym/lr0.1/m2/n0.4 --noise-rate 0.8 --lr 0.1 --noise-type Asym --m 2 --model ResNet18 --gpu 7 1> /dev/null 2> /dev/null &&
 python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Asym/lr0.1/m3/n0.4 --noise-rate 0.8 --lr 0.1 --noise-type Asym --m 3 --model ResNet18 --gpu 7 1> /dev/null 2> /dev/null &&

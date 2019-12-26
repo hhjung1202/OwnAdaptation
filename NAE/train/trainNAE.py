@@ -55,7 +55,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     correct = torch.tensor(0, dtype=torch.float32)
     total_Size = torch.tensor(0, dtype=torch.float32)
 
-    for ep in range(1):
+    for ep in range(10):
         for it, (x, y, label) in enumerate(Train_loader):
             x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
@@ -145,7 +145,7 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
             x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
 
             out, z = state_info.forward(x)
-            
+
             _, pred = torch.max(out.data, 1)
             correct_Test += float(pred.eq(y.data).cpu().sum())
             testSize += float(x.size(0))
