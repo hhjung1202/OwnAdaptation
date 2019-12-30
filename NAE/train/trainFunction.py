@@ -6,6 +6,9 @@ def to_var(x, dtype):
     return Variable(x.type(dtype))
 
 def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+    cuda = True if torch.cuda.is_available() else False
+    FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+    LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
     state_info.model.train()
     utils.print_log('Type, Epoch, Batch, total, percentage')
@@ -37,6 +40,10 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
 
 
 def train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+    cuda = True if torch.cuda.is_available() else False
+    FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+    LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+
     correct_Noise = torch.tensor(0, dtype=torch.float32)
     correct_Pseudo = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
@@ -97,6 +104,10 @@ def train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
 
 
 def train_step3(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+    cuda = True if torch.cuda.is_available() else False
+    FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+    LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+
     correct_Noise = torch.tensor(0, dtype=torch.float32)
     correct_Pseudo = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
@@ -156,6 +167,9 @@ def train_step3(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     return epoch_result
 
 def test(state_info, Test_loader, epoch):
+    cuda = True if torch.cuda.is_available() else False
+    FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+    LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
     
     testSize = torch.tensor(0, dtype=torch.float32)
     Similarity_Scale = torch.tensor(0, dtype=torch.float32)

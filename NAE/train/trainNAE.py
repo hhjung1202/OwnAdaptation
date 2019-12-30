@@ -53,18 +53,24 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
     for epoch in range(0, args.epoch1):
 
         epoch_result = train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
+        if epoch_result > best_prec_result:
+            best_prec_result = epoch_result
         state_info.lr_model.step()
         utils.print_log('')
 
     for epoch in range(0, args.epoch2):
 
         epoch_result = train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
+        if epoch_result > best_prec_result:
+            best_prec_result = epoch_result
         state_info.lr_model.step()
         utils.print_log('')
 
     for epoch in range(0, args.epoch3):
 
         epoch_result = train_step3(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
+        if epoch_result > best_prec_result:
+            best_prec_result = epoch_result
         state_info.lr_model.step()
         utils.print_log('')
 
