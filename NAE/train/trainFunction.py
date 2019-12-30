@@ -39,7 +39,7 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     return epoch_result
 
 
-def train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
@@ -103,7 +103,7 @@ def train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     return epoch_result
 
 
-def train_step3(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
