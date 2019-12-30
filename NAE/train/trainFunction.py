@@ -15,7 +15,7 @@ import torch.distributions.normal as normal
 def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
 
     state_info.model.train()
-	utils.print_log('Type, Epoch, Batch, total, percentage')
+    utils.print_log('Type, Epoch, Batch, total, percentage')
     correct = torch.tensor(0, dtype=torch.float32)
     total_Size = torch.tensor(0, dtype=torch.float32)
 
@@ -44,7 +44,7 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
 
 
 def train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
-	correct_Noise = torch.tensor(0, dtype=torch.float32)
+    correct_Noise = torch.tensor(0, dtype=torch.float32)
     correct_Pseudo = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
     train_Size = torch.tensor(0, dtype=torch.float32)
@@ -104,7 +104,7 @@ def train_step2(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
 
 
 def train_step3(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
-	correct_Noise = torch.tensor(0, dtype=torch.float32)
+    correct_Noise = torch.tensor(0, dtype=torch.float32)
     correct_Pseudo = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
     train_Size = torch.tensor(0, dtype=torch.float32)
@@ -163,8 +163,8 @@ def train_step3(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     return epoch_result
 
 def test(state_info, Test_loader, epoch):
-	
-	testSize = torch.tensor(0, dtype=torch.float32)
+    
+    testSize = torch.tensor(0, dtype=torch.float32)
     Similarity_Scale = torch.tensor(0, dtype=torch.float32)
     Similarity_Vector = torch.tensor(0, dtype=torch.float32)
     correct_Test = torch.tensor(0, dtype=torch.float32)
