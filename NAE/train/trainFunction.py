@@ -1,16 +1,9 @@
-import argparse
 import torch
 from torch.autograd import Variable
-from torchvision.utils import save_image
-import numpy as np
-import os
-import torch.backends.cudnn as cudnn
-import time
 import utils
-import dataset
-import math
-import torch.nn.functional as F
-import torch.distributions.normal as normal
+
+def to_var(x, dtype):
+    return Variable(x.type(dtype))
 
 def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
 

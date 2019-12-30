@@ -14,8 +14,6 @@ import torch.distributions.normal as normal
 from .Memory import MemorySet
 from .trainFunction import *
 
-def to_var(x, dtype):
-    return Variable(x.type(dtype))
 
 '''
     2가지 과정이 필요해보인다
