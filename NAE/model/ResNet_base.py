@@ -32,7 +32,7 @@ class BasicBlock(nn.Module):
         return out
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, memory=1, num_classes=10, z=64):
+    def __init__(self, block, num_blocks, memory=1, num_classes=10):
         super(ResNet, self).__init__()
         self.in_planes = 64
         self.memory = memory
@@ -73,30 +73,6 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
 
-        # self.fc1 = nn.Sequential(
-        #     nn.Linear(64, z),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(z, z),
-        # )
-
-        # self.fc2 = nn.Sequential(
-        #     nn.Linear(128, z),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(z, z),
-        # )
-
-        # self.fc3 = nn.Sequential(
-        #     nn.Linear(256, z),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(z, z),
-        # )
-
-        # self.fc4 = nn.Sequential(
-        #     nn.Linear(512, z),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(z, z),
-        # )
-
     def forward(self, x):
         z = None
         for i, name in enumerate(self._forward):
@@ -104,20 +80,10 @@ class ResNet(nn.Module):
             x = layer(x)
             if i == self.memory:
                 z = self.flatten(self.avgpool(x))
-                # l = z.size(1)
-                # if l is 64:
-                #     z = self.fc1(z)
-                # elif l is 128:
-                #     z = self.fc2(z)
-                # elif l is 256:
-                #     z = self.fc3(z)
-                # else:
-                #     z = self.fc4(z)
 
         x = self.avgpool(x)
         x = self.flatten(x)
         if z is None:
-            # z = self.fc4(x)
             z = x
         out = self.linear(x)
         return out, z

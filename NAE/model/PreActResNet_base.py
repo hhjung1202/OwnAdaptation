@@ -46,7 +46,7 @@ class Block_B(nn.Module):
 
 
 class PreActResNet(nn.Module):
-    def __init__(self, num_classes=10, resnet_layer=32, memory=0, z=64):
+    def __init__(self, num_classes=10, resnet_layer=32, memory=0):
         super(PreActResNet, self).__init__()
 
         filters = [32, 32, 64, 128]
@@ -93,24 +93,6 @@ class PreActResNet(nn.Module):
 
         self.flatten = Flatten()
 
-        # self.fc1 = nn.Sequential(
-        #     nn.Linear(32, 32),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(32, z),
-        # )
-
-        # self.fc2 = nn.Sequential(
-        #     nn.Linear(64, 64),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(64, z),
-        # )
-
-        # self.fc3 = nn.Sequential(
-        #     nn.Linear(128, 128),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(128, z),
-        # )
-
     def forward(self, x):
         z = None
         for i, name in enumerate(self._forward):
@@ -118,20 +100,12 @@ class PreActResNet(nn.Module):
             x = layer(x)
             if i == self.memory:
                 z = self.flatten(self.avgpool(x))
-                # l = z.size(1)
-                # if l is 32:
-                #     z = self.fc1(z)
-                # elif l is 64:
-                #     z = self.fc2(z)
-                # elif l is 128:
-                #     z = self.fc3(z)
 
         x = F.relu(self.bn(x))
         x = self.avgpool(x)
         x = self.flatten(x)
 
         if z is None:
-            # z = self.fc3(x)
             z = x
 
         out = self.fc(x)
