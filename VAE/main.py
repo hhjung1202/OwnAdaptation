@@ -13,8 +13,7 @@ import math
 
 
 parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Training')
-parser.add_argument('--sd', default='mnist', type=str, help='source dataset')
-parser.add_argument('--td', default='usps', type=str, help='target dataset')
+parser.add_argument('--dataset', default='mnist', type=str, help='source dataset')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--decay-epoch', default=30, type=int, metavar='N', help='epoch from which to start lr decay')
@@ -31,7 +30,6 @@ parser.add_argument('--img-size', type=int, default=28, help='input image width,
 
 parser.add_argument('--MSE', type=float, default=1.0, help='MSE loss parameter')
 parser.add_argument('--KLD', type=float, default=1.0, help='KLD loss parameter')
-parser.add_argument('--CE', type=float, default=1.0, help='CE loss parameter')
 
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
@@ -64,7 +62,7 @@ def main():
     utils.default_model_dir = args.dir
     start_time = time.time()
 
-    train_loader, test_loader, ch, wh = dataset_selector(args.sd)
+    train_loader, test_loader, ch, wh = dataset_selector(args.dataset)
     sample = extract_sample(train_loader)
 
     state_info = utils.model_optim_state_info()
@@ -91,7 +89,7 @@ def main():
 
 def train(state_info, train_loader, epoch): # all 
 
-    utils.print_log('Type, Epoch, Batch, loss, BCE, KLD, CE')
+    utils.print_log('Type, Epoch, Batch, loss, BCE, KLD')
     state_info.set_train_mode()
     correct = torch.tensor(0, dtype=torch.float32)
     total = torch.tensor(0, dtype=torch.float32)
