@@ -24,21 +24,21 @@ class model_optim_state_info(object):
         pass
 
     def model_init(self, Img=[1, 28], H=400, latent_size=20, num_class=10):
-        self.VAE = VAE(img_D=get_size(Img), H=H, latent_size=latent_size, num_class=num_class)
-        self.lenS = Img[1]
+        self.AE = AE(img_D=get_size(Img), H=H, latent_size=latent_size, num_class=num_class)
+        self.len = Img[1]
 
     def forward(self, x, test=False):
-        x_hat, mu, log_var, z = self.VAE(x)
-        x_hat = x_hat.view(x_hat.size(0), -1, self.lenS, self.lenS)
+        x_hat, z = self.AE(x)
+        x_hat = x_hat.view(x_hat.size(0), -1, self.len, self.len)
 
-        return x_hat, mu, log_var, z
+        return x_hat, z
 
     def model_cuda_init(self):
         if torch.cuda.is_available():
-            self.VAE = nn.DataParallel(self.VAE).cuda()
+            self.AE = nn.DataParallel(self.AE).cuda()
 
     def weight_init(self):
-        self.VAE.apply(self.weights_init_normal)
+        self.AE.apply(self.weights_init_normal)
 
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
@@ -48,23 +48,23 @@ class model_optim_state_info(object):
             torch.nn.init.constant_(m.bias.data, 0.0)
 
     def optimizer_init(self, args):
-        self.optim_VAE = optim.Adam(self.VAE.parameters(), lr=args.lr)
+        self.optim_AE = optim.Adam(self.AE.parameters(), lr=args.lr)
 
     def learning_scheduler_init(self, args, load_epoch=0):
-        self.lr_VAE = optim.lr_scheduler.StepLR(self.optim_VAE, step_size=30, gamma=0.1)
+        self.lr_AE = optim.lr_scheduler.StepLR(self.optim_AE, step_size=30, gamma=0.1)
 
     def learning_step(self):
-        self.lr_VAE.step()
+        self.lr_AE.step()
 
     def set_train_mode(self):
-        self.VAE.train()
+        self.AE.train()
 
     def set_test_mode(self):
-        self.VAE.eval()
+        self.AE.eval()
 
     def load_state_dict(self, checkpoint):
-        self.VAE.load_state_dict(checkpoint['VAE_dict'])
-        self.optim_VAE.load_state_dict(checkpoint['VAE_optimizer'])
+        self.AE.load_state_dict(checkpoint['AE_dict'])
+        self.optim_AE.load_state_dict(checkpoint['AE_optimizer'])
 
 def make_directory(directory):
     if not os.path.exists(directory):
