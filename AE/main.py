@@ -22,7 +22,7 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='n
 parser.add_argument('--epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--decay-epoch', default=30, type=int, metavar='N', help='epoch from which to start lr decay')
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
-parser.add_argument('--maxN', type=int, default=64, help='Maximum Buffer Size')
+parser.add_argument('--maxN', type=int, default=80, help='Maximum Buffer Size')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
@@ -78,6 +78,7 @@ class Memory(object):
         dgms = ripser(self.z.data, maxdim=3)['dgms']
         plot_diagrams(dgms)
         plt.savefig('{}/{}_{}_total.png'.format(path, epoch, cls_num))
+        plt.clf()
         if len(dgms[0]) is not 0:
             plot_diagrams(dgms, plot_only=[0], ax=subplot(221))
         if len(dgms[1]) is not 0:
@@ -87,6 +88,7 @@ class Memory(object):
         if len(dgms[3]) is not 0:
             plot_diagrams(dgms, plot_only=[3], ax=subplot(224))
         plt.savefig('{}/{}_{}_sub.png'.format(path2, epoch, cls_num))
+        plt.clf()
 
 class MemorySet(object):
     def __init__(self, args):
