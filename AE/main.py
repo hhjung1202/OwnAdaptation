@@ -78,10 +78,14 @@ class Memory(object):
         dgms = ripser(self.z.data, maxdim=3)['dgms']
         plot_diagrams(dgms)
         plt.savefig('{}/{}_{}_total.png'.format(path, epoch, cls_num))
-        plot_diagrams(dgms, plot_only=[0], ax=subplot(221))
-        plot_diagrams(dgms, plot_only=[1], ax=subplot(222))
-        plot_diagrams(dgms, plot_only=[2], ax=subplot(223))
-        plot_diagrams(dgms, plot_only=[3], ax=subplot(224))
+        if len(dgms[0]) is not 0:
+            plot_diagrams(dgms, plot_only=[0], ax=subplot(221))
+        if len(dgms[1]) is not 0:
+            plot_diagrams(dgms, plot_only=[1], ax=subplot(222))
+        if len(dgms[2]) is not 0:
+            plot_diagrams(dgms, plot_only=[2], ax=subplot(223))
+        if len(dgms[3]) is not 0:
+            plot_diagrams(dgms, plot_only=[3], ax=subplot(224))
         plt.savefig('{}/{}_{}_sub.png'.format(path2, epoch, cls_num))
 
 class MemorySet(object):
