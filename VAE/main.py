@@ -170,7 +170,7 @@ def test(state_info, test_loader, sample, epoch):
     global Memory
     for it, (x, y) in enumerate(test_loader):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        x_hat, z = state_info.forward(x)
+        x_hat, mu, log_var, z = state_info.forward(x)
         Memory.Batch_Insert(z, y)
 
     Memory.calc_TDAs(epoch)
