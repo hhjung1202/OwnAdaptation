@@ -53,8 +53,8 @@ criterion_BCE = torch.nn.BCELoss(reduction='sum')
 criterion = torch.nn.CrossEntropyLoss()
 
 def loss_function(x_hat, x):
-    BCE = criterion_BCE(x_hat.view(x.size(0), -1), x.view(x.size(0), -1))
-    return BCE
+    BCE = criterion_BCE(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
+    return BCEpy
 
 class Memory(object):
     def __init__(self, args):
