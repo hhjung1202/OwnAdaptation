@@ -63,7 +63,7 @@ class Memory(object):
     def __init__(self, args):
         self.N = args.maxN # size of ALL Buffer
         self.index = 0
-        self.z = torch.zeros([self.N, args.latent_size], device="cuda", dtype=torch.float32)
+        self.z = torch.zeros([self.N, args.latent_size], device="cpu", dtype=torch.float32)
 
     def Insert_memory(self, z): # Actual Function
         if self.index >= self.N:
@@ -99,8 +99,7 @@ class MemorySet(object):
 
     def calc_TDAs(self, epoch):
         for i in range(self.clsN):
-            TDA = self.Set[i].calc_TDA(epoch, i)
-            # save_TDA()
+            self.Set[i].calc_TDA(epoch, i)
 
 Memory = MemorySet(args=args)
 
