@@ -73,8 +73,8 @@ class Memory(object):
         self.index = self.index + 1
 
     def calc_TDA(self, epoch, cls_num):
-        path = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_total', cls_num))
-        path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_sub', cls_num))
+        path = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_total', str(cls_num)))
+        path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_sub', str(cls_num)))
         dgms = ripser(self.z.data, maxdim=3)['dgms']
         plot_diagrams(dgms)
         plt.savefig('{}/{}_total.png'.format(path, epoch))
