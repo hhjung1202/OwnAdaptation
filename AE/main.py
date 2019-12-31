@@ -88,7 +88,6 @@ class MemorySet(object):
     def __init__(self, args):
         self.clsN = 10
         self.Set = []
-        self.size_z = args.z
         for i in range(self.clsN):
             self.Set.append(Memory(args=args))
 
