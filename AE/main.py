@@ -29,7 +29,7 @@ parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='mo
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-size', type=int, default=100, help='dimension of latent z')
+parser.add_argument('--latent-size', type=int, default=64, help='dimension of latent z')
 parser.add_argument('--h', type=int, default=400, help='dimension of hidden layer')
 parser.add_argument('--img-size', type=int, default=28, help='input image width, height size')
 
@@ -73,11 +73,11 @@ class Memory(object):
         self.index = self.index + 1
 
     def calc_TDA(self, epoch, cls_num):
-        path = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_total'))
-        path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_sub'))
+        path = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_total', cls_num))
+        path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_sub', cls_num))
         dgms = ripser(self.z.data, maxdim=3)['dgms']
         plot_diagrams(dgms)
-        plt.savefig('{}/{}_{}_total.png'.format(path, epoch, cls_num))
+        plt.savefig('{}/{}_total.png'.format(path, epoch))
         plt.clf()
         if len(dgms[0]) is not 0:
             plot_diagrams(dgms, plot_only=[0], ax=subplot(221))
@@ -87,7 +87,7 @@ class Memory(object):
             plot_diagrams(dgms, plot_only=[2], ax=subplot(223))
         if len(dgms[3]) is not 0:
             plot_diagrams(dgms, plot_only=[3], ax=subplot(224))
-        plt.savefig('{}/{}_{}_sub.png'.format(path2, epoch, cls_num))
+        plt.savefig('{}/{}_sub.png'.format(path2, epoch))
         plt.clf()
 
 class MemorySet(object):
