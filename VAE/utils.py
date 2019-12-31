@@ -23,50 +23,22 @@ class model_optim_state_info(object):
     def __init__(self):
         pass
 
-    def model_init(self, Img_S=[1, 28], Img_T=[1, 28], H=400, latent_size=20, num_class=10):
-        self.VAE_src = VAE(img_D=get_size(Img_S), H=H, latent_size=latent_size, num_class=num_class)
-        self.VAE_tgt = VAE(img_D=get_size(Img_T), H=H, latent_size=latent_size, num_class=num_class)
+    def model_init(self, Img=[1, 28], H=400, latent_size=20, num_class=10):
+        self.VAE = VAE(img_D=get_size(Img), H=H, latent_size=latent_size, num_class=num_class)
         self.lenS = Img_S[1]
-        self.lenT = Img_T[1]
-
-    def pretrain_forward(self, x, test=False):
-        x_hat, mu, log_var, z, cls = self.VAE_src(x)
-        x_hat = x_hat.view(x_hat.size(0), -1, self.lenS, self.lenS)
-
-        if not test:
-            return x_hat, mu, log_var, z, cls
-        else:
-            return x_hat, cls, z
 
     def forward(self, x, test=False):
-        x_hat_t, mu, log_var, z, clsT = self.VAE_tgt(x)
-        x_hat_s, clsS = self.VAE_src(None, z=z)
+        x_hat, mu, log_var, z = self.VAE(x)
+        x_hat = x_hat.view(x_hat.size(0), -1, self.lenS, self.lenS)
 
-        x_hat_t = x_hat_t.view(x_hat_t.size(0), -1, self.lenT, self.lenT)
-        x_hat_s = x_hat_s.view(x_hat_s.size(0), -1, self.lenS, self.lenS)
-
-        if not test:
-            return x_hat_t, mu, log_var, z, clsT, clsS.detach()
-        else:
-            return clsT, clsS, x_hat_t, x_hat_s # edit
-
-    def forward_z(self, z):
-        x_hat_s, clsS = self.VAE_src(None, z=z)
-        x_hat_t, clsT = self.VAE_tgt(None, z=z)
-
-        x_hat_t = x_hat_t.view(x_hat_t.size(0), -1, self.lenT, self.lenT)
-        x_hat_s = x_hat_s.view(x_hat_s.size(0), -1, self.lenS, self.lenS)
-        
-        return x_hat_s, x_hat_t
+        return x_hat, mu, log_var, z
 
     def model_cuda_init(self):
         if torch.cuda.is_available():
-            self.VAE_src = nn.DataParallel(self.VAE_src).cuda()
-            self.VAE_tgt = nn.DataParallel(self.VAE_tgt).cuda()
+            self.VAE = nn.DataParallel(self.VAE).cuda()
 
     def weight_init(self):
-        self.VAE_src.apply(self.weights_init_normal)
-        self.VAE_tgt.apply(self.weights_init_normal)
+        self.VAE.apply(self.weights_init_normal)
 
     def weights_init_normal(self, m):
         if isinstance(m, nn.ConvTranspose2d) or isinstance(m, nn.Conv2d):
@@ -76,42 +48,23 @@ class model_optim_state_info(object):
             torch.nn.init.constant_(m.bias.data, 0.0)
 
     def optimizer_init(self, args):
-        self.optim_VAE_src = optim.Adam(self.VAE_src.parameters(), lr=args.lr)
-        self.optim_VAE_tgt = optim.Adam(self.VAE_tgt.parameters(), lr=args.lr) #, b1=args.b1, b2=args.b2, weight_decay=args.weight_decay
+        self.optim_VAE = optim.Adam(self.VAE.parameters(), lr=args.lr)
 
     def learning_scheduler_init(self, args, load_epoch=0):
-        # self.lr_VAE_tgt = optim.lr_scheduler.LambdaLR(self.optim_VAE_tgt, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step)
-        self.lr_VAE_tgt = optim.lr_scheduler.StepLR(self.optim_VAE_tgt, step_size=30, gamma=0.1)
-        
+        self.lr_VAE = optim.lr_scheduler.StepLR(self.optim_VAE, step_size=30, gamma=0.1)
+
     def learning_step(self):
-        self.lr_VAE_tgt.step()
+        self.lr_VAE.step()
 
     def set_train_mode(self):
-        self.VAE_tgt.train()
+        self.VAE.train()
 
     def set_test_mode(self):
-        self.VAE_tgt.eval()
+        self.VAE.eval()
 
     def load_state_dict(self, checkpoint):
-        self.VAE_tgt.load_state_dict(checkpoint['VAE_tgt_dict'])
-        self.optim_VAE_tgt.load_state_dict(checkpoint['VAE_tgt_optimizer'])
-
-    def pretrain_learning_scheduler_init(self, args, load_epoch=0):
-        # self.lr_VAE_src = optim.lr_scheduler.LambdaLR(self.optim_VAE_src, lr_lambda=LambdaLR(args.epoch, load_epoch, args.decay_epoch).step) # NEED TO EDIT!!!!!!
-        self.lr_VAE_src = optim.lr_scheduler.StepLR(self.optim_VAE_src, step_size=30, gamma=0.1)
-
-    def pretrain_learning_step(self):
-        self.lr_VAE_src.step()
-
-    def pretrain_set_train_mode(self):
-        self.VAE_src.train()
-
-    def pretrain_set_test_mode(self):
-        self.VAE_src.eval()
-
-    def pretrain_load_state_dict(self, checkpoint):
-        self.VAE_src.load_state_dict(checkpoint['VAE_src_dict'])
-        self.optim_VAE_src.load_state_dict(checkpoint['VAE_src_optimizer'])
+        self.VAE.load_state_dict(checkpoint['VAE_dict'])
+        self.optim_VAE.load_state_dict(checkpoint['VAE_optimizer'])
 
 def idx2onehot(idx, n):
 
@@ -125,16 +78,6 @@ def idx2onehot(idx, n):
     return onehot
 
 
-class LambdaLR():
-    def __init__(self, n_epochs, offset, decay_start_epoch):
-        assert ((n_epochs - decay_start_epoch) > 0), "Decay must start before the training session ends!"
-        self.n_epochs = n_epochs
-        self.offset = offset
-        self.decay_start_epoch = decay_start_epoch
-
-    def step(self, epoch):
-        return 1.0 - max(0, epoch + self.offset - self.decay_start_epoch)/(self.n_epochs - self.decay_start_epoch)
-
 def make_directory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -145,9 +88,9 @@ def save_source_checkpoint(state_info, best_prec_result, filename, directory, ep
         'epoch': epoch,
         'Best_Prec': best_prec_result,
 
-        'VAE_src_model': state_info.VAE_src,
-        'VAE_src_dict': state_info.VAE_src.state_dict(),
-        'VAE_src_optimizer': state_info.optim_VAE_src.state_dict(),
+        'VAE_model': state_info.VAE,
+        'VAE_dict': state_info.VAE.state_dict(),
+        'VAE_optimizer': state_info.optim_VAE.state_dict(),
 
     }, filename, directory)
 

@@ -11,7 +11,6 @@ class VAE(nn.Module):
 
         self.encoder = Encoder(D_in=img_D, H=H, latent_size=latent_size)
         self.decoder = Decoder(H=H, D_out=img_D, latent_size=latent_size)
-        self.inform = Inform(latent_size=latent_size, num_class=num_class)
 
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5*logvar)
@@ -21,19 +20,12 @@ class VAE(nn.Module):
 
     def forward(self, x, z=None):
 
-        if z is not None:
-            cls = self.inform(z)
-            x_hat = self.decoder(z)
-            return x_hat, cls
-
         x = x.view(x.size(0), -1)
         mu, log_var = self.encoder(x)
         z = self.reparameterize(mu, log_var)
-
-        cls = self.inform(z)
         x_hat = self.decoder(z)
 
-        return x_hat, mu, log_var, z, cls
+        return x_hat, mu, log_var, z
 
 class Encoder(nn.Module):
     def __init__(self, D_in=784, H=400, latent_size=20):
@@ -61,12 +53,3 @@ class Decoder(nn.Module):
 
         x = F.relu(self.linear1(x))
         return torch.sigmoid(self.linear2(x))
-
-class Inform(nn.Module):
-    def __init__(self, latent_size=20, num_class=10):
-        super(Inform, self).__init__()
-        self.fc1 = nn.Linear(latent_size, latent_size)
-        self.fc1 = nn.Linear(latent_size, num_class)
-    def forward(self, x):
-        x = self.fc1(x)
-        return x
