@@ -122,7 +122,7 @@ def make_sample_image(state_info, sample, epoch):
     """Saves a grid of generated digits ranging from 0 to n_classes"""
 
     img_path = utils.make_directory(os.path.join(utils.default_model_dir, 'image'))
-    sample_hat, _, _, _ = state_info.forward(sample)
+    sample_hat, _ = state_info.forward(sample)
     sample, sample_hat = to_data(sample), to_data(sample_hat)
     image = merge_images(sample, sample_hat)
     save_image(image.data, os.path.join(img_path, '%d.png' % epoch), normalize=True)
