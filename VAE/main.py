@@ -11,6 +11,10 @@ import utils
 import dataset
 import math
 
+from ripser import ripser
+from persim import plot_diagrams
+from pylab import subplot
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description='PyTorch Cycle Domain Adaptation Training')
 parser.add_argument('--dataset', default='mnist', type=str, help='source dataset')
@@ -18,18 +22,16 @@ parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='n
 parser.add_argument('--epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--decay-epoch', default=30, type=int, metavar='N', help='epoch from which to start lr decay')
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed (default: 1)')
+parser.add_argument('--maxN', type=int, default=80, help='Maximum Buffer Size')
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-4, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
-parser.add_argument('--latent-size', type=int, default=100, help='dimension of latent z')
+parser.add_argument('--latent-size', type=int, default=64, help='dimension of latent z')
 parser.add_argument('--h', type=int, default=400, help='dimension of hidden layer')
 parser.add_argument('--img-size', type=int, default=28, help='input image width, height size')
-
-parser.add_argument('--MSE', type=float, default=1.0, help='MSE loss parameter')
-parser.add_argument('--KLD', type=float, default=1.0, help='KLD loss parameter')
 
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
@@ -54,6 +56,56 @@ def loss_function(x_hat, x, mu, log_var):
     BCE = criterion_BCE(x_hat, x.view(x.size(0), -1))
     KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
     return BCE + KLD, BCE.item(), KLD.item()
+
+class Memory(object):
+    def __init__(self, args):
+        self.N = args.maxN # size of ALL Buffer
+        self.index = 0
+        self.z = torch.zeros([self.N, args.latent_size], device="cpu", dtype=torch.float32)
+
+    def Insert_memory(self, z): # Actual Function
+        if self.index >= self.N:
+            self.index = 0
+        self.z[self.index] = z.data
+        del(z)
+        self.index = self.index + 1
+
+    def calc_TDA(self, epoch, cls_num):
+        path = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_total', str(cls_num)))
+        path2 = utils.make_directory(os.path.join(utils.default_model_dir, 'tda_sub', str(cls_num)))
+        dgms = ripser(self.z.data, maxdim=3)['dgms']
+        plot_diagrams(dgms)
+        plt.savefig('{}/{}_total.png'.format(path, epoch))
+        plt.clf()
+        if len(dgms[0]) is not 0:
+            plot_diagrams(dgms, plot_only=[0], ax=subplot(221))
+        if len(dgms[1]) is not 0:
+            plot_diagrams(dgms, plot_only=[1], ax=subplot(222))
+        if len(dgms[2]) is not 0:
+            plot_diagrams(dgms, plot_only=[2], ax=subplot(223))
+        if len(dgms[3]) is not 0:
+            plot_diagrams(dgms, plot_only=[3], ax=subplot(224))
+        plt.savefig('{}/{}_sub.png'.format(path2, epoch))
+        plt.clf()
+
+class MemorySet(object):
+    def __init__(self, args):
+        self.clsN = 10
+        self.Set = []
+        for i in range(self.clsN):
+            self.Set.append(Memory(args=args))
+
+    def Batch_Insert(self, z, y):
+        for i in range(z.size(0)):
+            label = y[i]
+            data = z[i]
+            self.Set[label].Insert_memory(data)
+
+    def calc_TDAs(self, epoch):
+        for i in range(self.clsN):
+            self.Set[i].calc_TDA(epoch, i)
+
+Memory = MemorySet(args=args)
 
 def main():
     global args, best_prec_result
@@ -115,6 +167,13 @@ def train(state_info, train_loader, epoch): # all
     utils.print_log('')
 
 def test(state_info, test_loader, sample, epoch):
+    global Memory
+    for it, (x, y) in enumerate(test_loader):
+        x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
+        x_hat, z = state_info.forward(x)
+        Memory.Batch_Insert(z, y)
+
+    Memory.calc_TDAs(epoch)
 
     make_sample_image(state_info, sample, epoch)
     utils.print_log('')

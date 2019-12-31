@@ -33,9 +33,6 @@ parser.add_argument('--latent-size', type=int, default=64, help='dimension of la
 parser.add_argument('--h', type=int, default=400, help='dimension of hidden layer')
 parser.add_argument('--img-size', type=int, default=28, help='input image width, height size')
 
-parser.add_argument('--MSE', type=float, default=1.0, help='MSE loss parameter')
-parser.add_argument('--KLD', type=float, default=1.0, help='KLD loss parameter')
-
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
 
