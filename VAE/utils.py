@@ -25,7 +25,7 @@ class model_optim_state_info(object):
 
     def model_init(self, Img=[1, 28], H=400, latent_size=20, num_class=10):
         self.VAE = VAE(img_D=get_size(Img), H=H, latent_size=latent_size, num_class=num_class)
-        self.lenS = Img_S[1]
+        self.lenS = Img[1]
 
     def forward(self, x, test=False):
         x_hat, mu, log_var, z = self.VAE(x)
