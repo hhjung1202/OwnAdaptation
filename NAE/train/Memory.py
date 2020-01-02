@@ -115,7 +115,7 @@ class MemorySet(object):
     #     P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
     #     return 2-2*P
 
-    def Calc_Pseudolabel(self, z, y):
+    def Calc_Pseudolabel(self, z):
         vectorSet = z - self.T.detach()
         cos = torch.nn.CosineSimilarity(dim=1)
         cos_result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)

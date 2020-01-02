@@ -1,11 +1,7 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/10.0.30 --m 7 --gpu 7 --epoch1 10 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/20.0.30 --m 7 --gpu 7 --epoch1 20 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/30.0.30 --m 7 --gpu 7 --epoch1 30 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/40.0.30 --m 7 --gpu 7 --epoch1 40 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/50.0.30 --m 7 --gpu 7 --epoch1 50 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/60.0.30 --m 7 --gpu 7 --epoch1 60 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/70.0.30 --m 7 --gpu 7 --epoch1 70 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/80.0.30 --m 7 --gpu 7 --epoch1 80 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/90.0.30 --m 7 --gpu 7 --epoch1 90 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m7/100.0.30 --m 7 --gpu 7 --epoch1 100 --epoch2 0 --epoch3 30 1> /dev/null 2> /dev/null
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Step2_001/Post/Step3_0.0.1 --epoch1 10 --epoch2 120 --epoch3 120 --t1 0. --t2 0. --t3 0.01 --t4 1. --final post --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Step2_001/Post/Step3_1.0.0 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 0. --t3 0.01 --t4 0. --final post --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Step2_001/Post/Step3_1.0.1 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 0. --t3 0.01 --t4 1. --final post --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Step2_001/Post/Step3_0.1.1 --epoch1 10 --epoch2 120 --epoch3 120 --t1 0. --t2 1. --t3 0.01 --t4 1. --final post --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Step2_001/Post/Step3_0.01.1 --epoch1 10 --epoch2 120 --epoch3 120 --t1 0. --t2 0.1 --t3 0.01 --t4 1. --final post --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Step2_001/Post/Step3_0.001.1 --epoch1 10 --epoch2 120 --epoch3 120 --t1 0. --t2 0.01 --t3 0.01 --t4 1. --final post --gpu 0 1> /dev/null 2> /dev/null

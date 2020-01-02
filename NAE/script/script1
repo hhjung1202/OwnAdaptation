@@ -1,11 +1,13 @@
 #!/bin/bash
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/10.30.0 --m 4 --gpu 0 --epoch1 10 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/20.30.0 --m 4 --gpu 0 --epoch1 20 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/30.30.0 --m 4 --gpu 0 --epoch1 30 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/40.30.0 --m 4 --gpu 0 --epoch1 40 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/50.30.0 --m 4 --gpu 0 --epoch1 50 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/60.30.0 --m 4 --gpu 0 --epoch1 60 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/70.30.0 --m 4 --gpu 0 --epoch1 70 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/80.30.0 --m 4 --gpu 0 --epoch1 80 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/90.30.0 --m 4 --gpu 0 --epoch1 90 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /data2/hhjung/NAE_ResNet/ResNet18/Step/m4/100.30.0 --m 4 --gpu 0 --epoch1 100 --epoch2 30 --epoch3 0 1> /dev/null 2> /dev/null
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.1/Ep10 --noise-rate 0.1 --noise-type sym --epoch1 10 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.1/Ep20 --noise-rate 0.1 --noise-type sym --epoch1 20 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.1/Ep30 --noise-rate 0.1 --noise-type sym --epoch1 30 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.2/Ep10 --noise-rate 0.2 --noise-type sym --epoch1 10 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.2/Ep20 --noise-rate 0.2 --noise-type sym --epoch1 20 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.2/Ep30 --noise-rate 0.2 --noise-type sym --epoch1 30 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.4/Ep10 --noise-rate 0.4 --noise-type sym --epoch1 10 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.4/Ep20 --noise-rate 0.4 --noise-type sym --epoch1 20 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.4/Ep30 --noise-rate 0.4 --noise-type sym --epoch1 30 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.6/Ep10 --noise-rate 0.6 --noise-type sym --epoch1 10 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.6/Ep20 --noise-rate 0.6 --noise-type sym --epoch1 20 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /data2/hhjung/NAE/ResNet18/Sym/n0.6/Ep30 --noise-rate 0.6 --noise-type sym --epoch1 30 --epoch2 120 --epoch3 30 --gpu 0 1> /dev/null 2> /dev/null

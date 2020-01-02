@@ -28,6 +28,9 @@ class model_optim_state_info(object):
         elif args.model == "ResNet18":
             self.model = ResNet18(memory=args.m, num_classes=args.clsN)
             args.z = z_ResNet18[args.m]
+        elif args.model == "ResNet18_P":
+            args.z = 64
+            self.model = ResNet18_P(memory=args.m, num_classes=args.clsN, z=args.z)
         elif args.model == "ResNet34":
             self.model = ResNet34(memory=args.m, num_classes=args.clsN)
             args.z = z_ResNet34[args.m]

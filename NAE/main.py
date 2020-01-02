@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 parser.add_argument('--db', default='cifar10', type=str, help='dataset selection')
 parser.add_argument('--noise-rate', default=0.1, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
+parser.add_argument('--final', default="pre", type=str, help='Step3 training type : pre or post')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 parser.add_argument('--model', default='ResNet18', type=str, help='NAE, ResNet18, ResNet34, PreActResNet32')
 parser.add_argument('--maxN', default=500, type=int, help='Max Buffer Size')
@@ -25,9 +26,9 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 
 parser.add_argument('--d-epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 
-parser.add_argument('--epoch1', default=165, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch1', default=10, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--epoch2', default=165, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--epoch3', default=165, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch3', default=100, type=int, metavar='N', help='number of total epoch to run')
 
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-2, type=float, metavar='LR', help='initial learning rate')
@@ -39,15 +40,15 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--h', type=int, default=400, help='hidden size')
-parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
+parser.add_argument('--m', type=int, default=7, help='latent selection(0 to n)')
 # parser.add_argument('--z', type=int, default=64, help='latent size')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
-parser.add_argument('--t0', type=float, default=1.0, help='Classification loss weight')
-parser.add_argument('--t1', type=float, default=1.0, help='Noise label Vectorization')
-parser.add_argument('--t2', type=float, default=1.0, help='Random label Vectorization')
-parser.add_argument('--t3', type=float, default=1.0, help='Vector length Consistency Regularization')
-parser.add_argument('--t4', type=float, default=1.0, help='Vector length Consistency Regularization')
+parser.add_argument('--t0', type=float, default=1.0, help='Step 3 Classification loss weight')
+parser.add_argument('--t1', type=float, default=1.0, help='Step 3 Noise label Vectorization')
+parser.add_argument('--t2', type=float, default=1.0, help='Step 3 Random label Vectorization')
+parser.add_argument('--t3', type=float, default=1.0, help='Step 2 Random label')
+parser.add_argument('--t4', type=float, default=1.0, help='Step 3 Pseudo label Vectorization')
 # parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
