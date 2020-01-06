@@ -66,12 +66,11 @@ def train_NAE(args, state_info, Train_loader, Test_loader): # all
         state_info.lr_model.step()
         utils.print_log('')
 
+    pseudo_loader = get_Pseudo_loader(args, state_info, Memory)
+
     for epoch in range(0, args.epoch3):
 
-        if args.final ==  "pre":
-            epoch_result = train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch)
-        elif args.final ==  "post":
-            epoch_result = train_step3_post(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch)
+        epoch_result = train_step3(args, state_info, pseudo_loader, Test_loader, Memory, criterion, epoch)
         if epoch_result > best_prec_result:
             best_prec_result = epoch_result
         state_info.lr_model.step()
