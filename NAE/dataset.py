@@ -271,4 +271,4 @@ if __name__=='__main__':
 
     Train_loader = Cifar10_pseudo_loader(args, item)
     for i, (x, n, l) in enumerate(Train_loader):
-        print(n, l)
+        print(torch.sum(n.eq(l)))
