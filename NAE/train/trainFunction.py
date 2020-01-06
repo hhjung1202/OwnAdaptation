@@ -238,7 +238,7 @@ def get_Pseudo_loader(args, state_info, Memory):
     train_Size = torch.tensor(0, dtype=torch.float32)
     Pseudo_Real = torch.tensor(0, dtype=torch.float32)
 
-    temp_loader = pseudoDataset.temp_loader(args)
+    temp_loader = Cifar10_temp_loader(args)
     pseudo_label_set = torch.tensor([], dtype=torch.int64).cuda()
 
     for it, (x, y) in enumerate(temp_loader):
@@ -251,7 +251,7 @@ def get_Pseudo_loader(args, state_info, Memory):
 
     utils.print_log('Pseudo, Correct, {:.3f}'.format(100.*Pseudo_Real / train_Size))
 
-    pseudo_loader = pseudoDataset.Cifar10_pseudo_loader(args, pseudo_label_set.cpu())
+    pseudo_loader = Cifar10_pseudo_loader(args, pseudo_label_set.cpu())
 
     return pseudo_loader
     

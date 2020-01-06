@@ -28,7 +28,7 @@ class cifar10_pseudo(datasets.CIFAR10):
 
         return img, target, real_target
 
-def temp_loader(args):
+def Cifar10_temp_loader(args):
     
     print("Cifar10 Temp Data Loading ...")
     root = '/home/hhjung/hhjung/cifar10/'
