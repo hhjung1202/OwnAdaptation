@@ -247,7 +247,7 @@ def Cifar10_pseudo_loader(args, Pseudo_label):
     ])
 
     # Baseline result
-    Train_dataset = cifar10(label=Pseudo_label, root=root, train=True, transform=transform_train, download=True)
+    Train_dataset = cifar10_pseudo(label=Pseudo_label, root=root, train=True, transform=transform_train, download=True)
 
     Pseudo_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
     return Pseudo_loader
