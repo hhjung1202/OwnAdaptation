@@ -242,7 +242,7 @@ def get_Pseudo_loader(args, state_info, Memory):
     pseudo_label_set = torch.tensor([], dtype=torch.int64).cuda()
 
     for it, (x, y) in enumerate(temp_loader):
-        x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor)
+        x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         out, z = state_info.forward(x)
         pseudo_label = Memory.Calc_Pseudolabel(z)
         pseudo_label_set = torch.cat([pseudo_label_set, pseudo_label], 0)
