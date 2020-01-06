@@ -1,7 +1,7 @@
 import torch
 from torch.autograd import Variable
 import utils
-import pseudoDataset
+from .pseudoDataset import *
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))
