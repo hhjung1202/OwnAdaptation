@@ -270,5 +270,5 @@ if __name__=='__main__':
 
     # x = torch.randint
     Train_loader = temp_loader(args)
-    for i, (x, n, l) in enumerate(Train_loader):
+    for i, (x, n) in enumerate(Train_loader):
         print(n.dtype)
