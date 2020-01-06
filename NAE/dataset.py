@@ -3,6 +3,8 @@ from torchvision import datasets, transforms
 import random
 from PIL import Image
 import numpy as np
+import torch.utils.data as data
+
 
 class MNIST(datasets.MNIST):
     def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, sample=5000, seed=1234, Task='True'):
@@ -149,6 +151,8 @@ class cifar10(datasets.CIFAR10):
 
         return img, target, real_target
 
+
+
 def Cifar10_loader(args):
     
     torch.manual_seed(args.seed)
@@ -180,6 +184,75 @@ def Cifar10_loader(args):
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
     return Train_loader, Test_loader, 3, 10
 
+def temp_loader(args):
+    
+    print("Cifar10 Temp Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
+    
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    # Baseline result
+    Train_dataset = datasets.CIFAR10(root=root, train=True, transform=transform_train, download=True)
+    print(Train_dataset.size())
+
+    Temp_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+    return Temp_loader
+
+class cifar10_pseudo(datasets.CIFAR10):
+    def __init__(self, label, **kwargs):
+        super(cifar10_pseudo, self).__init__(**kwargs)
+        self.num_classes = 10
+        self.real_target = self.targets
+        self.data_zip = list(zip(self.data, label.numpy(), self.real_target))
+
+    def __getitem__(self, index):
+
+        img, target, real_target = self.data_zip[index]
+            
+        target = int(target)
+        real_target = int(real_target)
+
+        # doing this so that it is consistent with all other datasets
+        # to return a PIL Image
+        img = Image.fromarray(img)
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target, real_target
+
+
+def Cifar10_pseudo_loader(args, Pseudo_label):
+    
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    
+    print("Cifar10 Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
+    
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    # Baseline result
+    Train_dataset = cifar10(label=Pseudo_label, root=root, train=True, transform=transform_train, download=True)
+
+    Pseudo_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+    return Pseudo_loader, 3, 10
+
 if __name__=='__main__':
     class e():
         pass
@@ -194,7 +267,7 @@ if __name__=='__main__':
     args.sym = True
     args.seed = 1234
 
-    Train_loader, Test_loader, i,j = Cifar10_loader(args)
+    Train_loader = temp_loader(args)
     for i, (x, n, l) in enumerate(Train_loader):
         print(i)
         print(x)
