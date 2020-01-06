@@ -266,7 +266,7 @@ if __name__=='__main__':
     args.sym = True
     args.seed = 1234
 
-    item = torch.randint(0,9, size=50000, dtype=torch.int64)
+    item = torch.randint(0,9, size=[50000], dtype=torch.int64)
     print(item.size())
 
     Train_loader = Cifar10_pseudo_loader(args, item)
