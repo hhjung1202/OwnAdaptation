@@ -250,7 +250,7 @@ def Cifar10_pseudo_loader(args, Pseudo_label):
     Train_dataset = cifar10(label=Pseudo_label, root=root, train=True, transform=transform_train, download=True)
 
     Pseudo_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
-    return Pseudo_loader, 3, 10
+    return Pseudo_loader
 
 if __name__=='__main__':
     class e():
@@ -266,9 +266,9 @@ if __name__=='__main__':
     args.sym = True
     args.seed = 1234
 
-    # item = torch.randint(0,9, size=label.size(), dtype=label.dtype)
+    item = torch.randint(0,9, size=50000, dtype=torch.int64)
+    print(item.size())
 
-    # x = torch.randint
-    Train_loader = temp_loader(args)
-    for i, (x, n) in enumerate(Train_loader):
-        print(n.dtype)
+    Train_loader = Cifar10_pseudo_loader(args, item)
+    for i, (x, n, l) in enumerate(Train_loader):
+        print(n, l)
