@@ -199,7 +199,7 @@ def temp_loader(args):
 
     # Baseline result
     Train_dataset = datasets.CIFAR10(root=root, train=True, transform=transform_train, download=True)
-    print(Train_dataset.size())
+    print(Train_dataset.shape)
 
     Temp_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
     return Temp_loader
