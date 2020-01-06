@@ -250,6 +250,7 @@ def get_Pseudo_loader(args, state_info, Memory):
         train_Size += float(x.size(0))
 
     utils.print_log('Pseudo, Correct, {:.3f}'.format(100.*Pseudo_Real / train_Size))
+    print('Pseudo, Correct, {:.3f}'.format(100.*Pseudo_Real / train_Size))
 
     pseudo_loader = Cifar10_pseudo_loader(args, pseudo_label_set.cpu())
 

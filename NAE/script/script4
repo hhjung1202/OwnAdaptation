@@ -1,7 +1,0 @@
-#!/bin/bash
-python3 ../main.py --dir /home/hhjung/hhjung/NAE/ResNet18/Step2_01/Pre/Step3_1.0 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 0. --t3 0.1 --final pre --gpu 3 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/NAE/ResNet18/Step2_01/Pre/Step3_1.1 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 1. --t3 0.1 --final pre --gpu 3 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/NAE/ResNet18/Step2_01/Pre/Step3_1.01 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 0.1 --t3 0.1 --final pre --gpu 3 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/NAE/ResNet18/Step2_01/Pre/Step3_1.001 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 0.01 --t3 0.1 --final pre --gpu 3 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/NAE/ResNet18/Step2_001/Pre/Step3_0.0 --epoch1 10 --epoch2 120 --epoch3 120 --t1 0. --t2 0. --t3 0.01 --final pre --gpu 3 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/NAE/ResNet18/Step2_001/Pre/Step3_1.0 --epoch1 10 --epoch2 120 --epoch3 120 --t1 1. --t2 0. --t3 0.01 --final pre --gpu 3 1> /dev/null 2> /dev/null
