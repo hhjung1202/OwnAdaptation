@@ -11,6 +11,10 @@ class Memory(object):
         self.Refine_N = int(args.Refine * args.maxN)
         self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
 
+    def Calc_Memory(self):
+        self.mean = self.z.mean(dim=0)
+        self.sigma = self.z.var(dim=0).sqrt()
+
     def Insert_memory(self, z): # Actual Function
         if self.index >= self.N:
             self.index = 0
@@ -18,13 +22,11 @@ class Memory(object):
         del(z)
         self.index = self.index + 1
 
-    def Refine_memory(self, z):
-        _, index = (self.z - z).pow(2).sum(dim=1).sort()
+    def Refine_memory(self, Anchor):
+        _, index = (self.z - Anchor).pow(2).sum(dim=1).sort()
         x = self.z[index[:self.Refine_N]]
         self.mean = x.mean(dim=0)
         self.sigma = x.var(dim=0).sqrt()
-
-
 
 class MemorySet(object):
     def __init__(self, args):
@@ -75,8 +77,7 @@ class MemorySet(object):
         result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)
 
         for i in range(self.clsN):
-            mean = self.mean_Set[i].unsqueeze(0).repeat(z.size(0), 1)
-            result[:, i] = torch.sum(L2_loss(z, mean), dim=1)
+            result[:, i] = (z - self.mean_Set[i]).pow(2).sum(dim=1)
 
         _, pseudo_label = result.min(1)
 
