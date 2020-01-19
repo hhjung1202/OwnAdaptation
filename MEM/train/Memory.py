@@ -61,6 +61,8 @@ class MemorySet(object):
             self.Anchor_mean_Set[i] = self.AnchorSet[i].mean.detach()
             self.Anchor_sigma_Set[i] = self.AnchorSet[i].sigma.detach()
 
+        self.Refine_Memory()
+
     def Refine_Memory(self):
         for i in range(self.clsN):
             self.Set[i].Refine_memory(self.Anchor_mean_Set[i])
@@ -73,7 +75,6 @@ class MemorySet(object):
     #     return 2-2*P
 
     def Calc_Pseudolabel(self, z):
-        L2_loss = torch.nn.MSELoss(reduction='none')
         result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)
 
         for i in range(self.clsN):

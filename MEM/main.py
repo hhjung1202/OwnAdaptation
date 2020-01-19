@@ -27,9 +27,9 @@ parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.'
 
 parser.add_argument('--d-epoch', default=90, type=int, metavar='N', help='number of total epoch to run')
 
-parser.add_argument('--epoch1', default=10, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch1', default=1, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--epoch2', default=60, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--epoch3', default=120, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch3', default=60, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--epoch4', default=0, type=int, metavar='N', help='number of total epoch to run')
 
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
@@ -46,10 +46,15 @@ parser.add_argument('--m', type=int, default=7, help='latent selection(0 to n)')
 # parser.add_argument('--z', type=int, default=64, help='latent size')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
-parser.add_argument('--t0', type=float, default=1.0, help='Step 3 Classification loss weight')
-parser.add_argument('--t1', type=float, default=1.0, help='Step 3 Noise label Vectorization')
-parser.add_argument('--t2', type=float, default=0.1, help='Step 3 Random label Vectorization')
-parser.add_argument('--t3', type=float, default=0.1, help='Step 2 Random label')
+parser.add_argument('--t0', type=float, default=1.0, help='Step 2 Classification loss Noise')
+parser.add_argument('--t1', type=float, default=1.0, help='Step 2 Classification loss Pseudo')
+parser.add_argument('--t2', type=float, default=1.0, help='Step 2 Regularization Noise')
+parser.add_argument('--t3', type=float, default=1.0, help='Step 2 Regularization Pseudo')
+
+parser.add_argument('--t4', type=float, default=0.0, help='Step 3 Classification loss Noise')
+parser.add_argument('--t5', type=float, default=1.0, help='Step 3 Classification loss Pseudo')
+parser.add_argument('--t6', type=float, default=0.0, help='Step 3 Regularization Noise')
+parser.add_argument('--t7', type=float, default=1.0, help='Step 3 Regularization Pseudo')
 # parser.add_argument('--t4', type=float, default=1.0, help='Step 3 Pseudo label Vectorization')
 # parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
 
