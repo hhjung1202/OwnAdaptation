@@ -152,6 +152,13 @@ class cifar10(datasets.CIFAR10):
         return img, target, real_target
 
 
+from torch.autograd import Variable
+import utils
+from .pseudoDataset import *
+
+def to_var(x, dtype):
+    return torch.autograd.Variable(x.type(torch.LongTensor))
+
 
 class cifar10_sampler(datasets.CIFAR10):
     def __init__(self, Anchor=1, **kwargs):
@@ -159,10 +166,11 @@ class cifar10_sampler(datasets.CIFAR10):
         self.num_classes = 10
         self.Anchor = Anchor
         Anchor_index = self.iterative_Perm()
-        print(Anchor_index.dtype)
         
+        print(self.data[0])
+        print(self.targets[0])
         self.data = self.data[Anchor_index]
-        self.targets = self.targets[Anchor_index]
+        self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
 
         self.data_zip = list(zip(self.data, self.targets))
 
