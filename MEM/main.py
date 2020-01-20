@@ -75,8 +75,6 @@ def main():
     Train_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
     Sample_loader = dataset.Cifar10_Sample(args)
 
-    realA_sample_iter = 
-    realB_sample_iter = iter(Target_train_loader)
 
     AnchorSet = iter(Sample_loader).next()
     args.chIn = chIn
