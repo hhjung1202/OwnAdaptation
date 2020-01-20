@@ -151,25 +151,6 @@ class cifar10(datasets.CIFAR10):
 
         return img, target, real_target
 
-
-class cifar10_sampler(datasets.CIFAR10):
-    def __init__(self, Anchor=1, **kwargs):
-        super(cifar10_sampler, self).__init__(**kwargs)
-        self.num_classes = 10
-        self.Anchor = Anchor
-        Anchor_index = self.iterative_Perm()
-        print(self.targets)
-        
-        self.data = self.data[Anchor_index]
-        self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
-
-    def iterative_Perm(self):
-        Anchor_index = torch.tensor([], dtype=torch.int64)
-        for i in range(10):
-            index = torch.randperm(5000, dtype=Anchor_index.dtype)[:self.Anchor] + 5000 * i
-            Anchor_index = torch.cat((Anchor_index, index))
-        return Anchor_index
-    
 def Cifar10_loader(args):
     
     torch.manual_seed(args.seed)
@@ -197,17 +178,38 @@ def Cifar10_loader(args):
                                     , root=root, train=True, transform=transform_train, download=True)
     Test_dataset = datasets.CIFAR10(root=root, train=False, transform=transform_test, download=True)
 
-    Anchor_dataset = cifar10_sampler(Anchor=args.Anchor, seed=args.seed, root=root
-                                    , train=True, transform=transform_train, download=True)
-
     Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
-    Sample_loader = torch.utils.data.DataLoader(dataset=Anchor_dataset, batch_size=args.Anchor * 10, shuffle=False, num_workers=args.workers)
 
     return Train_loader, Test_loader, 3, 10
 
+class cifar10_sampler(datasets.CIFAR10):
+    def __init__(self, Anchor=1, **kwargs):
+        super(cifar10_sampler, self).__init__(**kwargs)
+        self.num_classes = 10
+        self.Anchor = Anchor
+        Anchor_index = self.iterative_Perm()
+        print(self.targets)
+        
+        self.data = self.data[Anchor_index]
+        self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
+
+    def iterative_Perm(self):
+        Anchor_index = torch.tensor([], dtype=torch.int64)
+        arr = []
+        for i in range(self.num_classes):
+            arr.append([])
+        for i in range(len(self.targets)):
+            arr[self.targets[i]] = i
+        for i in range(self.num_classes):
+            random.shuffle(arr[i], random.random)
+            Anchor_index = torch.cat((Anchor_index, arr[i][:self.Anchor]))
+        
+        return Anchor_index
+
 def Cifar10_Sample(args):
 
+    random.seed(args.seed)
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed(args.seed)
     
