@@ -169,7 +169,7 @@ class cifar10_sampler(datasets.CIFAR10):
     def iterative_Perm(self):
         Anchor_index = torch.tensor([], dtype=torch.int32)
         for i in range(10):
-            index = torch.randperm(5000)[:self.Anchor] + 5000 * i
+            index = torch.randperm(5000, dtype=Anchor_index.dtype)[:self.Anchor] + 5000 * i
             Anchor_index = torch.cat((Anchor_index, index))
         return Anchor_index
     
