@@ -200,7 +200,7 @@ class cifar10_sampler(datasets.CIFAR10):
         for i in range(self.num_classes):
             arr.append([])
         for i in range(len(self.targets)):
-            arr[self.targets[i]] = i
+            arr[self.targets[i]].append(i)
         for i in range(self.num_classes):
             random.shuffle(arr[i], random.random)
             Anchor_index = torch.cat((Anchor_index, arr[i][:self.Anchor]))
