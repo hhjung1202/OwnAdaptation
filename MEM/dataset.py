@@ -155,7 +155,7 @@ class cifar10(datasets.CIFAR10):
 
 class cifar10_sampler(datasets.CIFAR10):
     def __init__(self, Anchor=1, **kwargs):
-        super(cifar10, self).__init__(**kwargs)
+        super(cifar10_sampler, self).__init__(**kwargs)
         self.num_classes = 10
         self.Anchor = Anchor
         Anchor_index = self.iterative_Perm()
