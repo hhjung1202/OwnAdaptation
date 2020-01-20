@@ -158,14 +158,10 @@ class cifar10_sampler(datasets.CIFAR10):
         self.num_classes = 10
         self.Anchor = Anchor
         Anchor_index = self.iterative_Perm()
-        
-        print(self.data[0])
-        print(self.targets[0])
-        self.data = self.data[Anchor_index]
-        print(self.data)
-
-        self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
         print(self.targets)
+        
+        self.data = self.data[Anchor_index]
+        self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
 
     def iterative_Perm(self):
         Anchor_index = torch.tensor([], dtype=torch.int64)
