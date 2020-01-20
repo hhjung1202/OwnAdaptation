@@ -45,11 +45,8 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
-    correct_Noise = torch.tensor(0, dtype=torch.float32)
-    correct_Pseudo = torch.tensor(0, dtype=torch.float32)
-    correct_Real = torch.tensor(0, dtype=torch.float32)
     train_Size = torch.tensor(0, dtype=torch.float32)
-    Pseudo_Noise = torch.tensor(0, dtype=torch.float32)
+    correct_Real = torch.tensor(0, dtype=torch.float32)
     Pseudo_Real = torch.tensor(0, dtype=torch.float32)
 
     Anchor_Image, Anchor_label = AnchorSet
@@ -109,6 +106,7 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
+    train_Size = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
     Pseudo_Real = torch.tensor(0, dtype=torch.float32)
 
