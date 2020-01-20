@@ -9,5 +9,4 @@ x = [	[1,0,0,0,0],
 ]
 
 for i in range(len(x)):
-	"python3 ../main.py --dir /home/hhjung/hhjung/MEM/{}{}{}{} --t0 {} --t1 {} --t2 {} --t3 {} --gpu {} 1> /dev/null 2> /dev/null &"
-	.format(x[i][0],x[i][1],x[i][2],x[i][3],x[i][0],x[i][1],x[i][2],x[i][3],x[i][4])
+	"python3 ../main.py --dir /home/hhjung/hhjung/MEM/{}{}{}{} --t0 {} --t1 {} --t2 {} --t3 {} --gpu {} 1> /dev/null 2> /dev/null &".format(x[i][0],x[i][1],x[i][2],x[i][3],x[i][0],x[i][1],x[i][2],x[i][3],x[i][4])
