@@ -230,6 +230,7 @@ def Cifar10_Sample(args):
     return Sample_loader
 
 import matplotlib.pyplot as plt
+import torchvision.transforms as transforms
 
 
 if __name__=='__main__':
@@ -250,5 +251,5 @@ if __name__=='__main__':
     Sample_loader = Cifar10_Sample(args)
     for i, (x, l) in enumerate(Sample_loader):
         for j in range(10):
-            plt.imshow(x[j].numpy())
+            plt.imshow(x[j].view(32,32,3).numpy())
         print(l)
