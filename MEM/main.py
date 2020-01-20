@@ -73,10 +73,8 @@ def main():
     global args, best_prec_result
 
     Train_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
-    Sample_loader = dataset.Cifar10_Sample(args)
+    AnchorSet = dataset.Cifar10_Sample(args)
 
-
-    AnchorSet = iter(Sample_loader).next()
     args.chIn = chIn
     args.clsN = clsN
     args.milestones = [200,300]

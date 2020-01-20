@@ -225,12 +225,9 @@ def Cifar10_Sample(args):
     Anchor_dataset = cifar10_sampler(Anchor=args.Anchor, root=root, train=True, transform=transform_train, download=True)
 
     Sample_loader = torch.utils.data.DataLoader(dataset=Anchor_dataset, batch_size=args.Anchor * 10, shuffle=False, num_workers=args.workers)
+    AnchorSet = iter(Sample_loader).next()
 
-    return Sample_loader
-
-import matplotlib.pyplot as plt
-import torchvision.transforms as transforms
-
+    return AnchorSet
 
 if __name__=='__main__':
     class e():
@@ -250,6 +247,6 @@ if __name__=='__main__':
     Sample_loader = Cifar10_Sample(args)
     AnchorSet = iter(Sample_loader).next()
     x, l = AnchorSet
-    print(l)
+    print(x, l)
     # for i, (x, l) in enumerate(Sample_loader):
         # print(l)
