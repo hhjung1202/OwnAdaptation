@@ -152,14 +152,6 @@ class cifar10(datasets.CIFAR10):
         return img, target, real_target
 
 
-from torch.autograd import Variable
-import utils
-from .pseudoDataset import *
-
-def to_var(x, dtype):
-    return torch.autograd.Variable(x.type(torch.LongTensor))
-
-
 class cifar10_sampler(datasets.CIFAR10):
     def __init__(self, Anchor=1, **kwargs):
         super(cifar10_sampler, self).__init__(**kwargs)
