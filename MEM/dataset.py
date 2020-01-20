@@ -159,7 +159,7 @@ class cifar10_sampler(datasets.CIFAR10):
         self.num_classes = 10
         self.Anchor = Anchor
         Anchor_index = self.iterative_Perm()
-        print(Anchor_index)
+        print(Anchor_index.dtype)
         
         self.data = self.data[Anchor_index]
         self.targets = self.targets[Anchor_index]
