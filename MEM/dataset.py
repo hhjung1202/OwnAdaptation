@@ -189,7 +189,6 @@ class cifar10_sampler(datasets.CIFAR10):
         self.num_classes = 10
         self.Anchor = Anchor
         Anchor_index = self.iterative_Perm()
-        print(self.targets)
         
         self.data = self.data[Anchor_index]
         self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
@@ -230,6 +229,9 @@ def Cifar10_Sample(args):
 
     return Sample_loader
 
+import matplotlib.pyplot as plt
+
+
 if __name__=='__main__':
     class e():
         pass
@@ -246,5 +248,7 @@ if __name__=='__main__':
     args.seed = 1234
 
     Sample_loader = Cifar10_Sample(args)
-    for i, (x, l) in enumerate(Sample_loader):
+    for i, (x, l) in enumerate(Sample_loader)
+        for j in range(10):
+            plt.imshow(x[j].numpy())
         print(l)
