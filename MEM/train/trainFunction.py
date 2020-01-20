@@ -82,10 +82,7 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         loss_N = criterion(out, y)
         loss_P = criterion(out, pseudo_label)
 
-        total = args.t0 * loss_N + 
-                args.t1 * loss_P +
-                args.t2 * reg_N +
-                args.t3 * reg_P
+        total = args.t0 * loss_N + args.t1 * loss_P + args.t2 * reg_N + args.t3 * reg_P
 
         total.backward()
         state_info.optim_model.step()
@@ -145,10 +142,7 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         loss_N = criterion(out, y)
         loss_P = criterion(out, pseudo_label)
 
-        total = args.t4 * loss_N + 
-                args.t5 * loss_P +
-                args.t6 * reg_N +
-                args.t7 * reg_P
+        total = args.t4 * loss_N + args.t5 * loss_P + args.t6 * reg_N + args.t7 * reg_P
 
         total.backward()
         state_info.optim_model.step()
