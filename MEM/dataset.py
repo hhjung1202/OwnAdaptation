@@ -153,6 +153,25 @@ class cifar10(datasets.CIFAR10):
 
 
 
+class cifar10_sampler(datasets.CIFAR10):
+    def __init__(self, Anchor=1, **kwargs):
+        super(cifar10, self).__init__(**kwargs)
+        self.num_classes = 10
+        self.Anchor = Anchor
+        Anchor_index = self.iterative_Perm()
+        
+        self.data = self.data[Anchor_index]
+        self.targets = self.targets[Anchor_index]
+
+        self.data_zip = list(zip(self.data, self.targets))
+
+    def iterative_Perm(self):
+        Anchor_index = torch.tensor([], dtype=torch.int64)
+        for i in range(10):
+            index = torch.randperm(5000)[:self.Anchor] + 5000 * i
+            Anchor_index = torch.cat((Anchor_index, index))
+        return Anchor_index
+    
 def Cifar10_loader(args):
     
     torch.manual_seed(args.seed)
@@ -180,9 +199,36 @@ def Cifar10_loader(args):
                                     , root=root, train=True, transform=transform_train, download=True)
     Test_dataset = datasets.CIFAR10(root=root, train=False, transform=transform_test, download=True)
 
+    Anchor_dataset = cifar10_sampler(Anchor=args.Anchor, seed=args.seed, root=root
+                                    , train=True, transform=transform_train, download=True)
+
     Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+    Sample_loader = torch.utils.data.DataLoader(dataset=Anchor_dataset, batch_size=args.Anchor * 10, shuffle=False, num_workers=args.workers)
+
     return Train_loader, Test_loader, 3, 10
+
+def Cifar10_Sample(args):
+
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    
+    print("Cifar10 Sampler Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
+    
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+    
+    Anchor_dataset = cifar10_sampler(Anchor=args.Anchor, root=root, train=True, transform=transform_train, download=True)
+
+    Sample_loader = torch.utils.data.DataLoader(dataset=Anchor_dataset, batch_size=args.Anchor * 10, shuffle=False, num_workers=args.workers)
+
+    return Sample_loader
 
 if __name__=='__main__':
     class e():
@@ -194,10 +240,11 @@ if __name__=='__main__':
     args.workers = 4
     args.img_size = 32
     args.noise_rate = 0.1
+    args.Anchor = 10
     args.noise_type = "Asym"
     args.sym = True
     args.seed = 1234
 
-    Train_loader, Test_loader, i,j = Cifar10_loader(args)
-    for i, (x, n, l) in enumerate(Train_loader):
-        print(torch.sum(n.eq(l))/n.size(0))
+    Sample_loader = Cifar10_Sample(args)
+    for i, (x, l) in enumerate(Sample_loader):
+        print(l)

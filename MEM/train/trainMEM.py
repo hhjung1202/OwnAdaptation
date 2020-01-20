@@ -22,7 +22,7 @@ from .trainFunction import *
     3. 최종 Pseudo label 어떻게 사용할지 결정??
 '''
 
-def train_MEM(args, state_info, Train_loader, Test_loader): # all 
+def train_MEM(args, state_info, Train_loader, Test_loader, AnchorSet): # all 
 
     Memory = MemorySet(args=args)
     
