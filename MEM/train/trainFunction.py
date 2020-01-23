@@ -2,6 +2,8 @@ import torch
 from torch.autograd import Variable
 import utils
 from .pseudoDataset import *
+import torch.nn.functional as F
+from typing import List, Mapping, Optional
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))
@@ -39,6 +41,7 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     epoch_result = test(state_info, Test_loader, epoch)
     return epoch_result
 
+            
 
 def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
     cuda = True if torch.cuda.is_available() else False
@@ -70,21 +73,21 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         _, Anchor_z = state_info.forward(Anchor_Image)
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
-        pseudo_label = Memory.Calc_Pseudolabel(z)
+        pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
         reg_N = Memory.get_Regularizer(z, y, reduction='mean')
-        reg_P = Memory.get_Regularizer(z, pseudo_label, reduction='mean')
+        reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
 
         # Anchor_Image args.Anchor * 10, CH, W, H
         # ------------------------------------------------------------
         loss_N = criterion(out, y)
-        loss_P = criterion(out, pseudo_label)
+        loss_P = criterion(out, pseudo_hard_label)
 
         total = args.t0 * loss_N + args.t1 * loss_P + args.t2 * reg_N + args.t3 * reg_P
 
         total.backward()
         state_info.optim_model.step()
 
-        Pseudo_Real += float(pseudo_label.eq(label).sum())
+        Pseudo_Real += float(pseudo_hard_label.eq(label).sum())
         correct_Real += float(model_pred.eq(label.data).cpu().sum())
         train_Size += float(x.size(0))
 
@@ -100,6 +103,42 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
     epoch_result = test(state_info, Test_loader, epoch)
     return epoch_result
+
+def soft_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N, C) with soft label
+    log_likelihood = input.log_softmax(dim=1)
+    soft_log_likelihood = target * log_likelihood
+    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+    return nll_loss
+
+def hard_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood = input.log_softmax(dim=1)
+    nll_loss = F.nll_loss(log_likelihood, target)
+    return nll_loss
+
+def Reverse_soft_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N, C) with soft label
+    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
+    soft_log_likelihood = target * log_likelihood_reverse
+    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+    return nll_loss
+
+def Reverse_hard_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
+    nll_loss = F.nll_loss(log_likelihood_reverse, target)
+    return nll_loss
+
+
+
+
+
+    
 
 def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
     cuda = True if torch.cuda.is_available() else False
@@ -131,21 +170,29 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         _, Anchor_z = state_info.forward(Anchor_Image)
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
-        pseudo_label = Memory.Calc_Pseudolabel(z)
-        reg_P = Memory.get_Regularizer(z, pseudo_label, reduction='mean')
+        pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
+        reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
         reg_N = Memory.get_Regularizer(z, y, reduction='mean')
 
         # Anchor_Image args.Anchor * 10, CH, W, H
         # ------------------------------------------------------------
-        loss_N = criterion(out, y)
-        loss_P = criterion(out, pseudo_label)
+        loss_N = hard_label_cross_entropy(out, y)
+        
+        loss_P_hard = hard_label_cross_entropy(out, pseudo_hard_label)
+        loss_P_soft = soft_label_cross_entropy(out, pseudo_soft_label)
+
+        loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
+        loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
+
+        # _p_ = torch.log(1 - softmax(out))
+        # loss_1_p = F.nll_loss(_p_, Reverse_label)
 
         total = args.t4 * loss_N + args.t5 * loss_P + args.t6 * reg_N + args.t7 * reg_P
 
         total.backward()
         state_info.optim_model.step()
 
-        Pseudo_Real += float(pseudo_label.eq(label).sum())
+        Pseudo_Real += float(pseudo_hard_label.eq(label).sum())
         correct_Real += float(model_pred.eq(label.data).cpu().sum())
         train_Size += float(x.size(0))
 
@@ -193,3 +240,31 @@ def test(state_info, Test_loader, epoch):
           .format(epoch, it, 100.*correct_Test / testSize))
 
     return 100.*correct_Test / testSize
+
+
+Outputs = Mapping[str, List[torch.Tensor]]
+def cross_entropy_with_probs(
+    input: torch.Tensor,
+    target: torch.Tensor,
+    weight: Optional[torch.Tensor] = None,
+    reduction: str = "mean",
+) -> torch.Tensor:
+    
+    num_points, num_classes = input.shape
+    # Note that t.new_zeros, t.new_full put tensor on same device as t
+    cum_losses = input.new_zeros(num_points)
+    for y in range(num_classes):
+        target_temp = input.new_full((num_points,), y, dtype=torch.long)
+        y_loss = F.cross_entropy(input, target_temp, reduction="none")
+        if weight is not None:
+            y_loss = y_loss * weight[y]
+        cum_losses += target[:, y].float() * y_loss
+
+    if reduction == "none":
+        return cum_losses
+    elif reduction == "mean":
+        return cum_losses.mean()
+    elif reduction == "sum":
+        return cum_losses.sum()
+    else:
+        raise ValueError("Keyword 'reduction' must be one of ['none', 'mean', 'sum']")

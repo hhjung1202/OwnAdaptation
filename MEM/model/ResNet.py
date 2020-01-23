@@ -88,6 +88,20 @@ class ResNet(nn.Module):
         out = self.linear(x)
         return out, z
 
+class Predictor(nn.Module):
+    def __init__(self, num_class=64, inc=4096, temp=0.05):
+        super(Predictor, self).__init__()
+        self.fc = nn.Linear(inc, num_class, bias=False)
+        self.num_class = num_class
+        self.temp = temp
+
+    def forward(self, x, reverse=False, eta=0.1):
+        if reverse:
+            x = grad_reverse(x, eta)
+        x = F.normalize(x)
+        x_out = self.fc(x) / self.temp
+        return x_out
+
 
 def ResNet18(memory=1, num_classes=10):
     return ResNet(BasicBlock, [2,2,2,2], memory=memory, num_classes=num_classes)

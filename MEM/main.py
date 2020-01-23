@@ -47,8 +47,8 @@ parser.add_argument('--m', type=int, default=7, help='latent selection(0 to n)')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
 parser.add_argument('--t0', type=float, default=1.0, help='Step 2 Classification loss Noise')
-parser.add_argument('--t1', type=float, default=1.0, help='Step 2 Classification loss Pseudo')
-parser.add_argument('--t2', type=float, default=1.0, help='Step 2 Regularization Noise')
+parser.add_argument('--t1', type=float, default=0.0, help='Step 2 Classification loss Pseudo')
+parser.add_argument('--t2', type=float, default=0.0, help='Step 2 Regularization Noise')
 parser.add_argument('--t3', type=float, default=1.0, help='Step 2 Regularization Pseudo')
 
 parser.add_argument('--t4', type=float, default=0.0, help='Step 3 Classification loss Noise')

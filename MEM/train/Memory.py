@@ -1,5 +1,6 @@
 import torch
 import torch.distributions.normal as normal
+import torch.nn.functional as F
 
 class Memory(object):
     def __init__(self, args, Anchor=False):
@@ -74,15 +75,17 @@ class MemorySet(object):
     #     P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
     #     return 2-2*P
 
-    def Calc_Pseudolabel(self, z):
+    def Calc_Pseudolabel(self, z, eps=1e-9):
         result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)
 
         for i in range(self.clsN):
             result[:, i] = (z - self.mean_Set[i]).pow(2).sum(dim=1)
+        
+        pseudo_soft_label = (result+eps).reciprocal().softmax(dim=1)
+        _, pseudo_hard_label = result.min(1)
+        _, pseudo_hard_reverse_label = result.max(1)
 
-        _, pseudo_label = result.min(1)
-
-        return pseudo_label.detach()
+        return pseudo_hard_label.detach(), pseudo_soft_label.detach(), pseudo_hard_reverse_label.detach()
 
     def get_Regularizer(self, z, y, reduction='mean'):
 
@@ -93,3 +96,4 @@ class MemorySet(object):
             return Regularizer / z.size(0)
         elif reduction == "sum":
             return Regularizer
+
