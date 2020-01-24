@@ -42,6 +42,36 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     return epoch_result
 
             
+def soft_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N, C) with soft label
+    log_likelihood = input.log_softmax(dim=1)
+    soft_log_likelihood = target * log_likelihood
+    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+    return nll_loss
+
+def hard_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood = input.log_softmax(dim=1)
+    nll_loss = F.nll_loss(log_likelihood, target)
+    return nll_loss
+
+def Reverse_soft_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N, C) with soft label
+    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
+    soft_log_likelihood = target * log_likelihood_reverse
+    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+    return nll_loss
+
+def Reverse_hard_label_cross_entropy(input, target, eps=1e-9):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
+    nll_loss = F.nll_loss(log_likelihood_reverse, target)
+    return nll_loss
+
 
 def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
     cuda = True if torch.cuda.is_available() else False
@@ -79,10 +109,18 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
         # Anchor_Image args.Anchor * 10, CH, W, H
         # ------------------------------------------------------------
-        loss_N = criterion(out, y)
-        loss_P = criterion(out, pseudo_hard_label)
+        # loss_N = criterion(out, y)
+        # loss_P = criterion(out, pseudo_hard_label)
 
-        total = args.t0 * loss_N + args.t1 * loss_P + args.t2 * reg_N + args.t3 * reg_P
+        loss_N = hard_label_cross_entropy(out, y)
+        
+        loss_P_hard = hard_label_cross_entropy(out, pseudo_hard_label)
+        loss_P_soft = soft_label_cross_entropy(out, pseudo_soft_label)
+
+        loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
+        loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
+
+        total = args.weight[0] * loss_N + args.weight[1] * loss_P_hard + args.weight[2] * loss_P_soft + args.weight[3] * loss_Reverse_P_hard + args.weight[4] * loss_Reverse_P_soft + args.weight[5] * reg_N + args.weight[6] * reg_P
 
         total.backward()
         state_info.optim_model.step()
@@ -92,52 +130,19 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_N.item(), loss_P.item(), reg_N.item(), reg_P.item()
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_N.item(), loss_P_hard.item(), loss_P_soft.item()
+                    , loss_Reverse_P_hard.item(), loss_Reverse_P_soft.item(), reg_N.item(), reg_P.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_N.item(), loss_P.item(), reg_N.item(), reg_P.item()
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_N.item(), loss_P_hard.item(), loss_P_soft.item()
+                    , loss_Reverse_P_hard.item(), loss_Reverse_P_soft.item(), reg_N.item(), reg_P.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 
     epoch_result = test(state_info, Test_loader, epoch)
     return epoch_result
-
-def soft_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N, C) with soft label
-    log_likelihood = input.log_softmax(dim=1)
-    soft_log_likelihood = target * log_likelihood
-    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
-    return nll_loss
-
-def hard_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N) with hard class label
-    log_likelihood = input.log_softmax(dim=1)
-    nll_loss = F.nll_loss(log_likelihood, target)
-    return nll_loss
-
-def Reverse_soft_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N, C) with soft label
-    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
-    soft_log_likelihood = target * log_likelihood_reverse
-    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
-    return nll_loss
-
-def Reverse_hard_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N) with hard class label
-    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
-    nll_loss = F.nll_loss(log_likelihood_reverse, target)
-    return nll_loss
-
-
-
-
-
     
 
 def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
@@ -184,10 +189,7 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
         loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
 
-        # _p_ = torch.log(1 - softmax(out))
-        # loss_1_p = F.nll_loss(_p_, Reverse_label)
-
-        total = args.t4 * loss_N + args.t5 * loss_P + args.t6 * reg_N + args.t7 * reg_P
+        total = args.weight[7] * loss_N + args.weight[8] * loss_P_hard + args.weight[9] * loss_P_soft + args.weight[10] * loss_Reverse_P_hard + args.weight[11] * loss_Reverse_P_soft + args.weight[12] * reg_N + args.weight[13] * reg_P
 
         total.backward()
         state_info.optim_model.step()
@@ -197,12 +199,14 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_N.item(), loss_P.item(), reg_N.item(), reg_P.item()
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_N.item(), loss_P_hard.item(), loss_P_soft.item()
+                    , loss_Reverse_P_hard.item(), loss_Reverse_P_soft.item(), reg_N.item(), reg_P.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_N.item(), loss_P.item(), reg_N.item(), reg_P.item()
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_N.item(), loss_P_hard.item(), loss_P_soft.item()
+                    , loss_Reverse_P_hard.item(), loss_Reverse_P_soft.item(), reg_N.item(), reg_P.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 

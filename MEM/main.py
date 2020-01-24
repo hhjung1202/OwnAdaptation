@@ -46,15 +46,8 @@ parser.add_argument('--m', type=int, default=7, help='latent selection(0 to n)')
 # parser.add_argument('--z', type=int, default=64, help='latent size')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
-parser.add_argument('--t0', type=float, default=1.0, help='Step 2 Classification loss Noise')
-parser.add_argument('--t1', type=float, default=0.0, help='Step 2 Classification loss Pseudo')
-parser.add_argument('--t2', type=float, default=0.0, help='Step 2 Regularization Noise')
-parser.add_argument('--t3', type=float, default=1.0, help='Step 2 Regularization Pseudo')
+parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 
-parser.add_argument('--t4', type=float, default=0.0, help='Step 3 Classification loss Noise')
-parser.add_argument('--t5', type=float, default=1.0, help='Step 3 Classification loss Pseudo')
-parser.add_argument('--t6', type=float, default=0.0, help='Step 3 Regularization Noise')
-parser.add_argument('--t7', type=float, default=1.0, help='Step 3 Regularization Pseudo')
 # parser.add_argument('--t4', type=float, default=1.0, help='Step 3 Pseudo label Vectorization')
 # parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
 

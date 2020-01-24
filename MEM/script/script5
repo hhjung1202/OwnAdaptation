@@ -1,0 +1,9 @@
+#!/bin/bash
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100000 -w 1 0 1 0 0 0 1 0 0 0 0 0 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100001 -w 1 0 1 0 0 0 1 0 0 0 0 1 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100010 -w 1 0 1 0 0 0 1 0 0 0 1 0 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100011 -w 1 0 1 0 0 0 1 0 0 0 1 1 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100100 -w 1 0 1 0 0 0 1 0 0 1 0 0 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100101 -w 1 0 1 0 0 0 1 0 0 1 0 1 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100110 -w 1 0 1 0 0 0 1 0 0 1 1 0 0 1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/100111 -w 1 0 1 0 0 0 1 0 0 1 1 1 0 1 --gpu 4 1> /dev/null 2> /dev/null
