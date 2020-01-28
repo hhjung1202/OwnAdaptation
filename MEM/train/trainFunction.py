@@ -8,6 +8,9 @@ from typing import List, Mapping, Optional
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
+def WeightedGradientGamma(weight, low=-1, high=1):
+    return weight * (high-low) + low
+
 def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
@@ -42,7 +45,16 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
     return epoch_result
 
             
-def soft_label_cross_entropy(input, target, eps=1e-9):
+
+
+def hard_label_cross_entropy(input, target, eps=1e-5):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood = input.log_softmax(dim=1)
+    nll_loss = F.nll_loss(log_likelihood, target)
+    return nll_loss
+
+def soft_label_cross_entropy(input, target, eps=1e-5):
     # input (N, C)
     # target (N, C) with soft label
     log_likelihood = input.log_softmax(dim=1)
@@ -50,27 +62,21 @@ def soft_label_cross_entropy(input, target, eps=1e-9):
     nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
     return nll_loss
 
-def hard_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N) with hard class label
-    log_likelihood = input.log_softmax(dim=1)
-    nll_loss = F.nll_loss(log_likelihood, target)
-    return nll_loss
+# def Reverse_soft_label_cross_entropy(input, target, eps=1e-5):
+#     # input (N, C)
+#     # target (N, C) with soft label
+#     log_likelihood_reverse = torch.log(1 - input.softmax(dim=1) + eps)
+#     soft_log_likelihood = target * log_likelihood_reverse
+#     nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+#     return nll_loss
 
-def Reverse_soft_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N, C) with soft label
-    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
-    soft_log_likelihood = target * log_likelihood_reverse
-    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
-    return nll_loss
+# def Reverse_hard_label_cross_entropy(input, target, eps=1e-5):
+#     # input (N, C)
+#     # target (N) with hard class label
+#     log_likelihood_reverse = torch.log(1 - input.softmax(dim=1) + eps)
+#     nll_loss = F.nll_loss(log_likelihood_reverse, target)
+#     return nll_loss
 
-def Reverse_hard_label_cross_entropy(input, target, eps=1e-9):
-    # input (N, C)
-    # target (N) with hard class label
-    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1))
-    nll_loss = F.nll_loss(log_likelihood_reverse, target)
-    return nll_loss
 
 
 def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
@@ -104,23 +110,15 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
         pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
-        reg_N = Memory.get_Regularizer(z, y, reduction='mean')
+
         reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
-
-        # Anchor_Image args.Anchor * 10, CH, W, H
-        # ------------------------------------------------------------
-        # loss_N = criterion(out, y)
-        # loss_P = criterion(out, pseudo_hard_label)
-
         loss_N = hard_label_cross_entropy(out, y)
-        
-        loss_P_hard = hard_label_cross_entropy(out, pseudo_hard_label)
         loss_P_soft = soft_label_cross_entropy(out, pseudo_soft_label)
 
-        loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
-        loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
+        # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
+        # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
 
-        total = args.weight[0] * loss_N + args.weight[1] * loss_P_hard + args.weight[2] * loss_P_soft + args.weight[3] * loss_Reverse_P_hard + args.weight[4] * loss_Reverse_P_soft + args.weight[5] * reg_N + args.weight[6] * reg_P
+        total = loss_N + args.weight[0] * loss_P_soft + reg_P
 
         total.backward()
         state_info.optim_model.step()
@@ -143,6 +141,21 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
     epoch_result = test(state_info, Test_loader, epoch)
     return epoch_result
+
+def soft_label_cross_entropy_diff(input, target, reverse_weight, eps=1e-5):
+    # input (N, C)
+    # target (N, C) with soft label
+    log_likelihood = input.log_softmax(dim=1)
+    soft_log_likelihood = target * log_likelihood * reverse_weight
+    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+    return nll_loss
+
+def hard_label_cross_entropy_same(input, target, weight, eps=1e-5):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood = input.log_softmax(dim=1) * weight
+    nll_loss = F.nll_loss(log_likelihood, target)
+    return nll_loss
     
 
 def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
@@ -162,7 +175,6 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
     for it, (x, y, label) in enumerate(Train_loader):
 
-
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
         state_info.optim_model.zero_grad()
@@ -176,20 +188,20 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
         pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
+
+        if args.grad == "T":
+            weight = y.eq(pseudo_hard_label).type(FloatTensor).view(-1,1)
+            zero = torch.zeros(weight.size()).type(FloatTensor)
+            reverse_weight = weight.eq(zero).type(FloatTensor).view(-1)
+
         reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
-        reg_N = Memory.get_Regularizer(z, y, reduction='mean')
+        loss_P_hard = hard_label_cross_entropy_same(out, pseudo_hard_label, weight)
+        loss_P_soft = soft_label_cross_entropy_diff(out, pseudo_soft_label, reverse_weight)
 
-        # Anchor_Image args.Anchor * 10, CH, W, H
-        # ------------------------------------------------------------
-        loss_N = hard_label_cross_entropy(out, y)
-        
-        loss_P_hard = hard_label_cross_entropy(out, pseudo_hard_label)
-        loss_P_soft = soft_label_cross_entropy(out, pseudo_soft_label)
+        # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
+        # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
 
-        loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
-        loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
-
-        total = args.weight[7] * loss_N + args.weight[8] * loss_P_hard + args.weight[9] * loss_P_soft + args.weight[10] * loss_Reverse_P_hard + args.weight[11] * loss_Reverse_P_soft + args.weight[12] * reg_N + args.weight[13] * reg_P
+        total = loss_P_hard + args.weight[1] * loss_P_soft + reg_P
 
         total.backward()
         state_info.optim_model.step()
