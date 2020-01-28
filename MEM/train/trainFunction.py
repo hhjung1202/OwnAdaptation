@@ -187,10 +187,10 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
         pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
 
-        if args.grad == "T":
-            weight = y.eq(pseudo_hard_label).type(FloatTensor).view(-1,1)
-            zero = torch.zeros(weight.size()).type(FloatTensor)
-            reverse_weight = weight.eq(zero).type(FloatTensor).view(-1)
+        # if args.grad == "T":
+        weight = y.eq(pseudo_hard_label).type(FloatTensor).view(-1,1)
+        zero = torch.zeros(weight.size()).type(FloatTensor)
+        reverse_weight = weight.eq(zero).type(FloatTensor).view(-1)
 
         reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
         loss_P_hard = hard_label_cross_entropy_same(out, pseudo_hard_label, weight)
