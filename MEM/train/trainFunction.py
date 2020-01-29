@@ -132,12 +132,12 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_N.item(), loss_P_soft.item(), reg_P.item()
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_N.item(), loss_P_soft.item(), reg_P.item(), loss_Ent.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_N.item(), loss_P_soft.item(), reg_P.item()
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_N.item(), loss_P_soft.item(), reg_P.item(), loss_Ent.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 
@@ -214,12 +214,12 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_P_hard.item(), loss_P_soft.item(), reg_P.item()
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_P_hard.item(), loss_P_soft.item(), reg_P.item(), loss_Ent.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
-                  .format(epoch, it, total.item(), loss_P_hard.item(), loss_P_soft.item(), reg_P.item()
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'
+                  .format(epoch, it, total.item(), loss_P_hard.item(), loss_P_soft.item(), reg_P.item(), loss_Ent.item()
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 
