@@ -119,6 +119,7 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         loss_P_soft = soft_label_cross_entropy(out, pseudo_soft_label)
         loss_Ent = Maximize_Pseudo_Entropy_loss(pseudo_soft_label)
         print(pseudo_soft_label)
+        print(loss_Ent)
 
         # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
         # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
