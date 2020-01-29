@@ -75,7 +75,7 @@ class MemorySet(object):
     #     P = torch.mean(self.Normal_Gaussian.cdf(Zn), dim=1) # 1-(P-0.5)*2 = 2-2P
     #     return 2-2*P
 
-    def Calc_Pseudolabel(self, z, eps=1e-9):
+    def Calc_Pseudolabel(self, z, eps=1e-5):
         result = torch.zeros((z.size(0), self.clsN), device="cuda", dtype=torch.float32)
 
         for i in range(self.clsN):
@@ -85,7 +85,7 @@ class MemorySet(object):
         _, pseudo_hard_label = result.min(1)
         _, pseudo_hard_reverse_label = result.max(1)
 
-        return pseudo_hard_label.detach(), pseudo_soft_label.detach(), pseudo_hard_reverse_label.detach()
+        return pseudo_hard_label.detach(), pseudo_soft_label, pseudo_hard_reverse_label.detach()
 
     def get_Regularizer(self, z, y, reduction='mean'):
 

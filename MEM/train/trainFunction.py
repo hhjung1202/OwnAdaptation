@@ -70,13 +70,16 @@ def soft_label_cross_entropy(input, target, eps=1e-5):
 #     nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
 #     return nll_loss
 
-# def Reverse_hard_label_cross_entropy(input, target, eps=1e-5):
-#     # input (N, C)
-#     # target (N) with hard class label
-#     log_likelihood_reverse = torch.log(1 - input.softmax(dim=1) + eps)
-#     nll_loss = F.nll_loss(log_likelihood_reverse, target)
-#     return nll_loss
+def Reverse_hard_label_cross_entropy(input, target, eps=1e-5):
+    # input (N, C)
+    # target (N) with hard class label
+    log_likelihood_reverse = torch.log(1 - input.softmax(dim=1) + eps)
+    nll_loss = F.nll_loss(log_likelihood_reverse, target)
+    return nll_loss
 
+def Maximize_Pseudo_Entropy_loss(pseudo_soft_label, eps=1e-5):
+    loss_Ent = torch.mean(torch.sum(pseudo_soft_label * (torch.log(pseudo_soft_label + eps)), 1))
+    return loss_Ent
 
 
 def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
@@ -114,11 +117,12 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
         loss_N = hard_label_cross_entropy(out, y)
         loss_P_soft = soft_label_cross_entropy(out, pseudo_soft_label)
+        loss_Ent = Maximize_Pseudo_Entropy_loss(pseudo_soft_label)
 
         # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
         # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
 
-        total = loss_N + args.weight[0] * loss_P_soft + reg_P
+        total = loss_N + args.weight[0] * loss_P_soft + reg_P + loss_Ent
 
         total.backward()
         state_info.optim_model.step()
@@ -195,11 +199,12 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         reg_P = Memory.get_Regularizer(z, pseudo_hard_label, reduction='mean')
         loss_P_hard = hard_label_cross_entropy_same(out, pseudo_hard_label, weight)
         loss_P_soft = soft_label_cross_entropy_diff(out, pseudo_soft_label, reverse_weight)
+        loss_Ent = Maximize_Pseudo_Entropy_loss(pseudo_soft_label)
 
         # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
         # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
 
-        total = loss_P_hard + args.weight[1] * loss_P_soft + reg_P
+        total = loss_P_hard + args.weight[1] * loss_P_soft + reg_P + loss_Ent
 
         total.backward()
         state_info.optim_model.step()
