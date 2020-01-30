@@ -11,7 +11,7 @@ def to_var(x, dtype):
 def WeightedGradientGamma(weight, low=-1, high=1):
     return weight * (high-low) + low
 
-def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+def train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
@@ -41,7 +41,7 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
             print('Init, {}, {}, {:.6f}, {:.3f}'
                   .format(epoch, it, loss.item(), 100.*correct / total_Size))
 
-    epoch_result = test(state_info, Test_loader, epoch)
+    epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
 
             
@@ -141,7 +141,7 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 
-    epoch_result = test(state_info, Test_loader, epoch)
+    epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
 
 def soft_label_cross_entropy_diff(input, target, reverse_one, eps=1e-5):
@@ -224,7 +224,7 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 
-    epoch_result = test(state_info, Test_loader, epoch)
+    epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
 
 def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
@@ -290,12 +290,12 @@ def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, 
                     , 100.*correct_Real / train_Size
                     , 100.*Pseudo_Real / train_Size))
 
-    epoch_result = test(state_info, Test_loader, epoch)
+    epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
 
 
 
-def test(state_info, Test_loader, epoch):
+def test(args, state_info, Test_loader, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
