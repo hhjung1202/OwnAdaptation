@@ -10,9 +10,9 @@ class Memory(object):
             self.N = args.maxN # size of ALL Buffer
         self.index = 0
         self.Refine_N = int(args.Refine * args.maxN)
-        # self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
-        self.z = torch.randn([self.N, args.z], device="cuda", dtype=torch.float32)
-        self.z = F.normalize(self.z, p=2, dim=1)
+        self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
+        # self.z = torch.randn([self.N, args.z], device="cuda", dtype=torch.float32)
+        # self.z = F.normalize(self.z, p=2, dim=1)
 
     def Calc_Memory(self):
         self.mean = self.z.mean(dim=0)
