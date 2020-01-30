@@ -85,13 +85,10 @@ class ResNet(nn.Module):
             layer = getattr(self, name)
             x = layer(x)
             if i == self.memory:
-                flat = self.flatten(self.avgpool(x))
-                z = F.normalize(flat, p=2, dim=1)
-                x = x * (z / flat).view(x.size(0), x.size(1), 1, 1)
+                z = self.flatten(self.avgpool(x))
 
         x = self.avgpool(x)
         x = self.flatten(x)
-        x = F.normalize(x, p=2, dim=1)
         if z is None:
             z = x
         out = self.linear(x)

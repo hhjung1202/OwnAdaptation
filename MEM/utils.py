@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 from model import *
 import os
 
@@ -37,6 +38,7 @@ class model_optim_state_info(object):
 
     def forward(self, image):
         out, z = self.model(image)
+        z = F.normalize(z, p=2, dim=1)
         return out, z
 
     def model_cuda_init(self):
