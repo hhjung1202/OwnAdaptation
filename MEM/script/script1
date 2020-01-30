@@ -7,3 +7,7 @@ python3 ../main.py --dir /home/hhjung/hhjung/MEM/7 -w 1 0.7 --gpu 4 1> /dev/null
 python3 ../main.py --dir /home/hhjung/hhjung/MEM/8 -w 1 0.8 --gpu 5 1> /dev/null 2> /dev/null &
 python3 ../main.py --dir /home/hhjung/hhjung/MEM/9 -w 1 0.9 --gpu 6 1> /dev/null 2> /dev/null &
 python3 ../main.py --dir /home/hhjung/hhjung/MEM/10 -w 1 1.0 --gpu 7 1> /dev/null 2> /dev/null
+
+
+python3 main.py -w 1 0.0 --gpu 0 --m 6 
+python3 main.py -w 1 0.0 --gpu 0 

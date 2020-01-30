@@ -10,7 +10,9 @@ class Memory(object):
             self.N = args.maxN # size of ALL Buffer
         self.index = 0
         self.Refine_N = int(args.Refine * args.maxN)
-        self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
+        # self.z = torch.zeros([self.N, args.z], device="cuda", dtype=torch.float32)
+        self.z = torch.randn([self.N, args.z], device="cuda", dtype=torch.float32)
+        self.z = F.normalize(self.z, p=2, dim=1)
 
     def Calc_Memory(self):
         self.mean = self.z.mean(dim=0)
@@ -96,4 +98,14 @@ class MemorySet(object):
             return Regularizer / z.size(0)
         elif reduction == "sum":
             return Regularizer
+
+    def get_Regularizer_with_one(self, z, y, one, reduction='mean'):
+
+        featureSet = z - self.mean_Set[y]
+        Regularizer = (featureSet * one).pow(2).sum().sqrt()
+
+        if reduction == "mean":
+            return Regularizer / one.sum()
+        elif reduction == "sum":
+            return Regularizer * z.size(0) / one.sum()
 
