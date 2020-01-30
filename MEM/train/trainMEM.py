@@ -58,6 +58,22 @@ def train_MEM(args, state_info, Train_loader, Test_loader, AnchorSet): # all
         state_info.lr_model.step()
         utils.print_log('')
 
+    for epoch in range(0, args.epoch2):
+
+        epoch_result = train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet)
+        if epoch_result > best_prec_result:
+            best_prec_result = epoch_result
+        state_info.lr_model.step()
+        utils.print_log('')
+    
+    for epoch in range(0, args.epoch3):
+
+        epoch_result = train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet)
+        if epoch_result > best_prec_result:
+            best_prec_result = epoch_result
+        state_info.lr_model.step()
+        utils.print_log('')
+
     for epoch in range(0, args.epoch4):
         epoch_result = train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet)
         if epoch_result > best_prec_result:
@@ -65,21 +81,9 @@ def train_MEM(args, state_info, Train_loader, Test_loader, AnchorSet): # all
         state_info.lr_model.step()
         utils.print_log('')
 
-    # for epoch in range(0, args.epoch2):
+    
 
-    #     epoch_result = train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet)
-    #     if epoch_result > best_prec_result:
-    #         best_prec_result = epoch_result
-    #     state_info.lr_model.step()
-    #     utils.print_log('')
-
-    # for epoch in range(0, args.epoch3):
-
-    #     epoch_result = train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet)
-    #     if epoch_result > best_prec_result:
-    #         best_prec_result = epoch_result
-    #     state_info.lr_model.step()
-    #     utils.print_log('')
+    
 
     now = time.gmtime(time.time() - start_time)
     utils.print_log('Best Prec : {:.4f}'.format(best_prec_result.item()))

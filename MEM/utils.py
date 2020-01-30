@@ -36,8 +36,10 @@ class model_optim_state_info(object):
             self.model = PreActResNet(num_classes=args.clsN, resnet_layer=32, memory=args.m)
             args.z = z_PreActResNet[args.m]
 
-    def forward(self, image):
+    def forward(self, args, image):
         out, z = self.model(image)
+        if args.norm == "True":
+            z = F.normalize(z, p=2, dim=1)
         return out, z
 
     def model_cuda_init(self):

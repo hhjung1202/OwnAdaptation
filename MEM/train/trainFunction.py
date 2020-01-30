@@ -25,7 +25,7 @@ def train_step1(state_info, Train_loader, Test_loader, Memory, criterion, epoch)
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
 
         state_info.optim_model.zero_grad()
-        out, z = state_info.forward(x)
+        out, z = state_info.forward(args, x)
         Memory.Batch_Insert(z, y)
         loss = criterion(out, y)
         loss.backward(retain_graph=True)
@@ -104,12 +104,12 @@ def train_step2(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
         state_info.optim_model.zero_grad()
         # with torch.autograd.set_detect_anomaly(True):
-        out, z = state_info.forward(x)
+        out, z = state_info.forward(args, x)
         _, model_pred = torch.max(out.data, 1)
         Memory.Batch_Insert(z, model_pred)
 
         # ------------------------------------------------------------
-        _, Anchor_z = state_info.forward(Anchor_Image)
+        _, Anchor_z = state_info.forward(args, Anchor_Image)
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
         pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
@@ -181,12 +181,12 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
         state_info.optim_model.zero_grad()
         # with torch.autograd.set_detect_anomaly(True):
-        out, z = state_info.forward(x)
+        out, z = state_info.forward(args, x)
         _, model_pred = torch.max(out.data, 1)
         Memory.Batch_Insert(z, model_pred)
 
         # ------------------------------------------------------------
-        _, Anchor_z = state_info.forward(Anchor_Image)
+        _, Anchor_z = state_info.forward(args, Anchor_Image)
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
         pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
@@ -204,7 +204,8 @@ def train_step3(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
         # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
 
-        total = loss_P_hard + args.weight[1] * loss_P_soft + reg_P + loss_Ent
+        total = loss_P_hard + args.weight[0] * loss_P_soft + reg_P + args.weight[1] * loss_Ent
+        # total = loss_P_hard + args.weight[1] * loss_P_soft + reg_P + loss_Ent
 
         total.backward()
         state_info.optim_model.step()
@@ -247,12 +248,12 @@ def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
         state_info.optim_model.zero_grad()
         # with torch.autograd.set_detect_anomaly(True):
-        out, z = state_info.forward(x)
+        out, z = state_info.forward(args, x)
         _, model_pred = torch.max(out.data, 1)
         Memory.Batch_Insert(z, model_pred)
 
         # ------------------------------------------------------------
-        _, Anchor_z = state_info.forward(Anchor_Image)
+        _, Anchor_z = state_info.forward(args, Anchor_Image)
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
         pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
@@ -310,7 +311,7 @@ def test(state_info, Test_loader, epoch):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
 
-        out, z = state_info.forward(x)
+        out, z = state_info.forward(args, x)
 
         _, pred = torch.max(out.data, 1)
         correct_Test += float(pred.eq(y.data).cpu().sum())

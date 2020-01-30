@@ -1,13 +1,7 @@
 #!/bin/bash
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/0 -w 1 0.0 --gpu 0 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/1 -w 1 0.1 --gpu 1 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/2 -w 1 0.2 --gpu 2 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/3 -w 1 0.3 --gpu 3 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/7 -w 1 0.7 --gpu 4 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/8 -w 1 0.8 --gpu 5 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/9 -w 1 0.9 --gpu 6 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/10 -w 1 1.0 --gpu 7 1> /dev/null 2> /dev/null
-
-
-python3 main.py -w 1 0.0 --gpu 0 --m 6 
-python3 main.py -w 1 0.0 --gpu 0 
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step3/0 -w 0.0 1 --norm True --epoch3 300 --epoch4 0 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step3/1 -w 0.1 1 --norm True --epoch3 300 --epoch4 0 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step3/2 -w 0.2 1 --norm True --epoch3 300 --epoch4 0 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step3/3 -w 0.3 1 --norm True --epoch3 300 --epoch4 0 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step3/4 -w 0.4 1 --norm True --epoch3 300 --epoch4 0 --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step3/5 -w 0.5 1 --norm True --epoch3 300 --epoch4 0 --gpu 0 1> /dev/null 2> /dev/null
