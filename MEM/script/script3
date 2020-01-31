@@ -1,7 +1,16 @@
 #!/bin/bash
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step4/1 -w 0.1 1 --norm True --epoch3 0 --epoch4 300 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step4/2 -w 0.2 1 --norm True --epoch3 0 --epoch4 300 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step4/3 -w 0.3 1 --norm True --epoch3 0 --epoch4 300 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step4/4 -w 0.4 1 --norm True --epoch3 0 --epoch4 300 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step4/5 -w 0.5 1 --norm True --epoch3 0 --epoch4 300 --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/Norm/Step4/6 -w 0.6 1 --norm True --epoch3 0 --epoch4 300 --gpu 2 1> /dev/null 2> /dev/null
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/1 -w 0.1 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/2 -w 0.2 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/3 -w 0.3 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/4 -w 0.4 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/5 -w 0.5 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/6 -w 0.6 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/7 -w 0.7 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/8 -w 0.8 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/9 -w 0.9 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.1/Step3/10 -w 1.0 1 --noise-rate 0.2 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.2/Step3/1 -w 0.1 1 --noise-rate 0.4 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.2/Step3/2 -w 0.2 1 --noise-rate 0.4 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.2/Step3/3 -w 0.3 1 --noise-rate 0.4 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.2/Step3/4 -w 0.4 1 --noise-rate 0.4 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/Asym0.2/Step3/5 -w 0.5 1 --noise-rate 0.4 --noise-type Asym --epoch3 300 --epoch4 0 --gpu 2 1> /dev/null 2> /dev/null 

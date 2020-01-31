@@ -55,7 +55,7 @@ def train_MEM(args, state_info, Train_loader, Test_loader, AnchorSet): # all
         epoch_result = train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch)
         if epoch_result > best_prec_result:
             best_prec_result = epoch_result
-        state_info.lr_model.step()
+        # state_info.lr_model.step()
         utils.print_log('')
 
     for epoch in range(0, args.epoch2):
