@@ -44,8 +44,6 @@ def train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
 
-            
-
 
 def hard_label_cross_entropy(input, target, eps=1e-5):
     # input (N, C)
