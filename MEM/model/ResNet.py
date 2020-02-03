@@ -69,13 +69,13 @@ class ResNet(nn.Module):
             setattr(self, 'layer4_%d' % (i), block(512, 512))
             self._forward.append('layer4_%d' % (i))
 
-        # self.linear = nn.Linear(512, num_classes)
+        self.linear = nn.Linear(512, num_classes)
 
-        self.linear = nn.Sequential(
-            nn.Linear(512, 512),
-            nn.ReLU(inplace=True),
-            nn.Linear(512, num_classes),
-        )
+        # self.linear = nn.Sequential(
+        #     nn.Linear(512, 512),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(512, num_classes),
+        # )
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
 

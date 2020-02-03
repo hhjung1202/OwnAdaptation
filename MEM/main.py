@@ -10,7 +10,7 @@ from train import *
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
 parser.add_argument('--db', default='cifar10', type=str, help='dataset selection')
-parser.add_argument('--noise-rate', default=0.1, type=float, help='Noise rate')
+parser.add_argument('--noise-rate', default=0.6, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 parser.add_argument('--model', default='ResNet18', type=str, help='NAE, ResNet18, ResNet34, PreActResNet32')
@@ -29,8 +29,8 @@ parser.add_argument('--d-epoch', default=90, type=int, metavar='N', help='number
 
 parser.add_argument('--epoch1', default=1, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('--epoch2', default=0, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--epoch3', default=300, type=int, metavar='N', help='number of total epoch to run')
-parser.add_argument('--epoch4', default=300, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch3', default=350, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch4', default=350, type=int, metavar='N', help='number of total epoch to run')
 
 parser.add_argument('-b', '--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-2, type=float, metavar='LR', help='initial learning rate')
@@ -42,7 +42,7 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--h', type=int, default=400, help='hidden size')
-parser.add_argument('--m', type=int, default=8, help='latent selection(0 to n)')
+parser.add_argument('--m', type=int, default=7, help='latent selection(0 to n)')
 # parser.add_argument('--z', type=int, default=64, help='latent size')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
@@ -70,7 +70,7 @@ def main():
 
     args.chIn = chIn
     args.clsN = clsN
-    args.milestones = [150,240]
+    args.milestones = [250,400]
     # args.milestones = [80,120]
     args.Dmilestones = [30,60]
     
