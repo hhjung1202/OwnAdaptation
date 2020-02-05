@@ -6,4 +6,4 @@ python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeA/pse1ent4lr1/Sym8 -w 0.1 0
 python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeA/pse1ent4lr1/Asym1 -w 0.1 0.4 --lr 0.01 --noise-rate 0.2 --noise-type Asym --gpu 0 1> /dev/null 2> /dev/null &&
 python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeA/pse1ent4lr1/Asym2 -w 0.1 0.4 --lr 0.01 --noise-rate 0.4 --noise-type Asym --gpu 0 1> /dev/null 2> /dev/null &&
 python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeA/pse1ent4lr1/Asym3 -w 0.1 0.4 --lr 0.01 --noise-rate 0.6 --noise-type Asym --gpu 0 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeA/pse1ent4lr1/Asym4 -w 0.1 0.4 --lr 0.01 --noise-rate 0.8 --noise-type Asym --gpu 0 1> /dev/null 2> /dev/null &&
+python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeA/pse1ent4lr1/Asym4 -w 0.1 0.4 --lr 0.01 --noise-rate 0.8 --noise-type Asym --gpu 0 1> /dev/null 2> /dev/null
