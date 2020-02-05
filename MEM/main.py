@@ -47,6 +47,7 @@ parser.add_argument('--m', type=int, default=7, help='latent selection(0 to n)')
 parser.add_argument('--layer', type=int, default=8, help='[8, 14, 20, 32, 44, 56, 110]')
 
 parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
+parser.add_argument('-mi', '--milestones', nargs='+', type=int, help='array of epochs for learning rate decay')
 
 # parser.add_argument('--t4', type=float, default=1.0, help='Step 3 Pseudo label Vectorization')
 # parser.add_argument('--mode', default=0, type=int, help='mode for sample 0, pred sample 1')
@@ -70,9 +71,8 @@ def main():
 
     args.chIn = chIn
     args.clsN = clsN
-    args.milestones = [250,400]
-    # args.milestones = [80,120]
-    args.Dmilestones = [30,60]
+    if not args.milestones:
+        args.milestones = [250,400]
     
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
