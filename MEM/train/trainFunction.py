@@ -64,6 +64,39 @@ def hard_label_cross_entropy_same(input, target, one, eps=1e-5):
     return nll_loss
     
 
+def train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+    cuda = True if torch.cuda.is_available() else False
+    FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+    LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
+
+    state_info.model.train()
+    utils.print_log('Type, Epoch, Batch, total, percentage')
+    correct = torch.tensor(0, dtype=torch.float32)
+    total_Size = torch.tensor(0, dtype=torch.float32)
+
+    for it, (x, y, label) in enumerate(Train_loader):
+        x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
+
+        state_info.optim_model.zero_grad()
+        out, z = state_info.forward(args, x)
+        Memory.Batch_Insert(z, y)
+        loss = criterion(out, y)
+        loss.backward(retain_graph=True)
+        state_info.optim_model.step()
+
+        _, pred = torch.max(out.data, 1)
+        correct += float(pred.eq(y.data).cpu().sum())
+        total_Size += float(x.size(0))
+        
+        if it % 10 == 0:
+            utils.print_log('Init, {}, {}, {:.6f}, {:.3f}'
+                  .format(epoch, it, loss.item(), 100.*correct / total_Size))
+            print('Init, {}, {}, {:.6f}, {:.3f}'
+                  .format(epoch, it, loss.item(), 100.*correct / total_Size))
+
+    epoch_result = test(args, state_info, Test_loader, epoch)
+    return epoch_result
+
 def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
