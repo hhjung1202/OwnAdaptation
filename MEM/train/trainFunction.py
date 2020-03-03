@@ -117,7 +117,7 @@ def train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
 
-def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch, AnchorSet):
+def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
@@ -125,9 +125,6 @@ def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     train_Size = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
     Pseudo_Real = torch.tensor(0, dtype=torch.float32)
-
-    Anchor_Image, Anchor_label = AnchorSet
-    Anchor_Image, Anchor_label = to_var(Anchor_Image, FloatTensor), to_var(Anchor_label, LongTensor)
 
     # train
     state_info.model.train()
@@ -144,8 +141,6 @@ def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         Memory.Batch_Insert(z, model_y, model_pred)
 
         # ------------------------------------------------------------
-        _, Anchor_z = state_info.forward(args, Anchor_Image)
-        Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
         memory_soft_label = Memory.Calc_Pseudolabel(z)
         posteriori = out.softmax(dim=1)[range(target.size(0)), y] # posteriori (N) 
