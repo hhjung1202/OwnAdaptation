@@ -143,7 +143,7 @@ def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, 
         # ------------------------------------------------------------
 
         memory_soft_label = Memory.Calc_Pseudolabel(z)
-        posteriori = out.softmax(dim=1)[range(target.size(0)), y] # posteriori (N) 
+        posteriori = out.softmax(dim=1)[range(out.size(0)), y] # posteriori (N) 
         label = posteriori * y_one + (1-posteriori) * memory_soft_label
         label = label.pow(1/args.T) / label.pow(1/args.T).sum() # Sharpening
 
