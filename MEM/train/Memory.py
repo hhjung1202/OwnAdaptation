@@ -48,6 +48,7 @@ class MemorySet(object):
                 self.Set[Pred_label].Insert_memory(data)
 
         for i in range(self.clsN):
+            self.Set[i].Calc_Memory()
             self.mean_Set[i] = self.Set[i].mean.detach()
             self.sigma_Set[i] = self.Set[i].sigma.detach()
 
