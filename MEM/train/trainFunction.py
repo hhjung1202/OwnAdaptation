@@ -99,7 +99,7 @@ def train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, 
 
         state_info.optim_model.zero_grad()
         out, z = state_info.forward(args, x)
-        Memory.Batch_Insert(z, y, torch.ones(z.size(0).cuda()))
+        Memory.Batch_Insert(z, y, torch.ones(z.size(0)).cuda())
         loss = criterion(out, y)
         loss.backward(retain_graph=True)
         state_info.optim_model.step()
