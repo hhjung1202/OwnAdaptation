@@ -25,29 +25,50 @@ class Memory(object):
         del(z)
         self.index = self.index + 1
 
+    def Refine_memory(self, Anchor):
+        _, index = (self.z - Anchor).pow(2).sum(dim=1).sort()
+        x = self.z[index[:self.Refine_N]]
+        self.mean = x.mean(dim=0)
+        self.sigma = x.var(dim=0).sqrt()
+
 class MemorySet(object):
     def __init__(self, args):
+        self.Normal_Gaussian = normal.Normal(0,1) # mean 0, var 1
         self.clsN = args.clsN
-        self.args = args
         self.Set = []
         self.AnchorSet = []
+        self.size_z = args.z
         for i in range(self.clsN):
             self.Set.append(Memory(args=args))
             self.AnchorSet.append(Memory(args=args, Anchor=True))
 
-        self.mean_Set = torch.zeros((self.clsN, self.args.z), device="cuda", dtype=torch.float32)
-        self.sigma_Set = torch.zeros((self.clsN, self.args.z), device="cuda", dtype=torch.float32)
-        self.Anchor_mean_Set = torch.zeros((self.clsN, self.args.z), device="cuda", dtype=torch.float32)
-        self.Anchor_sigma_Set = torch.zeros((self.clsN, self.args.z), device="cuda", dtype=torch.float32)
+        self.mean_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
+        self.sigma_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
+        self.Anchor_mean_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
+        self.Anchor_sigma_Set = torch.zeros((self.clsN, self.size_z), device="cuda", dtype=torch.float32)
 
-    def Batch_Insert(self, z, y, p):
+    def Batch_Insert(self, z, y):
         for i in range(z.size(0)):
             Pred_label = y[i]
             data = z[i]
-            if p[i] > args.ramda:
-                self.Set[Pred_label].Insert_memory(data)
+            self.Set[Pred_label].Insert_memory(data)
+
+    def Anchor_Insert(self, z, y):
+        for i in range(z.size(0)):
+            label = y[i]
+            data = z[i]
+            self.AnchorSet[label].Insert_memory(data)
 
         for i in range(self.clsN):
+            self.AnchorSet[i].Calc_Memory()
+            self.Anchor_mean_Set[i] = self.AnchorSet[i].mean.detach()
+            self.Anchor_sigma_Set[i] = self.AnchorSet[i].sigma.detach()
+
+        self.Refine_Memory()
+
+    def Refine_Memory(self):
+        for i in range(self.clsN):
+            self.Set[i].Refine_memory(self.Anchor_mean_Set[i])
             self.mean_Set[i] = self.Set[i].mean.detach()
             self.sigma_Set[i] = self.Set[i].sigma.detach()
 
@@ -62,9 +83,11 @@ class MemorySet(object):
         for i in range(self.clsN):
             result[:, i] = (z - self.mean_Set[i]).pow(2).sum(dim=1)
         
-        memory_soft_label = (result+eps).reciprocal().softmax(dim=1)
-        memory_soft_label = memory_soft_label.pow(1/self.args.T) / memory_soft_label.pow(1/self.args.T).sum() # Sharpening
-        return memory_soft_label.detach()
+        pseudo_soft_label = (result+eps).reciprocal().softmax(dim=1)
+        _, pseudo_hard_label = result.min(1)
+        _, pseudo_hard_reverse_label = result.max(1)
+
+        return pseudo_hard_label.detach(), pseudo_soft_label, pseudo_hard_reverse_label.detach()
 
     def get_Regularizer(self, z, y, reduction='mean'):
 

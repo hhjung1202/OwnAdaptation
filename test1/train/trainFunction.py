@@ -62,26 +62,6 @@ def hard_label_cross_entropy_same(input, target, one, eps=1e-5):
     log_likelihood = input.log_softmax(dim=1) * one
     nll_loss = F.nll_loss(log_likelihood, target)
     return nll_loss
-
-# def posteriori_cross_entropy(input, target, ramda=0.5, eps=1e-5):
-#     # input (N, C)
-#     # target (N, C) with soft label
-#     log_likelihood = input.log_softmax(dim=1)
-#     soft_log_likelihood = target * log_likelihood * reverse_one
-#     nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
-#     return nll_loss
-
-# def posteriori_cross_entropy(input, target, gamma=0.5, eps=1e-5):
-#     # input (N, C)
-#     # target (N) with hard class label
-#     posteriori = input.softmax(dim=1)[range(target.size(0)), target] # posteriori (N) 
-#     log_likelihood = input.log_softmax(dim=1)[range(target.size(0)), target] # log_likelihood about target (N) 
-#     # p > 0.5 정상 학습
-#     posteriori[(posteriori < gamma).nonzero().view(-1)] = 0.
-#     # p < 0.5 다른 방법 강구
-#     soft_log_likelihood = posteriori * log_likelihood
-#     nll_loss = -soft_log_likelihood.mean(dim=0)
-#     return nll_loss
     
 
 def train_step1(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
@@ -135,35 +115,39 @@ def train_step4(args, state_info, Train_loader, Test_loader, Memory, criterion, 
     for it, (x, y, label) in enumerate(Train_loader):
 
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
-        y_one = torch.cuda.FloatTensor(y.size(0), 10).zero_().scatter_(1, y.view(-1, 1), 1)
 
         state_info.optim_model.zero_grad()
         # with torch.autograd.set_detect_anomaly(True):
         out, z = state_info.forward(args, x)
-        model_pred, model_y = torch.max(out.softmax(dim=1), 1)
-        Memory.Batch_Insert(z, model_y, model_pred)
+        _, model_pred = torch.max(out.data, 1)
+        Memory.Batch_Insert(z, model_pred)
 
         # ------------------------------------------------------------
         _, Anchor_z = state_info.forward(args, Anchor_Image)
         Memory.Anchor_Insert(Anchor_z, Anchor_label)
 
-        memory_soft_label = Memory.Calc_Pseudolabel(z)
-        posteriori = out.softmax(dim=1)[range(target.size(0)), y] # posteriori (N) 
-        label = posteriori * y_one + (1-posteriori) * memory_soft_label
-        label = label.pow(1/args.T) / label.pow(1/args.T).sum() # Sharpening
+        pseudo_hard_label, pseudo_soft_label, pseudo_hard_reverse_label = Memory.Calc_Pseudolabel(z)
 
         # if args.grad == "T":
-        loss_P_soft = soft_label_cross_entropy(out, label)
-        loss_Ent = Maximize_Pseudo_Entropy_loss(memory_soft_label)
-        reg_P = Memory.get_Regularizer(z, torch.max(label, 1)[1], reduction='mean')
+        one = y.eq(pseudo_hard_label).type(FloatTensor).view(-1,1)
+        zero = torch.zeros(one.size()).type(FloatTensor)
+        reverse_one = one.eq(zero).type(FloatTensor).view(-1,1)
 
-        total = args.weight[0] * loss_P_soft + args.weight[1] * loss_Ent + args.weight[2] * reg_P
+        reg_P = Memory.get_Regularizer_with_one(z, pseudo_hard_label, one, reduction='mean')
+        loss_P_hard = hard_label_cross_entropy_same(out, pseudo_hard_label, one)
+        loss_P_soft = soft_label_cross_entropy_diff(out, pseudo_soft_label, reverse_one)
+        loss_Ent = Maximize_Pseudo_Entropy_loss(pseudo_soft_label)
+
+        # loss_Reverse_P_hard = Reverse_hard_label_cross_entropy(out, pseudo_hard_reverse_label)
+        # loss_Reverse_P_soft = Reverse_soft_label_cross_entropy(out, pseudo_soft_label)
+
+        total = loss_P_hard + args.weight[0] * loss_P_soft + reg_P + args.weight[1] * loss_Ent
 
         total.backward()
         state_info.optim_model.step()
 
         Pseudo_Real += float(pseudo_hard_label.eq(label).sum())
-        correct_Real += float(model_y.eq(label.data).cpu().sum())
+        correct_Real += float(model_pred.eq(label.data).cpu().sum())
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
@@ -211,3 +195,31 @@ def test(args, state_info, Test_loader, epoch):
           .format(epoch, it, 100.*correct_Test / testSize))
 
     return 100.*correct_Test / testSize
+
+
+Outputs = Mapping[str, List[torch.Tensor]]
+def cross_entropy_with_probs(
+    input: torch.Tensor,
+    target: torch.Tensor,
+    weight: Optional[torch.Tensor] = None,
+    reduction: str = "mean",
+) -> torch.Tensor:
+    
+    num_points, num_classes = input.shape
+    # Note that t.new_zeros, t.new_full put tensor on same device as t
+    cum_losses = input.new_zeros(num_points)
+    for y in range(num_classes):
+        target_temp = input.new_full((num_points,), y, dtype=torch.long)
+        y_loss = F.cross_entropy(input, target_temp, reduction="none")
+        if weight is not None:
+            y_loss = y_loss * weight[y]
+        cum_losses += target[:, y].float() * y_loss
+
+    if reduction == "none":
+        return cum_losses
+    elif reduction == "mean":
+        return cum_losses.mean()
+    elif reduction == "sum":
+        return cum_losses.sum()
+    else:
+        raise ValueError("Keyword 'reduction' must be one of ['none', 'mean', 'sum']")
