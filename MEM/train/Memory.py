@@ -44,7 +44,7 @@ class MemorySet(object):
         for i in range(z.size(0)):
             Pred_label = y[i]
             data = z[i]
-            if p[i] > args.ramda:
+            if p[i] > self.args.ramda:
                 self.Set[Pred_label].Insert_memory(data)
 
         for i in range(self.clsN):
