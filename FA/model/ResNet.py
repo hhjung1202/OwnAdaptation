@@ -7,28 +7,28 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 class BasicBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1):
         super(BasicBlock, self).__init__()
+        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
+        self.bn1 = nn.BatchNorm2d(planes)
+        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(planes)
 
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1)
-        self.bn1 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1)
-        self.bn2 = nn.BatchNorm2d(out_channels)
-
-        self.downsample = downsample
-        if downsample is not None:
-            self.downsample = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride), #avgPooling?
-                nn.BatchNorm2d(out_channels))
+        self.shortcut = nn.Sequential()
+        if stride != 1 or in_planes != self.expansion*planes:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
+                nn.BatchNorm2d(self.expansion*planes)
+            )
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-
-        if self.downsample is not None:
-            x = self.downsample(x)
-
-        return F.relu(out + x)
+        out += self.shortcut(x)
+        out = F.relu(out)
+        return out
 
 class ResNet(nn.Module):
     def __init__(self, block, num_blocks, aug=1, num_classes=10, z=64):
