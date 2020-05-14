@@ -96,7 +96,7 @@ class ResNet(nn.Module):
         x = self.init(x)
 
         x = self.layer1(x)
-        x = self.rotate(x)
+        # x = self.rotate(x)
 
         x = self.layer2(x)
         x = self.layer3(x)
