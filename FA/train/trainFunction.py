@@ -1,9 +1,7 @@
 import torch
 from torch.autograd import Variable
 import utils
-from .pseudoDataset import *
 import torch.nn.functional as F
-from typing import List, Mapping, Optional
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))
