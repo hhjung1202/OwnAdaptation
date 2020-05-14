@@ -6,7 +6,7 @@ import torch.nn.functional as F
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
-def train(args, state_info, Train_loader, Test_loader, Memory, criterion, epoch):
+def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
