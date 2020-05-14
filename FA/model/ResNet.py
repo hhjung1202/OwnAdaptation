@@ -103,7 +103,7 @@ class ResNet(nn.Module):
         x = self.layer4(x)
 
         x = self.flatten(self.avgpool(x))
-        x = self.fc(x)
+        x = self.linear(x)
 
         return x
 
