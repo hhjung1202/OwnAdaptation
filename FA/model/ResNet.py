@@ -46,22 +46,22 @@ class ResNet(nn.Module):
 
         self.layer1 = nn.Sequential()
         self.layer1.add_module('layer1_0', block(64, 64, 1))
-        for i in range(1,self.n):
+        for i in range(1,num_blocks[0]):
             self.layer1.add_module('layer1_%d' % (i), block(64, 64))
 
         self.layer2 = nn.Sequential()
         self.layer2.add_module('layer2_0', block(64, 128, 2))
-        for i in range(1,self.n):
+        for i in range(1,num_blocks[1]):
             self.layer2.add_module('layer2_%d' % (i), block(128, 128))
 
         self.layer3 = nn.Sequential()
         self.layer3.add_module('layer3_0', block(128, 256, 2))
-        for i in range(1,self.n):
+        for i in range(1,num_blocks[2]):
             self.layer3.add_module('layer3_%d' % (i), block(256, 256))
 
         self.layer4 = nn.Sequential()
         self.layer4.add_module('layer3_0', block(256, 512, 2))
-        for i in range(1,self.n):
+        for i in range(1,num_blocks[3]):
             self.layer4.add_module('layer3_%d' % (i), block(512, 512))
 
         self.linear = nn.Linear(512, num_classes)
