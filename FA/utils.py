@@ -26,7 +26,7 @@ class model_optim_state_info(object):
             self.model = ResNet34(aug=args.m, num_classes=args.clsN)
 
     def forward(self, image):
-        out, Rot_label = self.model(image)
+        out = self.model(image)
         return out
 
     def model_cuda_init(self):
