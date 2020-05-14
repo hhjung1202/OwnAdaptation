@@ -24,7 +24,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         state_info.optim_model.zero_grad()
         out = state_info.forward(x)
-        loss = criterion(out, y)
+        loss = criterion(out, label)
         loss.backward()
         state_info.optim_model.step()
 
