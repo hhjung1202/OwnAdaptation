@@ -43,7 +43,6 @@ def main():
     global args, best_prec_result
 
     Train_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
-    AnchorSet = dataset.Cifar10_Sample(args)
 
     args.chIn = chIn
     args.clsN = clsN
@@ -63,7 +62,7 @@ def main():
         print("NO GPU")
 
     state_info.optimizer_init(args)
-    train_MEM(args, state_info, Train_loader, Test_loader, AnchorSet)
+    train_MEM(args, state_info, Train_loader, Test_loader)
 
 def dataset_selector(data):
     if data == 'mnist':

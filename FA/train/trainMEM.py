@@ -5,7 +5,7 @@ import time
 import utils
 from .trainFunction import *
 
-def train_MEM(args, state_info, Train_loader, Test_loader, AnchorSet): # all 
+def train_MEM(args, state_info, Train_loader, Test_loader): # all 
 
     start_time = time.time()
     best_prec_result = torch.tensor(0, dtype=torch.float32)
