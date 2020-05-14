@@ -7,7 +7,7 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 class BasicBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride, downsample=None):
+    def __init__(self, in_channels, out_channels, stride=1, downsample=None):
         super(BasicBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1)
