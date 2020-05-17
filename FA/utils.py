@@ -26,8 +26,8 @@ class model_optim_state_info(object):
             self.model = ResNet34(aug=args.m, num_classes=args.clsN)
 
     def forward(self, image):
-        out = self.model(image)
-        return out
+        logits, logits_rot, Rot_label = self.model(image)
+        return logits, logits_rot, Rot_label
 
     def model_cuda_init(self):
         if torch.cuda.is_available():

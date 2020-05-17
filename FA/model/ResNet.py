@@ -64,7 +64,9 @@ class ResNet(nn.Module):
         for i in range(1,num_blocks[3]):
             self.layer4.add_module('layer3_%d' % (i), block(512, 512))
 
-        self.linear = nn.Linear(512, num_classes)
+
+        self.fc = nn.Linear(512, num_classes)
+        self.fc2 = nn.Linear(1024, 4)
 
         # self.linear = nn.Sequential(
         #     nn.Linear(512, 512),
@@ -78,34 +80,41 @@ class ResNet(nn.Module):
         batch_size = x.size(0)
         num = batch_size // 4
         Rot_label = torch.zeros(batch_size)
-
-
         x0 = x[:num]
         x1 = x[num:2*num].transpose(2, 3)
         x2 = x[2*num:3*num].flip(2)
         x3 = x[3*num:].transpose(2, 3).flip(3)
 
-        # Rot_label[:num] = 0
-        # Rot_label[num:2*num] = 1
-        # Rot_label[2*num:3*num] = 2
-        # Rot_label[3*num:] = 3
+        Rot_label[:num] = 0
+        Rot_label[num:2*num] = 1
+        Rot_label[2*num:3*num] = 2
+        Rot_label[3*num:] = 3
 
-        return torch.cat([x0,x1,x2,x3], dim=0)
+        return torch.cat([x0,x1,x2,x3], dim=0), Rot_label
 
     def forward(self, x):
         x = self.init(x)
-
         x = self.layer1(x)
-        # x = self.rotate(x)
 
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        xL = x
+        xL = self.layer2(xL)
+        xL = self.layer3(xL)
+        xL = self.layer4(xL)
 
-        x = self.flatten(self.avgpool(x))
-        x = self.linear(x)
+        xR, Rot_label = self.rotate(x)
+        xR = self.layer2(xR)
+        xR = self.layer3(xR)
+        xR = self.layer4(xR)
 
-        return x
+        xLR = torch.cat((xL, xR), 1)
+        xLR = self.flatten(self.avgpool(xLR))
+        
+        x = self.flatten(self.avgpool(xL))
+        
+        logits = self.fc(x)
+        logits_rot = self.fc2(xLR)
+
+        return logits, logits_rot, Rot_label
 
 
 def ResNet18(aug=1, num_classes=10):
