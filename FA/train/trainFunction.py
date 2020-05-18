@@ -69,6 +69,7 @@ def test(args, state_info, Test_loader, epoch):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
 
         logits, logits_rot, Rot_label = state_info.forward(x)
+        Rot_label = to_var(Rot_label, LongTensor)
 
         _, pred = torch.max(logits.data, 1)
         correct_Test += float(pred.eq(y.data).cpu().sum())
