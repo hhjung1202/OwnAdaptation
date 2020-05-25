@@ -111,6 +111,7 @@ class ResNet(nn.Module):
         x = self.init(x)
 
         x, _ = self.m(x, is_adain)
+        print(self.layer1)
 
         x, _ = self.layer1(x, is_adain)
         x, _ = self.layer2(x, is_adain)
