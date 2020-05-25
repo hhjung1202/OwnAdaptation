@@ -63,7 +63,7 @@ class BasicBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
 
-        return out, is_adain       
+        return out       
 
         # out = F.relu(self.bn1(self.conv1(x)))
         # out = self.bn2(self.conv2(out))
