@@ -82,6 +82,7 @@ class ResNet(nn.Module):
             nn.ReLU(inplace=True),
         )
 
+        self.m = block(64, 64, 1)
         self.layer1 = nn.Sequential()
         self.layer1.add_module('layer1_0', block(64, 64, 1))
         for i in range(1,num_blocks[0]):
@@ -108,6 +109,8 @@ class ResNet(nn.Module):
 
     def forward(self, x, is_adain):
         x = self.init(x)
+
+        x, _ = self.m(x, is_adain)
 
         x, _ = self.layer1(x, is_adain)
         x, _ = self.layer2(x, is_adain)
