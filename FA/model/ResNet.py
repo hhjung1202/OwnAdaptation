@@ -82,7 +82,7 @@ class ResNet(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.m = block(64, 64, 1)
+        self.m = nn.Sequential(block(64, 64, 1), block(64, 64))
         self.layer1 = nn.Sequential()
         self.layer1.add_module('layer1_0', block(64, 64, 1))
         for i in range(1,num_blocks[0]):
