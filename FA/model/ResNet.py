@@ -82,26 +82,31 @@ class ResNet(nn.Module):
             nn.ReLU(inplace=True),
         )
 
-        self.m = nn.Sequential(block(64, 64, 1), block(64, 64))
-        self.layer1 = nn.Sequential()
-        self.layer1.add_module('layer1_0', block(64, 64, 1))
-        for i in range(1,num_blocks[0]):
-            self.layer1.add_module('layer1_%d' % (i), block(64, 64))
+        self._forward = []
 
-        self.layer2 = nn.Sequential()
-        self.layer2.add_module('layer2_0', block(64, 128, 2))
-        for i in range(1,num_blocks[1]):
-            self.layer2.add_module('layer2_%d' % (i), block(128, 128))
+        setattr(self, 'layer1_0', block(64, 64, 1))
+        self._forward.append('layer1_0')
+        for i in range(1, num_blocks[0]):
+            setattr(self, 'layer1_%d' % (i), block(64, 64))
+            self._forward.append('layer1_%d' % (i))
 
-        self.layer3 = nn.Sequential()
-        self.layer3.add_module('layer3_0', block(128, 256, 2))
-        for i in range(1,num_blocks[2]):
-            self.layer3.add_module('layer3_%d' % (i), block(256, 256))
+        setattr(self, 'layer2_0', block(64, 128, 2))
+        self._forward.append('layer2_0')
+        for i in range(1, num_blocks[1]):
+            setattr(self, 'layer2_%d' % (i), block(128, 128))
+            self._forward.append('layer2_%d' % (i))
 
-        self.layer4 = nn.Sequential()
-        self.layer4.add_module('layer3_0', block(256, 512, 2))
-        for i in range(1,num_blocks[3]):
-            self.layer4.add_module('layer3_%d' % (i), block(512, 512))
+        setattr(self, 'layer3_0', block(128, 256, 2))
+        self._forward.append('layer3_0')
+        for i in range(1, num_blocks[2]):
+            setattr(self, 'layer3_%d' % (i), block(256, 256))
+            self._forward.append('layer3_%d' % (i))
+
+        setattr(self, 'layer4_0', block(256, 512, 2))
+        self._forward.append('layer4_0')
+        for i in range(1, num_blocks[3]):
+            setattr(self, 'layer4_%d' % (i), block(512, 512))
+            self._forward.append('layer4_%d' % (i))
 
         self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
@@ -109,14 +114,9 @@ class ResNet(nn.Module):
 
     def forward(self, x, is_adain):
         x = self.init(x)
-
-        x, _ = self.m(x, is_adain)
-        print(self.layer1)
-
-        x, _ = self.layer1(x, is_adain)
-        x, _ = self.layer2(x, is_adain)
-        x, _ = self.layer3(x, is_adain)
-        x, _ = self.layer4(x, is_adain)
+        for i, name in enumerate(self._forward):
+            layer = getattr(self, name)
+            x = layer(x, is_adain)
 
         x = self.flatten(self.avgpool(x))
         x = self.linear(x)
