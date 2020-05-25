@@ -63,7 +63,7 @@ class BasicBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
 
-        return out            
+        return out, is_adain       
 
         # out = F.relu(self.bn1(self.conv1(x)))
         # out = self.bn2(self.conv2(out))
@@ -109,10 +109,10 @@ class ResNet(nn.Module):
     def forward(self, x, is_adain):
         x = self.init(x)
 
-        x = self.layer1(x, is_adain)
-        x = self.layer2(x, is_adain)
-        x = self.layer3(x, is_adain)
-        x = self.layer4(x, is_adain)
+        x, _ = self.layer1(x, is_adain)
+        x, _ = self.layer2(x, is_adain)
+        x, _ = self.layer3(x, is_adain)
+        x, _ = self.layer4(x, is_adain)
 
         x = self.flatten(self.avgpool(x))
         x = self.linear(x)
