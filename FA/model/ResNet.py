@@ -6,6 +6,29 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
+class Adain(nn.Module):
+    def calc_mean_std(self, feat, eps=1e-5):
+        # eps is a small value added to the variance to avoid divide-by-zero.
+        size = feat.size()
+        assert (len(size) == 4)
+        N, C = size[:2]
+        feat_var = feat.view(N, C, -1).var(dim=2) + eps
+        feat_std = feat_var.sqrt().view(N, C, 1, 1)
+        feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
+        return feat_mean, feat_std
+
+    def forward(self, content_feat):
+        size = content_feat.size()
+
+        style_feat = content_feat[torch.randperm(size[0])]
+        style_mean, style_std = self.calc_mean_std(style_feat)
+        content_mean, content_std = self.calc_mean_std(content_feat)
+
+        normalized_feat = (content_feat - content_mean.expand(
+            size)) / content_std.expand(size)
+        return normalized_feat * style_std.expand(size) + style_mean.expand(size)
+
+
 class BasicBlock(nn.Module):
     expansion = 1
 
@@ -15,6 +38,7 @@ class BasicBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(planes)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
+        self.adain = Adain()
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != self.expansion*planes:
@@ -23,26 +47,40 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.bn2(self.conv2(out))
+    def forward(self, x, is_adain):
+        out = self.conv1(x)
+        if is_adain:
+            out = F.relu(self.adain(out))
+        else:
+            out = F.relu(self.bn1(out))
+
+        out = self.conv2(x)
+        if is_adain:
+            out = self.adain(out)
+        else:
+            out = self.bn2(out)
+
         out += self.shortcut(x)
         out = F.relu(out)
-        return out
+
+        return out            
+
+        # out = F.relu(self.bn1(self.conv1(x)))
+        # out = self.bn2(self.conv2(out))
+        # out += self.shortcut(x)
+        # out = F.relu(out)
+        # return out
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, aug=1, num_classes=10, z=64):
+    def __init__(self, block, num_blocks, num_classes=10, z=64):
         super(ResNet, self).__init__()
         self.in_planes = 64
-        self.aug = aug
 
         self.init = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
         )
-
-        self._forward = ['init']
 
         self.layer1 = nn.Sequential()
         self.layer1.add_module('layer1_0', block(64, 64, 1))
@@ -65,42 +103,16 @@ class ResNet(nn.Module):
             self.layer4.add_module('layer3_%d' % (i), block(512, 512))
 
         self.linear = nn.Linear(512, num_classes)
-
-        # self.linear = nn.Sequential(
-        #     nn.Linear(512, 512),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(512, num_classes),
-        # )
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
 
-    def rotate(self, x):
-        batch_size = x.size(0)
-        num = batch_size // 4
-        Rot_label = torch.zeros(batch_size)
-
-
-        x0 = x[:num]
-        x1 = x[num:2*num].transpose(2, 3)
-        x2 = x[2*num:3*num].flip(2)
-        x3 = x[3*num:].transpose(2, 3).flip(3)
-
-        # Rot_label[:num] = 0
-        # Rot_label[num:2*num] = 1
-        # Rot_label[2*num:3*num] = 2
-        # Rot_label[3*num:] = 3
-
-        return torch.cat([x0,x1,x2,x3], dim=0)
-
-    def forward(self, x):
+    def forward(self, x, is_adain):
         x = self.init(x)
 
-        x = self.layer1(x)
-        # x = self.rotate(x)
-
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.layer1(x, is_adain)
+        x = self.layer2(x, is_adain)
+        x = self.layer3(x, is_adain)
+        x = self.layer4(x, is_adain)
 
         x = self.flatten(self.avgpool(x))
         x = self.linear(x)
@@ -108,8 +120,8 @@ class ResNet(nn.Module):
         return x
 
 
-def ResNet18(aug=1, num_classes=10):
-    return ResNet(BasicBlock, [2,2,2,2], aug=aug, num_classes=num_classes)
+def ResNet18(num_classes=10):
+    return ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes)
 
-def ResNet34(aug=1, num_classes=10):
-    return ResNet(BasicBlock, [3,4,6,3], aug=aug, num_classes=num_classes)
+def ResNet34(num_classes=10):
+    return ResNet(BasicBlock, [3,4,6,3], num_classes=num_classes)

@@ -21,12 +21,16 @@ class model_optim_state_info(object):
         
         self.init_lr = args.lr
         if args.model == "ResNet18":
-            self.model = ResNet18(aug=args.m, num_classes=args.clsN)
+            self.model = ResNet18(num_classes=args.clsN)
         elif args.model == "ResNet34":
-            self.model = ResNet34(aug=args.m, num_classes=args.clsN)
+            self.model = ResNet34(num_classes=args.clsN)
 
-    def forward(self, image):
-        out = self.model(image)
+    def forward_IN(self, image):
+        out = self.model(image, is_adain=True)
+        return out
+
+    def forward_BN(self, image):
+        out = self.model(image, is_adain=False)
         return out
 
     def model_cuda_init(self):

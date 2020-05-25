@@ -27,6 +27,7 @@ parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first 
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
+parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
