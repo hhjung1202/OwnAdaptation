@@ -60,6 +60,8 @@ def test(args, state_info, Test_loader, epoch):
     Similarity_Scale = torch.tensor(0, dtype=torch.float32)
     Similarity_Vector = torch.tensor(0, dtype=torch.float32)
     correct_Test = torch.tensor(0, dtype=torch.float32)
+    correct_Real = torch.tensor(0, dtype=torch.float32)
+    correct_Real2 = torch.tensor(0, dtype=torch.float32)
 
     # test
     state_info.model.eval()
@@ -67,17 +69,24 @@ def test(args, state_info, Test_loader, epoch):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
 
-        out = state_info.forward(x)
+        out_IN = state_info.forward_IN(x)
+        out_BN = state_info.forward_BN(x)
 
-        _, pred = torch.max(out.data, 1)
-        correct_Test += float(pred.eq(y.data).cpu().sum())
+        _, pred = torch.max(out_BN.softmax(dim=1), 1)
+        correct_Real += float(pred.eq(y.data).cpu().sum())
+
+        _, pred = torch.max(out_IN.softmax(dim=1), 1)
+        correct_Real2 += float(pred.eq(y.data).cpu().sum())
+
+        # _, pred = torch.max(out.data, 1)
+        # correct_Test += float(pred.eq(y.data).cpu().sum())
         testSize += float(x.size(0))
 
     utils.print_log('Type, Epoch, Batch, Percentage')
 
-    utils.print_log('Test, {}, {}, {:.3f}'
-          .format(epoch, it, 100.*correct_Test / testSize))
-    print('Test, {}, {}, {:.3f}'
-          .format(epoch, it, 100.*correct_Test / testSize))
+    utils.print_log('Test, {}, {}, {:.3f}, {:.3f}'
+          .format(epoch, it, 100.*correct_Real / testSize, 100.*correct_Real2 / testSize))
+    print('Test, {}, {}, {:.3f}, {:.3f}'
+          .format(epoch, it, 100.*correct_Real / testSize, 100.*correct_Real2 / testSize))
 
     return 100.*correct_Test / testSize
