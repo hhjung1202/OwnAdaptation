@@ -54,7 +54,7 @@ class BasicBlock(nn.Module):
         else:
             out = F.relu(self.bn1(out))
 
-        out = self.conv2(x)
+        out = self.conv2(out)
         if is_adain:
             out = self.adain(out)
         else:
@@ -114,7 +114,8 @@ class ResNet(nn.Module):
 
     def forward(self, x, is_adain):
         x = self.init(x)
-        for i, name in enumerate(self._forward):
+
+        for name in self._forward:
             layer = getattr(self, name)
             x = layer(x, is_adain)
 
