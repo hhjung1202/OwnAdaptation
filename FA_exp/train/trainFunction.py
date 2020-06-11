@@ -31,8 +31,10 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
-        label_one = torch.cuda.FloatTensor(label.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
+        label_one = FloatTensor(label.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
         suffle_label, suffle_label_one = label[perm], label_one[perm]
+
+        print(suffle_label, suffle_label_one)
 
         l = np.random.beta(0.75, 0.75)
         l = max(l, 1-l)
@@ -48,7 +50,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         loss_IN = { 0: criterion(out_IN, label),
                     1: criterion(out_IN, suffle_label),
                     2: soft_label_cross_entropy(out_IN, mixed_label),
-                    3: soft_label_cross_entropy(out_IN, mixed_label2)}[args.case]
+                    3: soft_label_cross_entropy(out_IN, mixed_label2) }[args.case]
         
         loss_BN = criterion(out_BN, label)
         total = args.weight[0] * loss_BN + args.weight[1] * loss_IN
