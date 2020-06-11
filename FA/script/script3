@@ -1,9 +1,0 @@
-#!/bin/bash
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.775 -w 0.2 0.775 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.825 -w 0.2 0.825 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.750 -w 0.2 0.750 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.850 -w 0.2 0.850 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.725 -w 0.2 0.725 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.875 -w 0.2 0.875 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.700 -w 0.2 0.700 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null &&
-python3 ../main.py --dir /home/hhjung/hhjung/MEM/TypeB/2_0.900 -w 0.2 0.900 --noise-rate 0.6 --lr 0.01 --noise-type sym --gpu 2 1> /dev/null 2> /dev/null
