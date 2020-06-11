@@ -47,6 +47,8 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         out_IN = state_info.forward_IN(x, perm)
         out_BN = state_info.forward_BN(x)
 
+        print(out_IN.size(0), suffle_label.size(0))
+
         loss_IN = { 0: criterion(out_IN, label),
                     1: criterion(out_IN, suffle_label),
                     2: soft_label_cross_entropy(out_IN, mixed_label),
