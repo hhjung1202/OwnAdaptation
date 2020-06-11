@@ -17,10 +17,13 @@ class Adain(nn.Module):
         feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
         return feat_mean, feat_std
 
-    def forward(self, content_feat):
+    def forward(self, content_feat, perm=None):
         size = content_feat.size()
 
-        style_feat = content_feat[torch.randperm(size[0])]
+        if perm is None:
+            style_feat = content_feat[torch.randperm(size[0])]
+        else:
+            style_feat = content_feat[perm]
         style_mean, style_std = self.calc_mean_std(style_feat)
         content_mean, content_std = self.calc_mean_std(content_feat)
 
@@ -47,16 +50,16 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x, is_adain):
+    def forward(self, x, is_adain, perm):
         out = self.conv1(x)
         if is_adain:
-            out = F.relu(self.adain(out))
+            out = F.relu(self.adain(out, perm))
         else:
             out = F.relu(self.bn1(out))
 
         out = self.conv2(out)
         if is_adain:
-            out = self.adain(out)
+            out = self.adain(out, perm)
         else:
             out = self.bn2(out)
 
@@ -112,12 +115,12 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
 
-    def forward(self, x, is_adain):
+    def forward(self, x, is_adain, perm=None):
         x = self.init(x)
 
         for name in self._forward:
             layer = getattr(self, name)
-            x = layer(x, is_adain)
+            x = layer(x, is_adain, perm)
 
         x = self.flatten(self.avgpool(x))
         x = self.linear(x)

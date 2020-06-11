@@ -28,6 +28,8 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
 parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
+parser.add_argument('--fixed_perm', action='store_true', help='use fixed perm by iteration')
+parser.add_argument('--case', default=0, type=int, metavar='N', help='case')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()

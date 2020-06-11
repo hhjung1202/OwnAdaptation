@@ -25,8 +25,8 @@ class model_optim_state_info(object):
         elif args.model == "ResNet34":
             self.model = ResNet34(num_classes=args.clsN)
 
-    def forward_IN(self, image):
-        out = self.model(image, is_adain=True)
+    def forward_IN(self, image, perm=None):
+        out = self.model(image, is_adain=True, perm=perm)
         return out
 
     def forward_BN(self, image):
