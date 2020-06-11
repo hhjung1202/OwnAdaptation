@@ -32,10 +32,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
         label_one = FloatTensor(label.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
-        suffle_label = label[perm]
-        suffle_label_one = label_one[perm]
-
-        print(suffle_label, suffle_label_one)
+        suffle_label, suffle_label_one = label[perm][0], label_one[perm][0]
 
         l = np.random.beta(0.75, 0.75)
         l = max(l, 1-l)
@@ -47,8 +44,6 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         out_IN = state_info.forward_IN(x, perm)
         out_BN = state_info.forward_BN(x)
-
-        print(out_IN.size(0), suffle_label.size(0))
 
         loss_IN = { 0: criterion(out_IN, label),
                     1: criterion(out_IN, suffle_label),
