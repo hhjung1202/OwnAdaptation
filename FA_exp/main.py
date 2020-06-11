@@ -10,7 +10,7 @@ from train import *
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
 parser.add_argument('--db', default='cifar10', type=str, help='dataset selection')
-parser.add_argument('--noise-rate', default=0.6, type=float, help='Noise rate')
+parser.add_argument('--noise-rate', default=0.5, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
 parser.add_argument('--model', default='ResNet18', type=str, help='ResNet18, ResNet34')

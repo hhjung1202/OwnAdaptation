@@ -9,6 +9,7 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
 
     start_time = time.time()
     best_prec_result = torch.tensor(0, dtype=torch.float32)
+    best_prec_result2 = torch.tensor(0, dtype=torch.float32)
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
@@ -33,12 +34,18 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
 
     for epoch in range(0, args.epoch):
 
-        epoch_result = train(args, state_info, Train_loader, Test_loader, criterion, epoch)
+        # epoch_result = train(args, state_info, Train_loader, Test_loader, criterion, epoch)
+        epoch_result, epoch_result2 = train(args, state_info, Train_loader, Test_loader, criterion, epoch)
+        
         if epoch_result > best_prec_result:
             best_prec_result = epoch_result
+
+        if epoch_result2 > best_prec_result2:
+            best_prec_result2 = epoch_result2
         state_info.lr_model.step()
         utils.print_log('')
 
     now = time.gmtime(time.time() - start_time)
     utils.print_log('Best Prec : {:.4f}'.format(best_prec_result.item()))
+    utils.print_log('Best Prec : {:.4f}'.format(best_prec_result2.item()))
     utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))

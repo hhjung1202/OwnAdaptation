@@ -31,26 +31,24 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
-        label_one = FloatTensor(label.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
-        suffle_label, suffle_label_one = label[perm][0], label_one[perm][0]
+        label_one = FloatTensor(y.size(0), 10).zero_().scatter_(1, y.view(-1, 1), 1)
+        suffle_label, suffle_label_one = y[perm][0], label_one[perm][0]
 
         l = np.random.beta(0.75, 0.75)
         l = max(l, 1-l)
 
         mixed_label =  l * label_one + (1-l) * suffle_label_one
-        mixed_label2 =  0.7 * label_one + 0.3 * suffle_label_one
 
         state_info.optim_model.zero_grad()
 
         out_IN = state_info.forward_IN(x, perm)
         out_BN = state_info.forward_BN(x)
 
-        loss_IN = { 0: criterion(out_IN, label),
+        loss_IN = { 0: criterion(out_IN, y),
                     1: criterion(out_IN, suffle_label),
-                    2: soft_label_cross_entropy(out_IN, mixed_label),
-                    3: soft_label_cross_entropy(out_IN, mixed_label2) }[args.case]
+                    2: soft_label_cross_entropy(out_IN, mixed_label)}[args.case]
         
-        loss_BN = criterion(out_BN, label)
+        loss_BN = criterion(out_BN, y)
         total = args.weight[0] * loss_BN + args.weight[1] * loss_IN
         total.backward()
         state_info.optim_model.step()
@@ -114,4 +112,5 @@ def test(args, state_info, Test_loader, epoch):
     print('Test, {}, {}, {:.3f}, {:.3f}'
           .format(epoch, it, 100.*correct_Real / testSize, 100.*correct_Real2 / testSize))
 
-    return 100.*correct_Test / testSize
+    # return 100.*correct_Test / testSize
+    return (100.*correct_Real / testSize, 100.*correct_Real2 / testSize)
