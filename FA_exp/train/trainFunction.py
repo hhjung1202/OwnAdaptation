@@ -31,10 +31,9 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
-        print(label.size())
         label_one = FloatTensor(label.size(0), 10).zero_().scatter_(1, label.view(-1, 1), 1)
-        print(label.size())
-        suffle_label, suffle_label_one = label[perm], label_one[perm]
+        suffle_label = label[perm]
+        suffle_label_one = label_one[perm]
 
         print(suffle_label, suffle_label_one)
 
