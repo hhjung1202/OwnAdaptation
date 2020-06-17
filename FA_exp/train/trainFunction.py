@@ -73,6 +73,8 @@ def test(args, state_info, Test_loader, epoch):
     Similarity_Scale = torch.tensor(0, dtype=torch.float32)
     Similarity_Vector = torch.tensor(0, dtype=torch.float32)
     correct_Test = torch.tensor(0, dtype=torch.float32)
+    correct_Real = torch.tensor(0, dtype=torch.float32)
+    correct_Real2 = torch.tensor(0, dtype=torch.float32)
 
     # test
     state_info.model.eval()
