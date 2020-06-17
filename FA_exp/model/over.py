@@ -17,13 +17,10 @@ class Adain(nn.Module):
         feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
         return feat_mean, feat_std
 
-    def forward(self, content_feat, perm=None):
+    def forward(self, content_feat, style_feat, perm=None):
         size = content_feat.size()
 
-        if perm is None:
-            style_feat = content_feat[torch.randperm(size[0])]
-        else:
-            style_feat = content_feat[perm]
+        style_feat = style_feat[perm]
         style_mean, style_std = self.calc_mean_std(style_feat)
         content_mean, content_std = self.calc_mean_std(content_feat)
 
@@ -31,7 +28,9 @@ class Adain(nn.Module):
         final_feat = normalized_feat * style_std + style_mean
 
         del(style_mean, style_std, content_mean, content_std)
+
         return final_feat
+
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -51,15 +50,33 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x, perm):
-        out = self.bn1(self.conv1(x))
-        out = F.relu(self.adain(out, perm))
-        out = self.bn2(self.conv2(out))
-        out = self.adain(out, perm)
+    def forward(self, x, x_, is_adain, perm):
+        if x_ is None:
+            x_ = x
+
+        out1 = self.conv1(x_)
+        out2 = self.bn1(out1)
+        out3 = self.conv2(F.relu(out2))
+        out4 = self.bn2(out3)
+        out5 = out4 + self.shortcut(x_)
+        out6 = F.relu(out5)
+
+        out = self.conv1(x)
+        if is_adain:
+            out = F.relu(self.adain(out, out1, perm))
+        else:
+            out = F.relu(self.adain(out, out2, perm))
+        
+        out = self.conv2(out)
+        if is_adain:
+            out = self.adain(out, out3, perm)
+        else:
+            out = self.adain(out, out4, perm)
+
         out += self.shortcut(x)
         out = F.relu(out)
 
-        return out       
+        return out, out6
 
 class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10, z=64):
@@ -102,12 +119,13 @@ class ResNet(nn.Module):
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
 
-    def forward(self, x, perm=None):
+    def forward(self, x, is_adain, perm=None):
         x = self.init(x)
-
+        x_ = None
         for name in self._forward:
             layer = getattr(self, name)
-            x = layer(x, perm)
+            x, x_ = layer(x, x_, is_adain, perm)
+
 
         x = self.flatten(self.avgpool(x))
         x = self.linear(x)

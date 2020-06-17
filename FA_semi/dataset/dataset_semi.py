@@ -1,0 +1,172 @@
+import torch
+from torchvision import datasets, transforms
+import random
+from PIL import Image
+import numpy as np
+import torch.utils.data as data
+
+def Semi_Cifar10_dataset(args):
+
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    
+    print("Cifar10 Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
+    
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+    
+
+    base_dataset = datasets.CIFAR10(root, train=True, download=True)
+    train_labeled_idxs, train_unlabeled_idxs, val_idxs = train_val_split(base_dataset.targets, int(args.n_labeled/10))
+
+    train_labeled_dataset = CIFAR10_labeled(root, train_labeled_idxs, train=True, transform=transform_train)
+    train_unlabeled_dataset = CIFAR10_unlabeled(root, train_unlabeled_idxs, train=True, transform=transform_train)
+    val_dataset = CIFAR10_labeled(root, val_idxs, train=True, transform=transform_test, download=True)
+    test_dataset = CIFAR10_labeled(root, train=False, transform=transform_test, download=True)
+
+    print ("#Labeled: {} #Unlabeled: {} #Val: {}".format(len(train_labeled_idxs), len(train_unlabeled_idxs), len(val_idxs)))
+    return train_labeled_dataset, train_unlabeled_dataset, val_dataset, test_dataset
+    
+
+def train_val_split(labels, n_labeled_per_class):
+    labels = np.array(labels)
+    train_labeled_idxs = []
+    train_unlabeled_idxs = []
+    val_idxs = []
+
+    for i in range(10):
+        idxs = np.where(labels == i)[0]
+        np.random.shuffle(idxs)
+        train_labeled_idxs.extend(idxs[:n_labeled_per_class])
+        train_unlabeled_idxs.extend(idxs[n_labeled_per_class:-500])
+        val_idxs.extend(idxs[-500:])
+    np.random.shuffle(train_labeled_idxs)
+    np.random.shuffle(train_unlabeled_idxs)
+    np.random.shuffle(val_idxs)
+
+    return train_labeled_idxs, train_unlabeled_idxs, val_idxs
+
+
+class CIFAR10_labeled(datasets.CIFAR10):
+
+    def __init__(self, root, indexs=None, train=True,
+                 transform=None, target_transform=None,
+                 download=False):
+        super(CIFAR10_labeled, self).__init__(root, train=train,
+                 transform=transform, target_transform=target_transform,
+                 download=download)
+        if indexs is not None:
+            self.data = self.data[indexs]
+            self.targets = np.array(self.targets)[indexs]
+
+    def __getitem__(self, index):
+
+        img, target = self.data[index], self.targets[index]
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
+
+class CIFAR10_unlabeled(CIFAR10_labeled):
+
+    def __init__(self, root, indexs, train=True,
+                 transform=None, target_transform=None,
+                 download=False):
+        super(CIFAR10_unlabeled, self).__init__(root, indexs, train=train,
+                 transform=transform, target_transform=target_transform,
+                 download=download)
+        self.targets = np.array([-1 for i in range(len(self.targets))])
+        
+
+
+
+
+
+
+
+
+
+
+class cifar10_sampler(datasets.CIFAR10):
+    def __init__(self, Anchor=1, **kwargs):
+        super(cifar10_sampler, self).__init__(**kwargs)
+        self.num_classes = 10
+        self.Anchor = Anchor
+        Anchor_index = self.iterative_Perm()
+        self.data = self.data[Anchor_index]
+        self.targets = torch.tensor(self.targets, dtype=torch.int64)[Anchor_index]
+
+    def iterative_Perm(self):
+        Anchor_index = torch.tensor([], dtype=torch.int64)
+        arr = []
+        for i in range(self.num_classes):
+            arr.append([])
+        for i in range(len(self.targets)):
+            arr[self.targets[i]].append(i)
+        for i in range(self.num_classes):
+            random.shuffle(arr[i], random.random)
+            Anchor_index = torch.cat((Anchor_index, torch.tensor(arr[i][:self.Anchor])))
+        
+        return Anchor_index
+
+def Cifar10_Sample(args):
+
+    random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    
+    print("Cifar10 Sampler Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar10/'
+    
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+    
+    Anchor_dataset = cifar10_sampler(Anchor=args.Anchor, root=root, train=True, transform=transform_train, download=True)
+
+    Sample_loader = torch.utils.data.DataLoader(dataset=Anchor_dataset, batch_size=args.Anchor * 10, shuffle=False, num_workers=args.workers)
+    AnchorSet = iter(Sample_loader).next()
+
+    return AnchorSet
+
+if __name__=='__main__':
+    class e():
+        pass
+
+    args = e()
+
+    args.batch_size = 128
+    args.workers = 4
+    args.img_size = 32
+    args.noise_rate = 0.1
+    args.Anchor = 2
+    args.noise_type = "Asym"
+    args.sym = True
+    args.seed = 1234
+
+    Sample_loader = Cifar10_Sample(args)
+    AnchorSet = iter(Sample_loader).next()
+    x, l = AnchorSet
+    print(x, l)
+    # for i, (x, l) in enumerate(Sample_loader):
+        # print(l)

@@ -25,10 +25,13 @@ class model_optim_state_info(object):
         elif args.model == "ResNet34":
             self.model = ResNet34(num_classes=args.clsN)
 
-    def forward(self, image, perm=None):
-        out = self.model(image, perm=perm)
+    def forward_IN(self, image, perm=None):
+        out = self.model(image, is_adain=True, perm=perm)
         return out
 
+    def forward_BN(self, image):
+        out = self.model(image, is_adain=False)
+        return out
 
     def model_cuda_init(self):
         if torch.cuda.is_available():

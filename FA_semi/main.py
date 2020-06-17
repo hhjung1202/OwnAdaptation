@@ -4,7 +4,7 @@ import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
-import dataset
+from dataset import *
 from train import *
 
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
@@ -30,6 +30,8 @@ parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
 parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 parser.add_argument('--fixed_perm', action='store_true', help='use fixed perm by iteration')
 parser.add_argument('--case', default=0, type=int, metavar='N', help='case')
+parser.add_argument('--n-labeled', default=5000, type=int, metavar='N', help='semi labeled')
+parser.add_argument('--val-iteration', type=int, default=1024, help='Iteration')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
@@ -45,10 +47,9 @@ else:
 def main():
     global args, best_prec_result
 
-    Train_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
+    train_labeled_dataset, train_unlabeled_dataset, val_dataset, test_dataset = dataset_selector()
 
-    args.chIn = chIn
-    args.clsN = clsN
+    args.clsN = 10
     args.milestones = [80,120]
     
     state_info = utils.model_optim_state_info()
@@ -64,13 +65,10 @@ def main():
         print("NO GPU")
 
     state_info.optimizer_init(args)
-    train_MEM(args, state_info, Train_loader, Test_loader)
+    train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, val_dataset, test_dataset)
 
-def dataset_selector(data):
-    if data == 'mnist':
-        return dataset.MNIST_loader(args)
-    elif data == 'cifar10':
-        return dataset.Cifar10_loader(args)
+def dataset_selector():
+    return Semi_Cifar10_dataset(args)
 
 if __name__=='__main__':
     main()

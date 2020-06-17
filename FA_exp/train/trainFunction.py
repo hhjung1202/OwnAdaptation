@@ -22,7 +22,6 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
     train_Size = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
-    correct_Real2 = torch.tensor(0, dtype=torch.float32)
 
     # train
     state_info.model.train()
@@ -38,34 +37,27 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         l = max(l, 1-l)
 
         mixed_label =  l * label_one + (1-l) * suffle_label_one
+        mixed_label2 =  l * suffle_label_one + (1-l) * label_one
 
         state_info.optim_model.zero_grad()
 
-        out_IN = state_info.forward_IN(x, perm)
-        out_BN = state_info.forward_BN(x)
-
-        loss_IN = { 0: criterion(out_IN, y),
-                    1: criterion(out_IN, suffle_label),
-                    2: soft_label_cross_entropy(out_IN, mixed_label)}[args.case]
+        out = state_info.forward(x, perm)
+        loss = {    0: criterion(out, y),
+                    1: criterion(out, suffle_label),
+                    2: soft_label_cross_entropy(out, mixed_label),
+                    3: soft_label_cross_entropy(out, mixed_label2)}[args.case]
         
-        loss_BN = criterion(out_BN, y)
-        total = args.weight[0] * loss_BN + args.weight[1] * loss_IN
-        total.backward()
+        loss.backward()
         state_info.optim_model.step()
 
-        _, pred = torch.max(out_BN.softmax(dim=1), 1)
+        _, pred = torch.max(out.softmax(dim=1), 1)
         correct_Real += float(pred.eq(label.data).cpu().sum())
-
-        _, pred = torch.max(out_IN.softmax(dim=1), 1)
-        correct_Real2 += float(pred.eq(label.data).cpu().sum())
 
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'.format(epoch, it, total.item(), loss_BN.item(), loss_IN.item()
-                , 100.*correct_Real / train_Size, 100.*correct_Real2 / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'.format(epoch, it, total.item(), loss_BN.item(), loss_IN.item()
-                , 100.*correct_Real / train_Size, 100.*correct_Real2 / train_Size))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
+            print('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
@@ -81,8 +73,6 @@ def test(args, state_info, Test_loader, epoch):
     Similarity_Scale = torch.tensor(0, dtype=torch.float32)
     Similarity_Vector = torch.tensor(0, dtype=torch.float32)
     correct_Test = torch.tensor(0, dtype=torch.float32)
-    correct_Real = torch.tensor(0, dtype=torch.float32)
-    correct_Real2 = torch.tensor(0, dtype=torch.float32)
 
     # test
     state_info.model.eval()
@@ -91,14 +81,15 @@ def test(args, state_info, Test_loader, epoch):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
+        origin_perm = LongTensor([i for i in range(x.size(0))])
+        
+        out1 = state_info.forward(x, perm)
+        out2 = state_info.forward(x, origin_perm)
 
-        out_IN = state_info.forward_IN(x, perm)
-        out_BN = state_info.forward_BN(x)
-
-        _, pred = torch.max(out_BN.softmax(dim=1), 1)
+        _, pred = torch.max(out1.softmax(dim=1), 1)
         correct_Real += float(pred.eq(y.data).cpu().sum())
 
-        _, pred = torch.max(out_IN.softmax(dim=1), 1)
+        _, pred = torch.max(out2.softmax(dim=1), 1)
         correct_Real2 += float(pred.eq(y.data).cpu().sum())
 
         # _, pred = torch.max(out.data, 1)
