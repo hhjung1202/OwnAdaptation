@@ -1,9 +1,5 @@
 #!/bin/bash
-python3.5 ../main.py --dir Noise/IN_case0 -w 0.0 1.0 --case 0 --gpu 0 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/IN_case1 -w 0.0 1.0 --case 1 --gpu 1 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/IN_case2 -w 0.0 1.0 --case 2 --gpu 2 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/BNIN_case0 -w 0.5 0.5 --case 0 --gpu 3 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/BNIN_case1 -w 0.5 0.5 --case 1 --gpu 4 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/BNIN_case2 -w 0.5 0.5 --case 2 --gpu 5 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/Asym_BNIN_case0 --noise-type Asym -w 0.5 0.5 --case 0 --gpu 6 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir Noise/Asym_BNIN_case2 --noise-type Asym -w 0.5 0.5 --case 2 --gpu 7 1> /dev/null 2> /dev/null
+python3.5 ../main.py --dir BN_AD/case0 --case 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir BN_AD/case1 --case 1 --gpu 1 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir BN_AD/case2  --case 2 --gpu 2 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir BN_AD/case4  --case 3 --gpu 3 1> /dev/null 2> /dev/null &
