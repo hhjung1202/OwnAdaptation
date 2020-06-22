@@ -1,37 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from Feature_Adaptive import *
 
 class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
-
-class Adain(nn.Module):
-    def calc_mean_std(self, feat, eps=1e-5):
-        # eps is a small value added to the variance to avoid divide-by-zero.
-        size = feat.size()
-        assert (len(size) == 4)
-        N, C = size[:2]
-        feat_var = feat.view(N, C, -1).var(dim=2) + eps
-        feat_std = feat_var.sqrt().view(N, C, 1, 1)
-        feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
-        return feat_mean, feat_std
-
-    def forward(self, content_feat, perm=None):
-        size = content_feat.size()
-
-        if perm is None:
-            style_feat = content_feat[torch.randperm(size[0])]
-        else:
-            style_feat = content_feat[perm]
-        style_mean, style_std = self.calc_mean_std(style_feat)
-        content_mean, content_std = self.calc_mean_std(content_feat)
-
-        normalized_feat = (content_feat - content_mean) / content_std
-        final_feat = normalized_feat * style_std + style_mean
-
-        del(style_mean, style_std, content_mean, content_std)
-        return final_feat
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -59,7 +33,7 @@ class BasicBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
 
-        return out       
+        return out 
 
 class ResNet(nn.Module):
     def __init__(self, block, num_blocks, num_classes=10, z=64):
@@ -115,8 +89,8 @@ class ResNet(nn.Module):
         return x
 
 
-def ResNet18(num_classes=10):
+def ResNet18(serial, num_classes=10):
     return ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes)
 
-def ResNet34(num_classes=10):
+def ResNet34(serial, num_classes=10):
     return ResNet(BasicBlock, [3,4,6,3], num_classes=num_classes)
