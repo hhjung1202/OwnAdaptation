@@ -7,38 +7,12 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, in_planes, planes, stride=1):
-        super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.adain = Adain()
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x, perm):
-        out = self.bn1(self.conv1(x))
-        out = F.relu(self.adain(out, perm))
-        out = self.bn2(self.conv2(out))
-        out = self.adain(out, perm)
-        out += self.shortcut(x)
-        out = F.relu(out)
-
-        return out 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, z=64):
+    def __init__(self, blocks, num_blocks, num_classes=10, z=64):
         super(ResNet, self).__init__()
         self.in_planes = 64
+        index = 0
 
         self.init = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),
@@ -48,28 +22,28 @@ class ResNet(nn.Module):
 
         self._forward = []
 
-        setattr(self, 'layer1_0', block(64, 64, 1))
+        setattr(self, 'layer1_0', blocks[index](64, 64, 1)); index+=1
         self._forward.append('layer1_0')
         for i in range(1, num_blocks[0]):
-            setattr(self, 'layer1_%d' % (i), block(64, 64))
+            setattr(self, 'layer1_%d' % (i), blocks[index](64, 64)); index+=1
             self._forward.append('layer1_%d' % (i))
 
-        setattr(self, 'layer2_0', block(64, 128, 2))
+        setattr(self, 'layer2_0', blocks[index](64, 128, 2)); index+=1
         self._forward.append('layer2_0')
         for i in range(1, num_blocks[1]):
-            setattr(self, 'layer2_%d' % (i), block(128, 128))
+            setattr(self, 'layer2_%d' % (i), blocks[index](128, 128)); index+=1
             self._forward.append('layer2_%d' % (i))
 
-        setattr(self, 'layer3_0', block(128, 256, 2))
+        setattr(self, 'layer3_0', blocks[index](128, 256, 2)); index+=1
         self._forward.append('layer3_0')
         for i in range(1, num_blocks[2]):
-            setattr(self, 'layer3_%d' % (i), block(256, 256))
+            setattr(self, 'layer3_%d' % (i), blocks[index](256, 256)); index+=1
             self._forward.append('layer3_%d' % (i))
 
-        setattr(self, 'layer4_0', block(256, 512, 2))
+        setattr(self, 'layer4_0', blocks[index](256, 512, 2)); index+=1
         self._forward.append('layer4_0')
         for i in range(1, num_blocks[3]):
-            setattr(self, 'layer4_%d' % (i), block(512, 512))
+            setattr(self, 'layer4_%d' % (i), blocks[index](512, 512)); index+=1
             self._forward.append('layer4_%d' % (i))
 
         self.linear = nn.Linear(512, num_classes)
@@ -89,8 +63,30 @@ class ResNet(nn.Module):
         return x
 
 
-def ResNet18(serial, num_classes=10):
-    return ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes)
+def ResNet18(serial=[0,0,0,0,0,0,0,0], num_blocks=[2,2,2,2], num_classes=10):
+    blocks = []
+    for i in range(8):
+        if serial[i] is 0:
+            blocks.append(BasicBlock)
+        elif serial[i] is 1:
+            blocks.append(AdaptiveBlock)
+        elif serial[i] is 2:
+            blocks.append(PreBlock)
+        elif serial[i] is 3:
+            blocks.append(PostBlock)
 
-def ResNet34(serial, num_classes=10):
-    return ResNet(BasicBlock, [3,4,6,3], num_classes=num_classes)
+    return ResNet(blocks, num_blocks, num_classes=num_classes)
+
+def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], num_blocks=[3,4,6,3], num_classes=10):
+    blocks = []
+    for i in range(8):
+        if serial[i] is 0:
+            blocks.append(BasicBlock)
+        elif serial[i] is 1:
+            blocks.append(AdaptiveBlock)
+        elif serial[i] is 2:
+            blocks.append(PreBlock)
+        elif serial[i] is 3:
+            blocks.append(PostBlock)
+
+    return ResNet(blocks, num_blocks, num_classes=num_classes)
