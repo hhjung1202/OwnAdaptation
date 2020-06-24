@@ -7,11 +7,19 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
+class Smoothing(nn.Module):
+    def forward(self, x):
+        smoothing = GaussianSmoothing(x.size(1), 5, 1) # channels, kernel_size, sigma
+        x = F.pad(x, (2, 2, 2, 2), mode='reflect')
+        output = smoothing(x)
+        return output
+
 
 class ResNet(nn.Module):
-    def __init__(self, blocks, num_blocks, num_classes=10, z=64):
+    def __init__(self, blocks, num_blocks, style_out, num_classes=10, z=64):
         super(ResNet, self).__init__()
         self.in_planes = 64
+        self.style_out = style_out
         index = 0
 
         self.init = nn.Sequential(
@@ -49,21 +57,37 @@ class ResNet(nn.Module):
         self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
+        self.Smoothing = Smoothing()
+        # self.L1Loss = torch.nn.L1Loss()
+        self.MSELoss = nn.MSELoss()
 
     def forward(self, x, perm=None):
+        style_loss=None
+        origin_perm = [i for i in range(x.size(0))]
         x = self.init(x)
+        origin = x
 
-        for name in self._forward:
+        for i, name in enumerate(self._forward):
             layer = getattr(self, name)
             x = layer(x, perm)
+            origin = layer(origin, origin_perm)
+
+            if i+1 is self.style_out: # 2, 4, 6, 8
+                th_x = self.Smoothing(x)
+                th_o = self.Smoothing(origin[perm])
+                style_loss = self.MSELoss(th_x, th_o)
 
         x = self.flatten(self.avgpool(x))
         x = self.linear(x)
 
-        return x
+        origin = self.flatten(self.avgpool(origin))
+        origin = self.linear(origin)
+
+        return x, origin, style_loss
 
 
-def ResNet18(serial=[0,0,0,0,0,0,0,0], num_blocks=[2,2,2,2], num_classes=10):
+
+def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):
     blocks = []
     for i in range(8):
         if serial[i] is 0:
@@ -75,9 +99,9 @@ def ResNet18(serial=[0,0,0,0,0,0,0,0], num_blocks=[2,2,2,2], num_classes=10):
         elif serial[i] is 3:
             blocks.append(PostBlock)
 
-    return ResNet(blocks, num_blocks, num_classes=num_classes)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)
 
-def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], num_blocks=[3,4,6,3], num_classes=10):
+def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[3,4,6,3], num_classes=10):
     blocks = []
     for i in range(8):
         if serial[i] is 0:
@@ -89,4 +113,4 @@ def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], num_blocks=[3,4,6,3], num
         elif serial[i] is 3:
             blocks.append(PostBlock)
 
-    return ResNet(blocks, num_blocks, num_classes=num_classes)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)

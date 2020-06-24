@@ -30,6 +30,8 @@ parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
 parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 parser.add_argument('--fixed_perm', action='store_true', help='use fixed perm by iteration')
 parser.add_argument('--case', default=0, type=int, metavar='N', help='case')
+parser.add_argument('--style', default=0, type=int, metavar='N', help='post style')
+parser.add_argument('-s', '--serial', nargs='+', type=int, help='Block component: 0, 1, 2, 3')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
