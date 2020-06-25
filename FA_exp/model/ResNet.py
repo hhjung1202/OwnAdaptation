@@ -21,6 +21,7 @@ class Smoothing(nn.Module):
                             8: GaussianSmoothing(512, 5, 1),}[style_out]
 
     def forward(self, x):
+        print(x.size())
         x = F.pad(x, (2, 2, 2, 2), mode='reflect')
         output = self.Gaussian(x)
         return output
