@@ -15,6 +15,13 @@ def soft_label_cross_entropy(input, target):
     nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
     return nll_loss
 
+def mean_cross_entropy(input, input2, target):
+    # input (N, C)
+    # target (N, C) with soft label
+    log_likelihood = torch.log((input.softmax(dim=1) + input2.softmax(dim=1))/2)
+    nll_loss = F.nll_loss(log_likelihood, target)
+    return nll_loss
+
 def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
@@ -35,19 +42,19 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         l = np.random.beta(0.75, 0.75)
         l = max(l, 1-l)
-
         mixed_label =  l * label_one + (1-l) * suffle_label_one
-        mixed_label2 =  l * suffle_label_one + (1-l) * label_one
 
         state_info.optim_model.zero_grad()
 
-        out = state_info.forward(x, perm)
-        loss = {    0: criterion(out, y),
-                    1: criterion(out, suffle_label),
-                    2: soft_label_cross_entropy(out, mixed_label),
-                    3: soft_label_cross_entropy(out, mixed_label2)}[args.case]
-        
-        loss.backward()
+        out, origin, style_loss= state_info.forward(x, perm) # content loss, style loss
+
+        loss = {    0: mean_cross_entropy(out, origin, y),
+                    1: soft_label_cross_entropy(out, mixed_label),
+                    2: criterion(out, suffle_label),
+                    3: criterion(out, y)}[args.case]
+
+        total = loss + args.w[0] * style_loss
+        total.backward()
         state_info.optim_model.step()
 
         _, pred = torch.max(out.softmax(dim=1), 1)
@@ -85,13 +92,12 @@ def test(args, state_info, Test_loader, epoch):
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
         origin_perm = LongTensor([i for i in range(x.size(0))])
         
-        out1 = state_info.forward(x, perm)
-        out2 = state_info.forward(x, origin_perm)
+        out, origin, _ = state_info.forward(x, perm) # content loss, style loss
 
-        _, pred = torch.max(out1.softmax(dim=1), 1)
+        _, pred = torch.max(out.softmax(dim=1), 1)
         correct_Real += float(pred.eq(y.data).cpu().sum())
 
-        _, pred = torch.max(out2.softmax(dim=1), 1)
+        _, pred = torch.max(origin.softmax(dim=1), 1)
         correct_Real2 += float(pred.eq(y.data).cpu().sum())
 
         # _, pred = torch.max(out.data, 1)

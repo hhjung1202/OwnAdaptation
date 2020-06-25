@@ -85,8 +85,6 @@ class ResNet(nn.Module):
 
         return x, origin, style_loss
 
-
-
 def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):
     blocks = []
     for i in range(8):

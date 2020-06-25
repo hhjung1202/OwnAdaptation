@@ -29,7 +29,6 @@ class model_optim_state_info(object):
         x, origin, style_loss = self.model(image, perm=perm)
         return x, origin, style_loss
 
-
     def model_cuda_init(self):
         if torch.cuda.is_available():
             self.model = nn.DataParallel(self.model).cuda()

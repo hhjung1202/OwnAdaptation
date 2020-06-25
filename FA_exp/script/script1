@@ -1,5 +1,2 @@
 #!/bin/bash
-python3.5 ../main.py --dir BN_AD/case0 --case 0 --gpu 0 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir BN_AD/case1 --case 1 --gpu 1 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir BN_AD/case2  --case 2 --gpu 2 1> /dev/null 2> /dev/null &
-python3.5 ../main.py --dir BN_AD/case4  --case 3 --gpu 3 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir task1 -w 1.0 --s 0 0 0 0 0 0 0 0 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
