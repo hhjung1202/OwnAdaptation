@@ -21,7 +21,6 @@ class Smoothing(nn.Module):
                             8: GaussianSmoothing(512, 5, 1),}[style_out]
 
     def forward(self, x):
-        print(x.size())
         x = F.pad(x, (2, 2, 2, 2), mode='reflect')
         output = self.Gaussian(x)
         return output
@@ -79,7 +78,6 @@ class ResNet(nn.Module):
         origin_perm = [i for i in range(x.size(0))]
         x = self.init(x)
         origin = x
-        print(perm)
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
@@ -87,7 +85,6 @@ class ResNet(nn.Module):
             origin = layer(origin, origin_perm)
 
             if i+1 is self.style_out: # 2, 4, 6, 8
-                print(x[perm].size(), origin[perm].size(), perm)
                 th_x = self.Smoothing(x)
                 th_o = self.Smoothing(origin[perm])
                 style_loss = self.MSELoss(th_x, th_o)

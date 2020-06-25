@@ -35,7 +35,9 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
     for it, (x, y, label) in enumerate(Train_loader):
 
+        print(args.fixed_perm)
         perm = torch.randperm(x.size(0)) if args.fixed_perm else None
+        print(perm)
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
         label_one = FloatTensor(y.size(0), 10).zero_().scatter_(1, y.view(-1, 1), 1)
         suffle_label, suffle_label_one = y[perm][0], label_one[perm][0]
@@ -46,7 +48,6 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         state_info.optim_model.zero_grad()
 
-        print(perm)
         out, origin, style_loss= state_info.forward(x, perm) # content loss, style loss
 
         loss = {    0: mean_cross_entropy(out, origin, y),

@@ -26,7 +26,6 @@ class model_optim_state_info(object):
             self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN)
 
     def forward(self, image, perm=None):
-        print(perm)
         x, origin, style_loss = self.model(image, perm=perm)
         return x, origin, style_loss
 
