@@ -179,11 +179,10 @@ class GaussianSmoothing(nn.Module):
 
         # Reshape to depthwise convolutional weight
         kernel = kernel.view(1, 1, *kernel.size())
-        print(kernel)
         kernel = kernel.repeat(channels, *[1] * (kernel.dim() - 1))
 
 
-        self.register_buffer('weight', torch.tensor(kernel, device='cuda'))
+        self.register_buffer('weight', kernel.cuda())
         self.groups = channels
 
         if dim == 1:
