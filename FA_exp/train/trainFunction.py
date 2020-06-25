@@ -53,7 +53,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
                     2: criterion(out, suffle_label),
                     3: criterion(out, y)}[args.case]
 
-        total = loss + args.w[0] * style_loss
+        total = loss + args.weight[0] * style_loss
         total.backward()
         state_info.optim_model.step()
 
