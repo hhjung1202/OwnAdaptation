@@ -208,6 +208,6 @@ class GaussianSmoothing(nn.Module):
 
 if __name__ == "__main__":
     smoothing = GaussianSmoothing(3, 5, 1)
-    input = torch.rand(1, 3, 100, 100)
+    input = torch.rand(1, 3, 100, 100).cuda()
     input = F.pad(input, (2, 2, 2, 2), mode='reflect')
     output = smoothing(input)
