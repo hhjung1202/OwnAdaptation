@@ -46,6 +46,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
         state_info.optim_model.zero_grad()
 
+        print(perm)
         out, origin, style_loss= state_info.forward(x, perm) # content loss, style loss
 
         loss = {    0: mean_cross_entropy(out, origin, y),

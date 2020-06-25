@@ -79,6 +79,7 @@ class ResNet(nn.Module):
         origin_perm = [i for i in range(x.size(0))]
         x = self.init(x)
         origin = x
+        print(perm)
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
