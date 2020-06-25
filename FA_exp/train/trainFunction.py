@@ -53,6 +53,8 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
                     2: criterion(out, suffle_label),
                     3: criterion(out, y)}[args.case]
 
+        if style_loss is None:
+            style_loss = FloatTensor([0])
         total = loss + args.weight[0] * style_loss
         total.backward()
         state_info.optim_model.step()
@@ -63,8 +65,10 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}'.format(epoch, it, total.item(), loss.item(), style_loss.item()
+                , 100.*correct_Real / train_Size))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}'.format(epoch, it, total.item(), loss.item(), style_loss.item()
+                , 100.*correct_Real / train_Size))
 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
