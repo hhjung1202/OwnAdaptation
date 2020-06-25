@@ -1,0 +1,20 @@
+#!/bin/bash
+python3.5 ../main.py --dir style/2 -w 1.0 -s 1 1 0 0 0 0 0 0 --style 2 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir style/4 -w 1.0 -s 1 1 1 1 0 0 0 0 --style 4 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir style/6 -w 1.0 -s 1 1 1 1 1 1 0 0 --style 6 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir style/8 -w 1.0 -s 1 1 1 1 1 1 1 1 --style 8 --gpu 0 1> /dev/null 2> /dev/null &
+
+
+
+python3.5 ../main.py --dir loc/1 -w 0.0 -s 1 1 0 0 0 0 0 0 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir loc/2 -w 0.0 -s 0 0 1 1 0 0 0 0 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir loc/3 -w 0.0 -s 0 0 0 0 1 1 0 0 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir loc/4 -w 0.0 -s 0 0 0 0 0 0 1 1 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir loc/top -w 0.0 -s 1 0 1 0 1 0 1 0 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir loc/bot -w 0.0 -s 0 1 0 1 0 1 0 1 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+
+
+python3.5 ../main.py --dir type/0 -w 0.0 -s 0 0 0 0 0 0 0 0 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir type/1 -w 0.0 -s 1 1 1 1 1 1 1 1 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir type/2 -w 0.0 -s 2 2 2 2 2 2 2 2 --style 0 --gpu 0 1> /dev/null 2> /dev/null &
+python3.5 ../main.py --dir type/3 -w 0.0 -s 3 3 3 3 3 3 3 3 --style 0 --gpu 0 1> /dev/null 2> /dev/null &

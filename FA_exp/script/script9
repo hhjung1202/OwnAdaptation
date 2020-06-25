@@ -6,4 +6,3 @@ nohup sh script4 &
 nohup sh script5 &
 nohup sh script6 &
 nohup sh script7 &
-nohup sh script8 &
