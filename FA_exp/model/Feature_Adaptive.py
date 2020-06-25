@@ -181,7 +181,7 @@ class GaussianSmoothing(nn.Module):
         kernel = kernel.view(1, 1, *kernel.size())
         kernel = kernel.repeat(channels, *[1] * (kernel.dim() - 1))
 
-        self.register_buffer('weight', kernel)
+        self.register_buffer('weight', torch.tensor(kernel, device='cuda'))
         self.groups = channels
 
         if dim == 1:
