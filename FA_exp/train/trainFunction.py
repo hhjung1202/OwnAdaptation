@@ -35,7 +35,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
     for it, (x, y, label) in enumerate(Train_loader):
 
-        perm = torch.randperm(x.size(0)) if args.fixed_perm else None
+        perm = torch.randperm(x.size(0))
         x, y, label = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(label, LongTensor)
         label_one = FloatTensor(y.size(0), 10).zero_().scatter_(1, y.view(-1, 1), 1)
         suffle_label, suffle_label_one = y[perm], label_one[perm]
@@ -45,10 +45,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         mixed_label =  l * label_one + (1-l) * suffle_label_one
 
         state_info.optim_model.zero_grad()
-
         out, origin, style_loss= state_info.forward(x, perm) # content loss, style loss
-
-        print(out.size(), suffle_label.size())
 
         loss = {    0: mean_cross_entropy(out, origin, y),
                     1: soft_label_cross_entropy(out, mixed_label),
@@ -95,7 +92,7 @@ def test(args, state_info, Test_loader, epoch):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         
-        perm = torch.randperm(x.size(0)) if args.fixed_perm else None
+        perm = torch.randperm(x.size(0))
         origin_perm = LongTensor([i for i in range(x.size(0))])
         
         out, origin, _ = state_info.forward(x, perm) # content loss, style loss
