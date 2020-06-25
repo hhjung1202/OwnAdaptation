@@ -86,6 +86,7 @@ class ResNet(nn.Module):
             origin = layer(origin, origin_perm)
 
             if i+1 is self.style_out: # 2, 4, 6, 8
+                print(x.size(), origin.size())
                 th_x = self.Smoothing(x)
                 th_o = self.Smoothing(origin[perm])
                 style_loss = self.MSELoss(th_x, th_o)
