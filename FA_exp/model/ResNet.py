@@ -8,10 +8,21 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 class Smoothing(nn.Module):
+    def __init__(self, style_out):
+        super(Smoothing, self).__init__()
+        self.Gaussian = {   0: None,
+                            1: GaussianSmoothing(64, 5, 1),
+                            2: GaussianSmoothing(64, 5, 1),
+                            3: GaussianSmoothing(128, 5, 1),
+                            4: GaussianSmoothing(128, 5, 1),
+                            5: GaussianSmoothing(256, 5, 1),
+                            6: GaussianSmoothing(256, 5, 1),
+                            7: GaussianSmoothing(512, 5, 1),
+                            8: GaussianSmoothing(512, 5, 1),}[style_out]
+
     def forward(self, x):
-        smoothing = GaussianSmoothing(x.size(1), 5, 1) # channels, kernel_size, sigma
         x = F.pad(x, (2, 2, 2, 2), mode='reflect')
-        output = smoothing(x)
+        output = self.Gaussian(x)
         return output
 
 
@@ -20,6 +31,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
         self.in_planes = 64
         self.style_out = style_out
+
         index = 0
 
         self.init = nn.Sequential(
@@ -57,7 +69,7 @@ class ResNet(nn.Module):
         self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
-        self.Smoothing = Smoothing()
+        self.Smoothing = Smoothing(style_out)
         # self.L1Loss = torch.nn.L1Loss()
         self.MSELoss = nn.MSELoss()
 
