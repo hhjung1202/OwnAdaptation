@@ -29,6 +29,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
 
     train_Size = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
+    correct_Real2 = torch.tensor(0, dtype=torch.float32)
 
     # train
     state_info.model.train()
@@ -47,7 +48,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         state_info.optim_model.zero_grad()
         out, origin, style_loss= state_info.forward(x, perm) # content loss, style loss
 
-        loss = {    0: mean_cross_entropy(out, origin, y),
+        loss = {    0: mean_cross_entropy(out, origin, label),
                     1: soft_label_cross_entropy(out, mixed_label),
                     2: criterion(out, suffle_label),
                     3: criterion(out, y)}[args.case]
@@ -61,13 +62,16 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         _, pred = torch.max(out.softmax(dim=1), 1)
         correct_Real += float(pred.eq(label.data).cpu().sum())
 
+        _, pred = torch.max(origin.softmax(dim=1), 1)
+        correct_Real2 += float(pred.eq(label.data).cpu().sum())
+
         train_Size += float(x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}'.format(epoch, it, total.item(), loss.item(), style_loss.item()
-                , 100.*correct_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}'.format(epoch, it, total.item(), loss.item(), style_loss.item()
-                , 100.*correct_Real / train_Size))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'.format(epoch, it, total.item(), loss.item(), style_loss.item()
+                , 100.*correct_Real / train_Size, 100.*correct_Real2 / train_Size))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.3f}, {:.3f}'.format(epoch, it, total.item(), loss.item(), style_loss.item()
+                , 100.*correct_Real / train_Size, 100.*correct_Real2 / train_Size))
 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
