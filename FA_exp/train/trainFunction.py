@@ -51,7 +51,7 @@ def train(args, state_info, Train_loader, Test_loader, criterion, epoch):
         loss = {    0: mean_cross_entropy(out, origin, label),
                     1: soft_label_cross_entropy(out, mixed_label),
                     2: criterion(out, suffle_label),
-                    3: criterion(out, y)}[args.case]
+                    3: criterion(out, label)}[args.case]
 
         if style_loss is None:
             style_loss = FloatTensor([0])
