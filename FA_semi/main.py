@@ -28,10 +28,11 @@ parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of firs
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
 parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
-parser.add_argument('--fixed_perm', action='store_true', help='use fixed perm by iteration')
 parser.add_argument('--case', default=0, type=int, metavar='N', help='case')
 parser.add_argument('--n-labeled', default=5000, type=int, metavar='N', help='semi labeled')
-parser.add_argument('--val-iteration', type=int, default=1024, help='Iteration')
+parser.add_argument('--iteration', type=int, default=512, help='Iteration')
+parser.add_argument('--style', default=0, type=int, metavar='N', help='post style')
+parser.add_argument('-s', '--serial', nargs='+', type=int, help='Block component: 0, 1, 2, 3')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
@@ -47,7 +48,7 @@ else:
 def main():
     global args, best_prec_result
 
-    train_labeled_dataset, train_unlabeled_dataset, val_dataset, test_dataset = dataset_selector()
+    train_labeled_dataset, train_unlabeled_dataset, test_dataset = dataset_selector()
 
     args.clsN = 10
     args.milestones = [80,120]
@@ -65,7 +66,7 @@ def main():
         print("NO GPU")
 
     state_info.optimizer_init(args)
-    train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, val_dataset, test_dataset)
+    train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, test_dataset)
 
 def dataset_selector():
     return Semi_Cifar10_dataset(args)

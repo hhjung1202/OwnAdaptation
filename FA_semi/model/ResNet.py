@@ -1,87 +1,38 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from .Feature_Adaptive import *
 
 class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
-class Adain(nn.Module):
-    def calc_mean_std(self, feat, eps=1e-5):
-        # eps is a small value added to the variance to avoid divide-by-zero.
-        size = feat.size()
-        assert (len(size) == 4)
-        N, C = size[:2]
-        feat_var = feat.view(N, C, -1).var(dim=2) + eps
-        feat_std = feat_var.sqrt().view(N, C, 1, 1)
-        feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
-        return feat_mean, feat_std
+class Smoothing(nn.Module):
+    def __init__(self, style_out):
+        super(Smoothing, self).__init__()
+        self.Gaussian = {   0: None,
+                            1: GaussianSmoothing(64, 5, 1),
+                            2: GaussianSmoothing(64, 5, 1),
+                            3: GaussianSmoothing(128, 5, 1),
+                            4: GaussianSmoothing(128, 5, 1),
+                            5: GaussianSmoothing(256, 5, 1),
+                            6: GaussianSmoothing(256, 5, 1),
+                            7: GaussianSmoothing(512, 5, 1),
+                            8: GaussianSmoothing(512, 5, 1),}[style_out]
 
-    def forward(self, content_feat, style_feat, perm=None):
-        size = content_feat.size()
+    def forward(self, x):
+        x = F.pad(x, (2, 2, 2, 2), mode='reflect')
+        output = self.Gaussian(x)
+        return output
 
-        style_feat = style_feat[perm]
-        style_mean, style_std = self.calc_mean_std(style_feat)
-        content_mean, content_std = self.calc_mean_std(content_feat)
-
-        normalized_feat = (content_feat - content_mean) / content_std
-        final_feat = normalized_feat * style_std + style_mean
-
-        del(style_mean, style_std, content_mean, content_std)
-
-        return final_feat
-
-
-class BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, in_planes, planes, stride=1):
-        super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.adain = Adain()
-
-        self.shortcut = nn.Sequential()
-        if stride != 1 or in_planes != self.expansion*planes:
-            self.shortcut = nn.Sequential(
-                nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False),
-                nn.BatchNorm2d(self.expansion*planes)
-            )
-
-    def forward(self, x, x_, is_adain, perm):
-        if x_ is None:
-            x_ = x
-
-        out1 = self.conv1(x_)
-        out2 = self.bn1(out1)
-        out3 = self.conv2(F.relu(out2))
-        out4 = self.bn2(out3)
-        out5 = out4 + self.shortcut(x_)
-        out6 = F.relu(out5)
-
-        out = self.conv1(x)
-        if is_adain:
-            out = F.relu(self.adain(out, out1, perm))
-        else:
-            out = F.relu(self.adain(out, out2, perm))
-        
-        out = self.conv2(out)
-        if is_adain:
-            out = self.adain(out, out3, perm)
-        else:
-            out = self.adain(out, out4, perm)
-
-        out += self.shortcut(x)
-        out = F.relu(out)
-
-        return out, out6
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10, z=64):
+    def __init__(self, blocks, num_blocks, style_out, num_classes=10, z=64):
         super(ResNet, self).__init__()
         self.in_planes = 64
+        self.style_out = style_out
+
+        index = 0
 
         self.init = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),
@@ -91,50 +42,83 @@ class ResNet(nn.Module):
 
         self._forward = []
 
-        setattr(self, 'layer1_0', block(64, 64, 1))
+        setattr(self, 'layer1_0', blocks[index](64, 64, 1)); index+=1
         self._forward.append('layer1_0')
         for i in range(1, num_blocks[0]):
-            setattr(self, 'layer1_%d' % (i), block(64, 64))
+            setattr(self, 'layer1_%d' % (i), blocks[index](64, 64)); index+=1
             self._forward.append('layer1_%d' % (i))
 
-        setattr(self, 'layer2_0', block(64, 128, 2))
+        setattr(self, 'layer2_0', blocks[index](64, 128, 2)); index+=1
         self._forward.append('layer2_0')
         for i in range(1, num_blocks[1]):
-            setattr(self, 'layer2_%d' % (i), block(128, 128))
+            setattr(self, 'layer2_%d' % (i), blocks[index](128, 128)); index+=1
             self._forward.append('layer2_%d' % (i))
 
-        setattr(self, 'layer3_0', block(128, 256, 2))
+        setattr(self, 'layer3_0', blocks[index](128, 256, 2)); index+=1
         self._forward.append('layer3_0')
         for i in range(1, num_blocks[2]):
-            setattr(self, 'layer3_%d' % (i), block(256, 256))
+            setattr(self, 'layer3_%d' % (i), blocks[index](256, 256)); index+=1
             self._forward.append('layer3_%d' % (i))
 
-        setattr(self, 'layer4_0', block(256, 512, 2))
+        setattr(self, 'layer4_0', blocks[index](256, 512, 2)); index+=1
         self._forward.append('layer4_0')
         for i in range(1, num_blocks[3]):
-            setattr(self, 'layer4_%d' % (i), block(512, 512))
+            setattr(self, 'layer4_%d' % (i), blocks[index](512, 512)); index+=1
             self._forward.append('layer4_%d' % (i))
 
         self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
+        self.Smoothing = Smoothing(style_out)
+        # self.L1Loss = torch.nn.L1Loss()
+        self.MSELoss = nn.MSELoss()
 
-    def forward(self, x, is_adain, perm=None):
-        x = self.init(x)
-        x_ = None
-        for name in self._forward:
+    def forward(self, x, u_x):
+        style_loss=None
+        half = x.size(0)
+        x_ = torch.cat([x, u_x], dim=0)
+        x_ = self.init(x_)
+
+        for i, name in enumerate(self._forward):
             layer = getattr(self, name)
-            x, x_ = layer(x, x_, is_adain, perm)
+            x_ = layer(x_)
 
+            if i+1 is self.style_out: # 2, 4, 6, 8
+                content = x_[:half]
+                style = x_[half:]
+                th_x = self.Smoothing(content)
+                th_o = self.Smoothing(style)
+                style_loss = self.MSELoss(th_x, th_o)
 
-        x = self.flatten(self.avgpool(x))
+        x = self.flatten(self.avgpool(x_[:half]))
         x = self.linear(x)
 
-        return x
+        return x, style_loss
 
+def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):
+    blocks = []
+    for i in range(8):
+        if serial[i] is 0:
+            blocks.append(BasicBlock)
+        elif serial[i] is 1:
+            blocks.append(AdaptiveBlock)
+        elif serial[i] is 2:
+            blocks.append(PreBlock)
+        elif serial[i] is 3:
+            blocks.append(PostBlock)
 
-def ResNet18(num_classes=10):
-    return ResNet(BasicBlock, [2,2,2,2], num_classes=num_classes)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)
 
-def ResNet34(num_classes=10):
-    return ResNet(BasicBlock, [3,4,6,3], num_classes=num_classes)
+def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[3,4,6,3], num_classes=10):
+    blocks = []
+    for i in range(8):
+        if serial[i] is 0:
+            blocks.append(BasicBlock)
+        elif serial[i] is 1:
+            blocks.append(AdaptiveBlock)
+        elif serial[i] is 2:
+            blocks.append(PreBlock)
+        elif serial[i] is 3:
+            blocks.append(PostBlock)
+
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)

@@ -6,15 +6,15 @@ import utils
 from .trainFunction import *
 import torch.utils.data as data
 
-def train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, val_dataset, test_dataset): # all 
+def train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, test_dataset): # all 
 
     labeled_trainloader = data.DataLoader(train_labeled_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0, drop_last=True)
     unlabeled_trainloader = data.DataLoader(train_unlabeled_dataset, batch_size=args.batch_size, shuffle=True, num_workers=0, drop_last=True)
-    val_loader = data.DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
     test_loader = data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=0)
 
     start_time = time.time()
     best_prec_result = torch.tensor(0, dtype=torch.float32)
+    best_prec_result2 = torch.tensor(0, dtype=torch.float32)
     mode = args.model
     utils.default_model_dir = os.path.join(args.dir, mode)
     
@@ -35,14 +35,18 @@ def train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, 
     for epoch in range(0, args.epoch):
 
         # epoch_result = train(args, state_info, Train_loader, Test_loader, criterion, epoch)
-        epoch_result, epoch_result2 = train(args, state_info, labeled_trainloader, unlabeled_trainloader, val_loader, test_loader, criterion, epoch)
+        epoch_result, epoch_result2 = train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loader, criterion, epoch)
         
         if epoch_result > best_prec_result:
             best_prec_result = epoch_result
+
+        if epoch_result2 > best_prec_result2:
+            best_prec_result2 = epoch_result2
 
         state_info.lr_model.step()
         utils.print_log('')
 
     now = time.gmtime(time.time() - start_time)
     utils.print_log('Best Prec : {:.4f}'.format(best_prec_result.item()))
+    utils.print_log('Best Prec : {:.4f}'.format(best_prec_result2.item()))
     utils.print_log('{} hours {} mins {} secs for training'.format(now.tm_hour, now.tm_min, now.tm_sec))
