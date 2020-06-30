@@ -96,7 +96,7 @@ class PreBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x, perm):
+    def forward(self, x):
         out = F.relu(self.adain(self.conv1(x)))
         out = self.bn(self.conv2(out))
         out += self.shortcut(x)
@@ -121,7 +121,7 @@ class PostBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x, perm):
+    def forward(self, x):
         out = F.relu(self.bn(self.conv1(x)))
         out = self.adain(self.conv2(out))
         out += self.shortcut(x)
