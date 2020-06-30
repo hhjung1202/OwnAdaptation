@@ -52,7 +52,8 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
 
         out, style_loss = state_info.forward(inputs_x, inputs_u)
 
-        loss = criterion(out, targets_x)
+        loss = {    0: criterion(out, targets_x)
+                    1: criterion(out, targets_x) + style_loss   }[args.case]
         loss.backward()
 
         state_info.optim_model.step()

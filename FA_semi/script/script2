@@ -1,0 +1,3 @@
+#!/bin/bash
+python3.5 ../main.py --dir supervised/style/6 -w 1.0 -s 1 1 1 1 1 1 0 0 --style 6 --gpu 7 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir supervised/style/8 -w 1.0 -s 1 1 1 1 1 1 1 1 --style 8 --gpu 7 1> /dev/null 2> /dev/null
