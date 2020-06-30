@@ -52,6 +52,9 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
 
         out, style_loss = state_info.forward(inputs_x, inputs_u)
 
+        if style_loss is None:
+            style_loss = 0.0
+
         loss = {    0: criterion(out, targets_x),
                     1: criterion(out, targets_x) + style_loss   }[args.case]
         loss.backward()
