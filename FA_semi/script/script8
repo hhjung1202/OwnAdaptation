@@ -1,15 +1,15 @@
 #!/bin/bash
-python3.5 ../main.py --dir semi/style/2 -s 1 1 0 0 0 0 0 0 --style 2 --case 1 --gpu 0 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/style/4 -s 1 1 1 1 0 0 0 0 --style 4 --case 1 --gpu 0 1> /dev/null 2> /dev/null
-python3.5 ../main.py --dir semi/style/6 -s 1 1 1 1 1 1 0 0 --style 6 --case 1 --gpu 1 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/style/8 -s 1 1 1 1 1 1 1 1 --style 8 --case 1 --gpu 1 1> /dev/null 2> /dev/null
-python3.5 ../main.py --dir semi/loc/1 -s 1 1 0 0 0 0 0 0 --style 0 --case 0 --gpu 2 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/loc/2 -s 0 0 1 1 0 0 0 0 --style 0 --case 0 --gpu 2 1> /dev/null 2> /dev/null
-python3.5 ../main.py --dir semi/loc/3 -s 0 0 0 0 1 1 0 0 --style 0 --case 0 --gpu 3 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/loc/4 -s 0 0 0 0 0 0 1 1 --style 0 --case 0 --gpu 3 1> /dev/null 2> /dev/null
-python3.5 ../main.py --dir semi/loc/top -s 1 0 1 0 1 0 1 0 --style 0 --case 0 --gpu 4 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/loc/bot -s 0 1 0 1 0 1 0 1 --style 0 --case 0 --gpu 4 1> /dev/null 2> /dev/null
-python3.5 ../main.py --dir semi/type/0 -s 0 0 0 0 0 0 0 0 --style 0 --case 0 --gpu 5 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/type/1 -s 1 1 1 1 1 1 1 1 --style 0 --case 0 --gpu 5 1> /dev/null 2> /dev/null
-python3.5 ../main.py --dir semi/type/2 -s 2 2 2 2 2 2 2 2 --style 0 --case 0 --gpu 6 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --dir semi/type/3 -s 3 3 3 3 3 3 3 3 --style 0 --case 0 --gpu 6 1> /dev/null 2> /dev/null
+(python3.5 ../main.py --dir semi/style/2 -s 1 1 0 0 0 0 0 0 --style 2 --case 1 --gpu 0 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/style/4 -s 1 1 1 1 0 0 0 0 --style 4 --case 1 --gpu 0 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir semi/style/6 -s 1 1 1 1 1 1 0 0 --style 6 --case 1 --gpu 1 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/style/8 -s 1 1 1 1 1 1 1 1 --style 8 --case 1 --gpu 1 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir semi/loc/1 -s 1 1 0 0 0 0 0 0 --style 0 --case 0 --gpu 2 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/loc/2 -s 0 0 1 1 0 0 0 0 --style 0 --case 0 --gpu 2 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir semi/loc/3 -s 0 0 0 0 1 1 0 0 --style 0 --case 0 --gpu 3 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/loc/4 -s 0 0 0 0 0 0 1 1 --style 0 --case 0 --gpu 3 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir semi/loc/top -s 1 0 1 0 1 0 1 0 --style 0 --case 0 --gpu 4 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/loc/bot -s 0 1 0 1 0 1 0 1 --style 0 --case 0 --gpu 4 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir semi/type/0 -s 0 0 0 0 0 0 0 0 --style 0 --case 0 --gpu 5 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/type/1 -s 1 1 1 1 1 1 1 1 --style 0 --case 0 --gpu 5 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir semi/type/2 -s 2 2 2 2 2 2 2 2 --style 0 --case 0 --gpu 6 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir semi/type/3 -s 3 3 3 3 3 3 3 3 --style 0 --case 0 --gpu 6 1> /dev/null 2> /dev/null) &
