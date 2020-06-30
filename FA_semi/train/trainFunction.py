@@ -91,8 +91,8 @@ def test(args, state_info, Test_loader, epoch):
         
         perm = torch.randperm(x.size(0))
 
-        out1 = state_info.forward(x, x)
-        out2 = state_info.forward(x, x[perm])
+        out1, _ = state_info.forward(x, x)
+        out2, _ = state_info.forward(x, x[perm])
 
         _, pred = torch.max(out1.softmax(dim=1), 1)
         correct_Real += float(pred.eq(y.data).cpu().sum())
