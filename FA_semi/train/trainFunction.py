@@ -44,7 +44,7 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
             unlabeled_train_iter = iter(unlabeled_trainloader)
             inputs_u, _ = unlabeled_train_iter.next()
 
-        if input_x.size(0) is not input_u.size(0):
+        if inputs_x.size(0) is not inputs_u.size(0):
             continue
 
         inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
