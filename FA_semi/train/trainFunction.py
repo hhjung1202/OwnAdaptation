@@ -60,7 +60,7 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         _, pred = torch.max(out.softmax(dim=1), 1)
         correct_Real += float(pred.eq(targets_x.data).cpu().sum())
 
-        train_Size += float(x.size(0))
+        train_Size += float(inputs_x.size(0))
 
         if it % 10 == 0:
             utils.print_log('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
