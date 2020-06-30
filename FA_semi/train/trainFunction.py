@@ -31,7 +31,7 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
     unlabeled_train_iter = iter(unlabeled_trainloader)
 
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
-    for batch_idx in range(args.iteration):
+    for it in range(args.iteration):
         try:
             inputs_x, targets_x = labeled_train_iter.next()
         except:
