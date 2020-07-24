@@ -27,10 +27,11 @@ class Smoothing(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, blocks, num_blocks, style_out, num_classes=10, z=64):
+    def __init__(self, blocks, num_blocks, style_out, num_classes=10, n=4):
         super(ResNet, self).__init__()
         self.in_planes = 64
         self.style_out = style_out
+        self.n = n
 
         index = 0
 
@@ -77,12 +78,16 @@ class ResNet(nn.Module):
 
         x_ = torch.cat([x, u_x], dim=0)
         x_ = self.init(x_)
-        b = x_.size(0)
-        x_ = x_.repeat(b+1, 1, 1, 1) # 1234, 1234, 1234, 1234
+
+        b, c, w, h = x_.size()
+        n = self.n
+        if b < n: n = b;
+        x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0)
+        style_label = self.style_gen(b, n)
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
-            x_ = layer(x_, b)
+            x_ = layer(x_, style_label, b)
 
             if i+1 is self.style_out: # 2, 4, 6, 8
                 style = x_[-b:]
@@ -93,6 +98,17 @@ class ResNet(nn.Module):
         x = self.linear(x)
 
         return x, style_loss
+
+    def style_gen(self, batch_size, n):
+        i = torch.randint(1, batch_size, (1,))[0]
+        perm = [_ for _ in range(batch_size)]
+        arr = []
+        for m in range(batch_size):
+            for k in range(n):
+                arr.append((perm[(i+m+k)%batch_size]))
+
+        self.style_label = arr
+
 
 def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):
     blocks = []

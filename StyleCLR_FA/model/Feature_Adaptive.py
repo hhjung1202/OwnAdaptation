@@ -15,11 +15,11 @@ class Adain(nn.Module):
         feat_mean = feat.view(N, C, -1).mean(dim=2).view(N, C, 1, 1)
         return feat_mean, feat_std
 
-    def forward(self, feature, b):
+    def forward(self, feature, style_label, b):
 
         _, c, w, h = feature.size()
         style = feature[-b:]
-        style_feat = style.repeat(1, b, 1, 1).view(b*b, c, w, h)
+        style_feat = style[style_label]
         content_feat = feature[:-b]
         
         style_mean, style_std = self.calc_mean_std(style_feat)
@@ -50,7 +50,7 @@ class BasicBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x):
+    def forward(self, x, _, __):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
         out += self.shortcut(x)
@@ -73,9 +73,12 @@ class AdaptiveBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x, b):
-        out = F.relu(self.adain(self.conv1(x), b))
-        out = self.adain(self.conv2(out))
+    def forward(self, x, style_label, b):
+        out = self.conv1(x)
+        out = self.adain(out, style_label, b)
+        out = F.relu(out)
+        out = self.conv2(out)
+        out = self.adain(out, style_label, b)
         out += self.shortcut(x)
         out = F.relu(out)
         return out 
@@ -97,12 +100,14 @@ class PreBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x):
-        out = F.relu(self.adain(self.conv1(x)))
-        out = self.bn(self.conv2(out))
+    def forward(self, x, style_label, b):
+        out = self.conv1(x)
+        out = self.adain(out, style_label, b)
+        out = F.relu(out)
+        out = self.conv2(out)
+        out = self.bn(out)
         out += self.shortcut(x)
         out = F.relu(out)
-
         return out 
 
 class PostBlock(nn.Module):
@@ -122,13 +127,15 @@ class PostBlock(nn.Module):
                 nn.BatchNorm2d(self.expansion*planes)
             )
 
-    def forward(self, x):
-        out = F.relu(self.bn(self.conv1(x)))
-        out = self.adain(self.conv2(out))
+    def forward(self, x, style_label, b):
+        out = self.conv1(x)
+        out = self.bn(out)
+        out = F.relu(out)
+        out = self.conv2(out)
+        out = self.adain(out, style_label, b)
         out += self.shortcut(x)
         out = F.relu(out)
         return out 
-
 
 class GaussianSmoothing(nn.Module):
     """
