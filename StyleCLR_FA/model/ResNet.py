@@ -82,7 +82,8 @@ class ResNet(nn.Module):
             if i+1 is self.style_out: # 2, 4, 6, 8
                 style = x_[-b:]
                 content_feat = x_[:-b]
-        
+        content_feat = x_[:-b]
+        # x_ = self.g_x(x_)
         style_loss = self.style_contrastive(x_[:-b], x_[-b:], style_label, b, n) # x_[:-b], x[-b:] is Content, Style
         # style_loss = self.style_reconstruction(x_[:-b], x_[-b:], style_label)
         x = self.flatten(self.avgpool(content_feat))
