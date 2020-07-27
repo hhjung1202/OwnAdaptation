@@ -7,24 +7,6 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
-class Smoothing(nn.Module):
-    def __init__(self, style_out):
-        super(Smoothing, self).__init__()
-        self.Gaussian = {   0: None,
-                            1: GaussianSmoothing(64, 5, 1),
-                            2: GaussianSmoothing(64, 5, 1),
-                            3: GaussianSmoothing(128, 5, 1),
-                            4: GaussianSmoothing(128, 5, 1),
-                            5: GaussianSmoothing(256, 5, 1),
-                            6: GaussianSmoothing(256, 5, 1),
-                            7: GaussianSmoothing(512, 5, 1),
-                            8: GaussianSmoothing(512, 5, 1),}[style_out]
-
-    def forward(self, x):
-        x = F.pad(x, (2, 2, 2, 2), mode='reflect')
-        output = self.Gaussian(x)
-        return output
-
 
 class ResNet(nn.Module):
     def __init__(self, blocks, num_blocks, style_out, num_classes=10, n=4):
@@ -70,9 +52,17 @@ class ResNet(nn.Module):
         self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
-        self.Smoothing = Smoothing(style_out)
         # self.L1Loss = torch.nn.L1Loss()
         self.MSELoss = nn.MSELoss()
+        self.softmin = nn.Softmin(dim=-1)
+        self.softmax = nn.Softmax(dim=-1)
+        self.CE = nn.CrossEntropyLoss()
+
+        self.g_x = nn.Sequential(
+            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, bias=False),
+        )
 
     def forward(self, x, u_x):
 
@@ -81,8 +71,8 @@ class ResNet(nn.Module):
 
         b, c, w, h = x_.size()
         n = self.n
-        if b < n: n = b;
-        x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0)
+        if b < n: n = b-1;
+        x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
         style_label = self.style_gen(b, n)
 
         for i, name in enumerate(self._forward):
@@ -93,7 +83,8 @@ class ResNet(nn.Module):
                 style = x_[-b:]
                 content_feat = x_[:-b]
         
-        content_feat = x_[:-b]
+        style_loss = self.style_contrastive(x_[:-b], x_[-b:], style_label, b, n) # x_[:-b], x[-b:] is Content, Style
+        # style_loss = self.style_reconstruction(x_[:-b], x_[-b:], style_label)
         x = self.flatten(self.avgpool(content_feat))
         x = self.linear(x)
 
@@ -108,6 +99,45 @@ class ResNet(nn.Module):
                 arr.append((perm[(i+m+k)%batch_size]))
 
         self.style_label = arr
+
+
+    def style_contrastive(self, content, style, style_label, b, n):
+        f_c = gram_matrix(content).view(n,b,-1)             # n, b, ch * ch
+        f_s = gram_matrix(style)[style_label].view(n,b,-1)  # n, b, ch * ch
+
+        f_c = f_c.transpose(0,1).repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
+        f_s = f_s.transpose(0,1).repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
+
+        mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n)
+
+        # case 1
+        style_loss = self.softmin_ce(mse, style_label)
+
+        # case 2
+        # style_loss = self.softmax_ce_rev(mse, style_label)
+
+        return style_loss
+
+    def style_reconstruction(self, content, style, style_label):
+        f_c = gram_matrix(content) # b*n, ch, ch
+        f_s = gram_matrix(style) # b, ch, ch
+        adaptive_s = f_s[style_label] # b*n, ch, ch
+        style_loss = self.MSELoss(f_c, adaptive_s)
+        return style_loss
+
+
+    def softmin_ce(self, input, target): # y * log(p), p = softmax(-out)
+        log_likelihood = self.softmin(input).log()
+        nll_loss = F.nll_loss(log_likelihood, target)
+        return nll_loss
+
+    def softmax_ce_rev(self, input, target): # y * log(1-p), p = softmax(out)
+        log_likelihood_reverse = torch.log(1 - self.softmax(input))
+        nll_loss = F.nll_loss(log_likelihood_reverse, target)
+        return nll_loss
+
+
+
 
 
 def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):
@@ -137,3 +167,16 @@ def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[
             blocks.append(PostBlock)
 
     return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)
+
+
+def gram_matrix(input):
+    a, b, c, d = input.size()
+    features = input.view(a, b, c * d)
+    G = torch.bmm(features, torch.transpose(features, 1,2))
+    return G.div(b * c * d)
+
+# def gram_matrix2(input):
+#     a, b, c, d = input.size()
+#     features = input.view(a, b, c * d)
+#     G = torch.bmm(torch.transpose(features, 1,2), features)
+#     return G.div(b * c * d)
