@@ -8,6 +8,7 @@ class Adain(nn.Module):
     def calc_mean_std(self, feat, eps=1e-5):
         # eps is a small value added to the variance to avoid divide-by-zero.
         size = feat.size()
+        print(size)
         assert (len(size) == 4)
         N, C = size[:2]
         feat_var = feat.view(N, C, -1).var(dim=2) + eps
