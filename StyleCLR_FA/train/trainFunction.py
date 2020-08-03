@@ -7,15 +7,8 @@ import numpy as np
 def to_var(x, dtype):
     return Variable(x.type(dtype))
 
-def soft_label_cross_entropy(input, target):
-    # input (N, C)
-    # target (N, C) with soft label
-    log_likelihood = input.log_softmax(dim=1)
-    soft_log_likelihood = target * log_likelihood
-    nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
-    return nll_loss
 
-def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loader, criterion, epoch):
+def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loader, epoch):
     cuda = True if torch.cuda.is_available() else False
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
@@ -50,15 +43,11 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
         state_info.optim_model.zero_grad()
 
-        out, style_loss = state_info.forward(inputs_x, inputs_u)
+        loss_s, JS_loss, loss_u, style_loss, content_loss = state_info.forward(inputs_x, targets_x, inputs_u)
 
-        if style_loss is None:
-            style_loss = 0.0
-
-        loss = {    0: criterion(out, targets_x),
-                    1: criterion(out, targets_x) + style_loss   }[args.case]
-        loss.backward()
-
+        # total_loss = 
+        loss.backward(retain_graph=True)
+        total_loss.backward()
         state_info.optim_model.step()
 
         _, pred = torch.max(out.softmax(dim=1), 1)

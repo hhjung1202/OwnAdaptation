@@ -53,11 +53,6 @@ class ResNet(nn.Module):
         self.linear = nn.Linear(512, num_classes)
         self.avgpool = nn.AdaptiveAvgPool2d(output_size=1)
         self.flatten = Flatten()
-        # self.L1Loss = torch.nn.L1Loss()
-        self.MSELoss = nn.MSELoss()
-        self.softmin = nn.Softmin(dim=-1)
-        self.softmax = nn.Softmax(dim=-1)
-        self.CE = nn.CrossEntropyLoss()
 
         self.g_x = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, bias=False),
@@ -71,13 +66,14 @@ class ResNet(nn.Module):
         )
         self.Content_Contrastive = Content_Contrastive(temperature=1.)
         self.Style_Contrastive = Style_Contrastive()
+        self.Semi_Loss = Semi_Loss(temperature=1.)
 
-    def forward(self, x, u_x):
+    def forward(self, x, y, u_x):
 
         x_ = torch.cat([x, u_x], dim=0)
         x_ = self.init(x_)
 
-        b, c, w, h = x_.size()
+        (b, c, w, h), size_s = x_.size(), x.size(0)
         n = self.n; if b < n: n = b-1;
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
         style_label = self.style_gen(b, n)
@@ -91,9 +87,9 @@ class ResNet(nn.Module):
 
         style_loss = self.forward_style(x_, style_label, b, n, L_type="c1")
         content_loss = self.forward_content(x_, b, n)
-        logits = self.forward_classifier(x_, b, n)
+        loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
 
-        return logits, style_loss, content_loss
+        return loss_s, JS_loss, loss_u, style_loss, content_loss
 
     def forward_style(self, x, style_label, b, n, L_type="c1"):
         # x_ = self.g_x(x_)
@@ -112,13 +108,21 @@ class ResNet(nn.Module):
 
         return content_loss
 
-    def forward_classifier(self, x, b, n):
-        content = x_[:-b]
-        # style = x_[-b:]
+    def forward_classifier(self, x, b, n, size_s, y):
+        
         x = self.flatten(self.avgpool(x))
         logits = self.linear(x)
+        loss_s, JS_loss, loss_u = self.Semi_Loss(logits, b, n, size_s, y)
 
-        return logits
+        return loss_s, JS_loss, loss_u
+
+    def soft_label_cross_entropy(self, input, target, eps=1e-5):
+        # input (N, C)
+        # target (N, C) with soft label
+        log_likelihood = input.log_softmax(dim=1)
+        soft_log_likelihood = target * log_likelihood
+        nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
+        return nll_loss
 
 
     def style_gen(self, batch_size, n):
@@ -130,6 +134,28 @@ class ResNet(nn.Module):
                 arr.append((perm[(i+m+k)%batch_size]))
 
         self.style_label = arr
+
+    def test(self, x):
+
+        x_ = self.init(x)
+
+        b, c, w, h = x_.size()
+        n = self.n; if b < n: n = b-1;
+        x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
+        style_label = self.style_gen(b, n)
+
+        for i, name in enumerate(self._forward):
+            layer = getattr(self, name)
+            x_ = layer(x_, style_label, b)
+
+            # if i+1 is self.style_out: # 2, 4, 6, 8
+            #     style_loss = self.forward_style(x, style_label, b, n, L_type="c1")
+
+        style_loss = self.forward_style(x_, style_label, b, n, L_type="c1")
+        content_loss = self.forward_content(x_, b, n)
+        loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
+
+        return loss_s, JS_loss, loss_u, style_loss, content_loss
 
 
 def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):

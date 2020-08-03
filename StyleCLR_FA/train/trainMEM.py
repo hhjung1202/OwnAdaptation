@@ -18,7 +18,6 @@ def train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, 
     mode = args.model
     utils.default_model_dir = os.path.join(args.dir, mode)
     
-    criterion = torch.nn.CrossEntropyLoss()
     start_epoch = 0
     checkpoint = None
     # checkpoint = utils.load_checkpoint(utils.default_model_dir)    
@@ -34,8 +33,7 @@ def train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, 
 
     for epoch in range(0, args.epoch):
 
-        # epoch_result = train(args, state_info, Train_loader, Test_loader, criterion, epoch)
-        epoch_result, epoch_result2 = train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loader, criterion, epoch)
+        epoch_result, epoch_result2 = train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loader, epoch)
         
         if epoch_result > best_prec_result:
             best_prec_result = epoch_result
