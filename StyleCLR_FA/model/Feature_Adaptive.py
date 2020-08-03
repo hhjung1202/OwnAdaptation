@@ -19,9 +19,13 @@ class Adain(nn.Module):
     def forward(self, feature, style_label, b):
 
         _, c, w, h = feature.size()
+        print('1', feature.size())
         style = feature[-b:]
+        print('1', style.size())
         style_feat = style[style_label]
+        print('1', style_feat.size())
         content_feat = feature[:-b]
+        print('1', content_feat.size())
         
         style_mean, style_std = self.calc_mean_std(style_feat)
         content_mean, content_std = self.calc_mean_std(content_feat)
