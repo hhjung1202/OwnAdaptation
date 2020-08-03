@@ -27,6 +27,7 @@ class Content_Contrastive(nn.Module):
         # v size : (b*n, b)
         print(content.size(), style.size())
         v = self.similarity(content.unsqueeze(1), style.unsqueeze(0))
+        print(v.size())
         return v
 
     def forward(self, content, style, b, n):
