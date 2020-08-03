@@ -74,16 +74,10 @@ class ResNet(nn.Module):
         x_ = torch.cat([x, u_x], dim=0)
         x_ = self.init(x_)
 
-        print(x_.size())
-
         (b, c, w, h), size_s = x_.size(), x.size(0)
         n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
-
-        print(x_.size())
-
         style_label = self.style_gen(b, n)
-        print(style_label)
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
@@ -127,12 +121,12 @@ class ResNet(nn.Module):
     def style_gen(self, batch_size, n):
         i = torch.randint(1, batch_size, (1,))[0]
         perm = [_ for _ in range(batch_size)]
-        arr = []
+        style_label = []
         for m in range(batch_size):
             for k in range(n):
-                arr.append((perm[(i+m+k)%batch_size]))
+                style_label.append((perm[(i+m+k)%batch_size]))
 
-        self.style_label = arr
+        return style_label
 
     def test_style(self, x):
 
