@@ -21,9 +21,10 @@ class Adain(nn.Module):
         _, c, w, h = feature.size()
         print('1', feature.size())
         style = feature[-b:]
-        print('1', style)
+        print('1', style[0])
+        print(style_label)
         style_feat = style[style_label].squeeze(0)
-        print('1', style_feat)
+        print('1', style_feat[0])
         content_feat = feature[:-b]
         print('1', content_feat.size())
         
