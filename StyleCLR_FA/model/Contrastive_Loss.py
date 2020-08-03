@@ -15,7 +15,10 @@ class Content_Contrastive(nn.Module):
     
     def _get_label(self, b, n):
         # label gen : (b*n)
+        print(b, n)
         label = self.LongTensor([[_] for _ in range(b)]).repeat(1,n).view(-1)
+        print(label)
+
         return label
 
     def _cosine_similarity(self, content, style):
