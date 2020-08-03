@@ -10,11 +10,12 @@ class Flatten(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, blocks, num_blocks, style_out, num_classes=10, n=4):
+    def __init__(self, blocks, num_blocks, style_out, num_classes, n, L_type):
         super(ResNet, self).__init__()
         self.in_planes = 64
         self.style_out = style_out
         self.n = n
+        self.L_type = L_type
 
         index = 0
 
@@ -83,27 +84,27 @@ class ResNet(nn.Module):
             x_ = layer(x_, style_label, b)
 
             # if i+1 is self.style_out: # 2, 4, 6, 8
-            #     style_loss = self.forward_style(x, style_label, b, n, L_type="c1")
+            #     style_loss = self.forward_style(x, style_label, b, n)
 
-        style_loss = self.forward_style(x_, style_label, b, n, L_type="c1")
+        style_loss = self.forward_style(x_, style_label, b, n)
         content_loss = self.forward_content(x_, b, n)
         loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
 
         return loss_s, JS_loss, loss_u, style_loss, content_loss
 
-    def forward_style(self, x, style_label, b, n, L_type="c1"):
-        # x_ = self.g_x(x_)
-        content = x_[:-b]
-        style = x_[-b:]
-        style_loss = self.style_contrastive(content, style, style_label, b, n, L_type="c1")
+    def forward_style(self, x, style_label, b, n):
+        # x = self.g_x(x)
+        content = x[:-b]
+        style = x[-b:]
+        style_loss = self.style_contrastive(content, style, style_label, b, n, L_type=self.L_type)
 
         return style_loss
 
     def forward_content(self, x, b, n):
         x = self.flatten(self.avgpool(x))
         x = self.f_x(x)
-        content = x_[:-b]
-        style = x_[-b:]
+        content = x[:-b]
+        style = x[-b:]
         content_loss = self.Content_Contrastive(content, style, b, n)
 
         return content_loss
@@ -116,14 +117,6 @@ class ResNet(nn.Module):
 
         return loss_s, JS_loss, loss_u
 
-    def soft_label_cross_entropy(self, input, target, eps=1e-5):
-        # input (N, C)
-        # target (N, C) with soft label
-        log_likelihood = input.log_softmax(dim=1)
-        soft_log_likelihood = target * log_likelihood
-        nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
-        return nll_loss
-
 
     def style_gen(self, batch_size, n):
         i = torch.randint(1, batch_size, (1,))[0]
@@ -135,7 +128,7 @@ class ResNet(nn.Module):
 
         self.style_label = arr
 
-    def test(self, x):
+    def test_style(self, x):
 
         x_ = self.init(x)
 
@@ -148,17 +141,30 @@ class ResNet(nn.Module):
             layer = getattr(self, name)
             x_ = layer(x_, style_label, b)
 
-            # if i+1 is self.style_out: # 2, 4, 6, 8
-            #     style_loss = self.forward_style(x, style_label, b, n, L_type="c1")
+        x_ = self.flatten(self.avgpool(x_[:-b]))
+        out = self.linear(x_)
 
-        style_loss = self.forward_style(x_, style_label, b, n, L_type="c1")
-        content_loss = self.forward_content(x_, b, n)
-        loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
+        return out 
 
-        return loss_s, JS_loss, loss_u, style_loss, content_loss
+    def test_(self, x):
+
+        x_ = self.init(x)
+
+        b, c, w, h = x_.size()
+        x_ = torch.cat([x_, x_], 0) # AAA BBB CCC ABC
+        style_label = [i for i in range(b)]
+
+        for i, name in enumerate(self._forward):
+            layer = getattr(self, name)
+            x_ = layer(x_, style_label, b)
+
+        x_ = self.flatten(self.avgpool(x_))
+        out = self.linear(x_)
+
+        return out 
 
 
-def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10):
+def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10, n=4, L_type='c1'):
     blocks = []
     for i in range(8):
         if serial[i] is 0:
@@ -170,9 +176,9 @@ def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_cl
         elif serial[i] is 3:
             blocks.append(PostBlock)
 
-    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n, L_type=L_type)
 
-def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[3,4,6,3], num_classes=10):
+def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[3,4,6,3], num_classes=10, n=4, L_type='c1'):
     blocks = []
     for i in range(8):
         if serial[i] is 0:
@@ -184,4 +190,4 @@ def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[
         elif serial[i] is 3:
             blocks.append(PostBlock)
 
-    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n, L_type=L_type)

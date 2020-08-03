@@ -34,6 +34,11 @@ parser.add_argument('--iteration', type=int, default=512, help='Iteration')
 parser.add_argument('--style', default=0, type=int, metavar='N', help='post style')
 parser.add_argument('-s', '--serial', nargs='+', type=int, help='Block component: 0, 1, 2, 3')
 
+parser.add_argument('--n', type=int, default=4, help='Style count')
+parser.add_argument('--type', default='c1', type=str, help='c1 : softmin, c2 : 1-p, c3 : reconstruction')
+parser.add_argument('--loss', nargs='+', type=int, help='5 argumentation 0 or 1')
+
+
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu

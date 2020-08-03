@@ -21,13 +21,18 @@ class model_optim_state_info(object):
         
         self.init_lr = args.lr
         if args.model == "ResNet18":
-            self.model = ResNet18(serial=args.serial, style_out=args.style, num_classes=args.clsN)
+            self.model = ResNet18(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
         elif args.model == "ResNet34":
-            self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN)
+            self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
 
     def forward(self, x, y, u_x):
         loss_s, JS_loss, loss_u, style_loss, content_loss = self.model(x, y, u_x)
         return loss_s, JS_loss, loss_u, style_loss, content_loss
+
+    def test(self, x):
+        out = self.model.test_(x)
+        out_style = self.model.test_style(x)
+        return out, out_style
 
     def model_cuda_init(self):
         if torch.cuda.is_available():

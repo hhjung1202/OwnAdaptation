@@ -45,8 +45,13 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
 
         loss_s, JS_loss, loss_u, style_loss, content_loss = state_info.forward(inputs_x, targets_x, inputs_u)
 
-        # total_loss = 
-        loss.backward(retain_graph=True)
+        total_loss = 0
+        if args.loss[0] is 1: total_loss += loss_s.item();
+        if args.loss[1] is 1: total_loss += JS_loss.item();
+        if args.loss[2] is 1: total_loss += loss_u.item();
+        if args.loss[3] is 1: total_loss += style_loss.item();
+        if args.loss[4] is 1: total_loss += content_loss.item();
+
         total_loss.backward()
         state_info.optim_model.step()
 
@@ -56,8 +61,10 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         train_Size += float(inputs_x.size(0))
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
-            print('Train, {}, {}, {:.6f}, {:.3f}'.format(epoch, it, loss.item(), 100.*correct_Real / train_Size))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
+                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
+                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
 
     epoch_result = test(args, state_info, test_loader, epoch)
     return epoch_result
@@ -70,8 +77,6 @@ def test(args, state_info, Test_loader, epoch):
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
     
     testSize = torch.tensor(0, dtype=torch.float32)
-    Similarity_Scale = torch.tensor(0, dtype=torch.float32)
-    Similarity_Vector = torch.tensor(0, dtype=torch.float32)
     correct_Test = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
     correct_Real2 = torch.tensor(0, dtype=torch.float32)
@@ -81,20 +86,16 @@ def test(args, state_info, Test_loader, epoch):
     for it, (x, y) in enumerate(Test_loader):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
+        y_style_ = y.view(-1,1).repeat(1,n).view(-1)
         
-        perm = torch.randperm(x.size(0))
+        out, out_style = state_info.test(x)
 
-        out1, _ = state_info.forward(x, x)
-        out2, _ = state_info.forward(x, x[perm])
-
-        _, pred = torch.max(out1.softmax(dim=1), 1)
+        _, pred = torch.max(out.softmax(dim=1), 1)
         correct_Real += float(pred.eq(y.data).cpu().sum())
 
-        _, pred = torch.max(out2.softmax(dim=1), 1)
-        correct_Real2 += float(pred.eq(y.data).cpu().sum())
+        _, pred = torch.max(out_style.softmax(dim=1), 1)
+        correct_Real2 += float(pred.eq(y_style_.data).cpu().sum()) // args.n
 
-        # _, pred = torch.max(out.data, 1)
-        # correct_Test += float(pred.eq(y.data).cpu().sum())
         testSize += float(x.size(0))
 
     utils.print_log('Type, Epoch, Batch, Percentage')
@@ -104,6 +105,5 @@ def test(args, state_info, Test_loader, epoch):
     print('Test, {}, {}, {:.3f}, {:.3f}'
           .format(epoch, it, 100.*correct_Real / testSize, 100.*correct_Real2 / testSize))
 
-    # return 100.*correct_Test / testSize
     return (100.*correct_Real / testSize, 100.*correct_Real2 / testSize)
 

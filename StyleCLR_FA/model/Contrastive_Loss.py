@@ -123,16 +123,12 @@ class Semi_Loss(nn.Module):
         style = logits[-b:]
         logits_s = content[:n*size_s]
         logits_u = content[n*size_s:].view(-1, n, content.size(-1)) # size_u, n, Cls
-        y = y.view(-1,1).repeat(1,n).view(-1)
-        loss_s = (self.criterion(logits_s, y) + self.criterion(style, y)) / (n * size_s + b)
+        y_ = y.view(-1,1).repeat(1,n).view(-1)
+        loss_s = (self.criterion(logits_s, y_) + self.criterion(style, y)) / (n * size_s + b)
 
         p_u = F.softmax(logits_u, dim=-1)
         y_hat = p_u.mean(dim=1).unsqueeze(1) # size_u, 1, Cls
         JS_loss = F.kl_div(logits_u, y_hat, reduction="mean")
-
-        # pseudo_u = F.softmax(logits_u / temperature, dim=-1)
-        # y_hat = pseudo_u.mean(dim=1).unsqueeze(1) # size_u, 1, Cls
-        # JS_loss = F.kl_div(logits_u, y_hat, reduction="mean")
 
         pseudo_u = F.softmax(logits_u / temperature, dim=-1).mean(dim=1)
         y_hat_ = pseudo_u.unsqueeze(1).repeat(1,n,1).view(-1, content.size(-1)) # size_u * n, Cls
