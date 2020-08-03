@@ -104,7 +104,9 @@ class ResNet(nn.Module):
 
     def forward_content(self, x, b, n):
         x = self.flatten(self.avgpool(x))
+        print(x.size())
         x = self.f_x(x)
+        print(x.size())
         content = x[:-b]
         style = x[-b:]
         content_loss = self.Content_Contrastive(content, style, b, n)
