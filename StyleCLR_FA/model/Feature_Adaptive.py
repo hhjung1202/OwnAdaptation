@@ -8,7 +8,6 @@ class Adain(nn.Module):
     def calc_mean_std(self, feat, eps=1e-5):
         # eps is a small value added to the variance to avoid divide-by-zero.
         size = feat.size()
-        print(size)
         assert (len(size) == 4)
         N, C = size[:2]
         feat_var = feat.view(N, C, -1).var(dim=2) + eps
@@ -19,14 +18,9 @@ class Adain(nn.Module):
     def forward(self, feature, style_label, b):
 
         _, c, w, h = feature.size()
-        print('1', feature.size())
         style = feature[-b:]
-        print('1', style[0])
-        print(style_label)
         style_feat = style[style_label].squeeze(0)
-        print('1', style_feat[0])
         content_feat = feature[:-b]
-        print('1', content_feat.size())
         
         style_mean, style_std = self.calc_mean_std(style_feat)
         content_mean, content_std = self.calc_mean_std(content_feat)

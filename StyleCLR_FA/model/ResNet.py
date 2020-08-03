@@ -96,7 +96,7 @@ class ResNet(nn.Module):
         # x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
-        style_loss = self.style_contrastive(content, style, style_label, b, n, L_type=self.L_type)
+        style_loss = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
 
         return style_loss
 
