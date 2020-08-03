@@ -39,9 +39,8 @@ class Content_Contrastive(nn.Module):
         print('here3')
         labels = self._get_label(b, n)
         print('here4')
-        # loss = self.criterion(logits, labels)
+        loss = self.criterion(logits, labels)
         print('here5')
-        loss = 100
 
         return loss / (n * b)
 
@@ -88,11 +87,13 @@ class Style_Contrastive(nn.Module):
         return style_loss
 
     def softmin_ce(self, input, target): # y * log(p), p = softmax(-out)
+        print(target)
         log_likelihood = self.softmin(input).log()
         nll_loss = F.nll_loss(log_likelihood, target)
         return nll_loss
 
     def softmax_ce_rev(self, input, target): # y * log(1-p), p = softmax(out)
+        print(target)
         log_likelihood_reverse = torch.log(1 - F.softmax(input, dim=-1))
         nll_loss = F.nll_loss(log_likelihood_reverse, target)
         return nll_loss
@@ -150,6 +151,7 @@ class Semi_Loss(nn.Module):
     def soft_label_cross_entropy(self, input, target, eps=1e-5):
         # input (N, C)
         # target (N, C) with soft label
+        print(target)
         log_likelihood = input.log_softmax(dim=1)
         soft_log_likelihood = target * log_likelihood
         nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
