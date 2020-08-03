@@ -77,6 +77,7 @@ class ResNet(nn.Module):
         (b, c, w, h), size_s = x_.size(), x.size(0)
         n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
+        print(x_.size())
         style_label = self.style_gen(b, n)
 
         for i, name in enumerate(self._forward):
