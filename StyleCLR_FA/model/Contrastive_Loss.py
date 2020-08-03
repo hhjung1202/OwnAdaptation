@@ -39,8 +39,9 @@ class Content_Contrastive(nn.Module):
         print('here3')
         labels = self._get_label(b, n)
         print('here4')
-        loss = self.criterion(logits, labels)
+        # loss = self.criterion(logits, labels)
         print('here5')
+        loss = 100
 
         return loss / (n * b)
 
