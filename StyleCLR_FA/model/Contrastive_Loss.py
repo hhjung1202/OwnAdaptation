@@ -25,6 +25,7 @@ class Content_Contrastive(nn.Module):
         # content size : (b*n, 1, dim)
         # style size : (1, b, dim)
         # v size : (b*n, b)
+        print(content.size(), style.size())
         v = self.similarity(content.unsqueeze(1), style.unsqueeze(0))
         return v
 
