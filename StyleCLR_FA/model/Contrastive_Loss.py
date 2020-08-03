@@ -26,11 +26,16 @@ class Content_Contrastive(nn.Module):
         return v
 
     def forward(self, content, style, b, n):
+        print('here1')
 
         logits = self._cosine_similarity(content, style) # size : (b*n, b)
+        print('here2')
         logits /= self.temperature # softmax temperature
+        print('here3')
         labels = self._get_label(b, n)
+        print('here4')
         loss = self.criterion(logits, labels)
+        print('here5')
 
         return loss / (n * b)
 
