@@ -75,7 +75,7 @@ class ResNet(nn.Module):
         x_ = self.init(x_)
 
         (b, c, w, h), size_s = x_.size(), x.size(0)
-        n = self.n if b >= n else b-1
+        n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
         style_label = self.style_gen(b, n)
 
@@ -133,7 +133,7 @@ class ResNet(nn.Module):
         x_ = self.init(x)
 
         b, c, w, h = x_.size()
-        n = self.n if b >= n else b-1
+        n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
         style_label = self.style_gen(b, n)
 
