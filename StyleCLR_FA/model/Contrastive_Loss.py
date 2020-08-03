@@ -30,6 +30,7 @@ class Content_Contrastive(nn.Module):
         logits = self._cosine_similarity(content, style) # size : (b*n, b)
         logits /= self.temperature # softmax temperature
         labels = self._get_label(b, n)
+        print(labels)
         loss = self.criterion(logits, labels)
 
         return loss / (n * b)
