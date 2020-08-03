@@ -83,6 +83,7 @@ class ResNet(nn.Module):
         print(x_.size())
 
         style_label = self.style_gen(b, n)
+        print(style_label)
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
