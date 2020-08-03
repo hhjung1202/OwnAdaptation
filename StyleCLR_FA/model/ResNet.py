@@ -16,6 +16,7 @@ class ResNet(nn.Module):
         self.style_out = style_out
         self.n = n
         self.L_type = L_type
+        self.LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
 
         index = 0
 
@@ -70,6 +71,7 @@ class ResNet(nn.Module):
         self.Semi_Loss = Semi_Loss(temperature=1.)
 
     def forward(self, x, y, u_x):
+    
 
         x_ = torch.cat([x, u_x], dim=0)
         x_ = self.init(x_)
@@ -77,7 +79,7 @@ class ResNet(nn.Module):
         (b, c, w, h), size_s = x_.size(), x.size(0)
         n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
-        style_label = self.style_gen(b, n)
+        style_label = self.LongTensor(self.style_gen(b, n))
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
