@@ -133,7 +133,7 @@ class Semi_Loss(nn.Module):
         y_hat = p_u.mean(dim=1).unsqueeze(1) # size_u, 1, Cls
         JS_loss = F.kl_div(logits_u, y_hat, reduction="mean")
 
-        pseudo_u = F.softmax(logits_u / temperature, dim=-1).mean(dim=1)
+        pseudo_u = F.softmax(logits_u / self.temperature, dim=-1).mean(dim=1)
         y_hat_ = pseudo_u.unsqueeze(1).repeat(1,n,1).view(-1, content.size(-1)) # size_u * n, Cls
         loss_u = self.soft_label_cross_entropy(logits_u, y_hat_)
 
