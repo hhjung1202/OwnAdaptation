@@ -142,7 +142,6 @@ class Semi_Loss(nn.Module):
     def soft_label_cross_entropy(self, input, target, eps=1e-5):
         # input (N, C)
         # target (N, C) with soft label
-        print('3',target)
         log_likelihood = input.log_softmax(dim=1)
         soft_log_likelihood = target * log_likelihood
         nll_loss = -torch.sum(soft_log_likelihood.mean(dim=0))
