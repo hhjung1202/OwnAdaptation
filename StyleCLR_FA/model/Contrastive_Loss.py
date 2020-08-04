@@ -123,7 +123,7 @@ class Semi_Loss(nn.Module):
     def forward(self, logits, b, n, size_s, y):
         
         content = logits[:-b]
-        style = logits[-b:]
+        style = logits[-b:-b+size_s]
         logits_s = content[:n*size_s]
         logits_u = content[n*size_s:].view(-1, n, content.size(-1)) # size_u, n, Cls
         y_ = y.view(-1,1).repeat(1,n).view(-1)
