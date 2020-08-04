@@ -135,7 +135,7 @@ class Semi_Loss(nn.Module):
 
         pseudo_u = F.softmax(logits_u / self.temperature, dim=-1).mean(dim=1)
         y_hat_ = pseudo_u.unsqueeze(1).repeat(1,n,1).view(-1, content.size(-1)) # size_u * n, Cls
-        loss_u = self.soft_label_cross_entropy(logits_u, y_hat_)
+        loss_u = self.soft_label_cross_entropy(logits_u.view(-1, content.size(-1)), y_hat_)
 
         return loss_s, JS_loss, loss_u
 
