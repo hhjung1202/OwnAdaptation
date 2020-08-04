@@ -15,32 +15,22 @@ class Content_Contrastive(nn.Module):
     
     def _get_label(self, b, n):
         # label gen : (b*n)
-        print(b, n)
         label = self.LongTensor([[_] for _ in range(b)]).repeat(1,n).view(-1)
-        print(label)
-
         return label
 
     def _cosine_similarity(self, content, style):
         # content size : (b*n, 1, dim)
         # style size : (1, b, dim)
         # v size : (b*n, b)
-        print(content.size(), style.size())
         v = self.similarity(content.unsqueeze(1), style.unsqueeze(0))
-        print('0',v.size())
         return v
 
     def forward(self, content, style, b, n):
-        print('here1')
-
+        
         logits = self._cosine_similarity(content, style) # size : (b*n, b)
-        print('here2')
         logits /= self.temperature # softmax temperature
-        print('here3')
         labels = self._get_label(b, n)
-        print('here4')
         loss = self.criterion(logits, labels)
-        print('here5')
 
         return loss / (n * b)
 
@@ -50,6 +40,7 @@ class Style_Contrastive(nn.Module):
         super(Style_Contrastive, self).__init__()
         self.MSELoss = nn.MSELoss()
         self.softmin = nn.Softmin(dim=-1)
+        self.LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
 
     def style_reconstruction(self, content, style, style_label):
         f_c = self.gram_matrix(content) # b*n, ch, ch
@@ -59,41 +50,41 @@ class Style_Contrastive(nn.Module):
         return style_loss
 
     def style_contrastive_ver1(self, content, style, style_label, b, n):
-        f_c = self.gram_matrix(content).view(n,b,-1)             # n, b, ch * ch
-        f_s = self.gram_matrix(style)[style_label].view(n,b,-1)  # n, b, ch * ch
+        f_c = self.gram_matrix(content).view(b,n,-1)             # b, n, ch * ch
+        f_s = self.gram_matrix(style)[style_label].view(b,n,-1)  # b, n, ch * ch
 
-        f_c = f_c.transpose(0,1).repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
-        f_s = f_s.transpose(0,1).repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
+        f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
+        f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
 
         mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n)
+        label = self.LongTensor([_ for _ in range(n)]).repeat(b)
 
         # case 1
-        style_loss = self.softmin_ce(mse, style_label)
+        style_loss = self.softmin_ce(mse, label)
 
         return style_loss
 
     def style_contrastive_ver2(self, content, style, style_label, b, n):
-        f_c = self.gram_matrix(content).view(n,b,-1)             # n, b, ch * ch
+        f_c = self.gram_matrix(content).view(b,n,-1)             # n, b, ch * ch
         f_s = self.gram_matrix(style)[style_label].view(n,b,-1)  # n, b, ch * ch
 
-        f_c = f_c.transpose(0,1).repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
-        f_s = f_s.transpose(0,1).repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
+        f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
+        f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
 
         mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n)
+        label = self.LongTensor([_ for _ in range(n)]).repeat(b)
 
         # case 2
-        style_loss = self.softmax_ce_rev(mse, style_label)
+        style_loss = self.softmax_ce_rev(mse, label)
 
         return style_loss
 
     def softmin_ce(self, input, target): # y * log(p), p = softmax(-out)
-        print('1',target)
         log_likelihood = self.softmin(input).log()
         nll_loss = F.nll_loss(log_likelihood, target)
         return nll_loss
 
     def softmax_ce_rev(self, input, target): # y * log(1-p), p = softmax(out)
-        print('2',target)
         log_likelihood_reverse = torch.log(1 - F.softmax(input, dim=-1))
         nll_loss = F.nll_loss(log_likelihood_reverse, target)
         return nll_loss
