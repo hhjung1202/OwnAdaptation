@@ -88,7 +88,6 @@ def test(args, state_info, Test_loader, epoch):
 
 
         _, pred = torch.max(out.softmax(dim=1), 1)
-        print(pred.size(), y.size())
         correct_Real += float(pred.eq(y.data).cpu().sum())
 
         _, pred = torch.max(out_style.softmax(dim=1), 1)
