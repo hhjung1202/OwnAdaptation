@@ -24,46 +24,45 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
     unlabeled_train_iter = iter(unlabeled_trainloader)
 
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
-    # for it in range(args.iteration):
-    #     try:
-    #         inputs_x, targets_x = labeled_train_iter.next()
-    #     except:
-    #         labeled_train_iter = iter(labeled_trainloader)
-    #         inputs_x, targets_x = labeled_train_iter.next()
+    for it in range(args.iteration):
+        try:
+            inputs_x, targets_x = labeled_train_iter.next()
+        except:
+            labeled_train_iter = iter(labeled_trainloader)
+            inputs_x, targets_x = labeled_train_iter.next()
 
-    #     try:
-    #         inputs_u, _ = unlabeled_train_iter.next()
-    #     except:
-    #         unlabeled_train_iter = iter(unlabeled_trainloader)
-    #         inputs_u, _ = unlabeled_train_iter.next()
+        try:
+            inputs_u, _ = unlabeled_train_iter.next()
+        except:
+            unlabeled_train_iter = iter(unlabeled_trainloader)
+            inputs_u, _ = unlabeled_train_iter.next()
 
-    #     if inputs_x.size(0) is not inputs_u.size(0):
-    #         continue
+        if inputs_x.size(0) is not inputs_u.size(0):
+            continue
 
-    #     inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
-    #     state_info.optim_model.zero_grad()
+        inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
+        state_info.optim_model.zero_grad()
 
-    #     loss_s, JS_loss, loss_u, style_loss, content_loss = state_info.forward(inputs_x, targets_x, inputs_u)
+        loss_s, JS_loss, loss_u, style_loss, content_loss = state_info.forward(inputs_x, targets_x, inputs_u)
 
-    #     total_loss = 0
-    #     if args.loss[0] is 1: total_loss += loss_s;
-    #     if args.loss[1] is 1: total_loss += JS_loss;
-    #     if args.loss[2] is 1: total_loss += loss_u;
-    #     if args.loss[3] is 1: total_loss += style_loss;
-    #     if args.loss[4] is 1: total_loss += content_loss;
+        total_loss = 0
+        if args.loss[0] is 1: total_loss += loss_s;
+        if args.loss[1] is 1: total_loss += JS_loss;
+        if args.loss[2] is 1: total_loss += loss_u;
+        if args.loss[3] is 1: total_loss += style_loss;
+        if args.loss[4] is 1: total_loss += content_loss;
 
-    #     total_loss.backward()
-    #     state_info.optim_model.step()
+        total_loss.backward()
+        state_info.optim_model.step()
 
-    #     if it % 10 == 0:
-    #         utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
-    #             , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
-    #         print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
-    #             , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
+        if it % 10 == 0:
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
+                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
+                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
 
     epoch_result = test(args, state_info, test_loader, epoch)
     return epoch_result
-
 
 
 def test(args, state_info, Test_loader, epoch):
@@ -84,8 +83,6 @@ def test(args, state_info, Test_loader, epoch):
         y_style_ = y.view(-1,1).repeat(1,args.n).view(-1)
         
         out, out_style = state_info.test(x)
-
-
 
         _, pred = torch.max(out.softmax(dim=1), 1)
         correct_Real += float(pred.eq(y.data).cpu().sum())
