@@ -30,7 +30,7 @@ class model_optim_state_info(object):
         return loss_s, JS_loss, loss_u, style_loss, content_loss
 
     def test(self, x):
-        out, out_style = self.model(x, _, _, test=True)
+        out, out_style = self.model(x, None, None, test=True)
         return out, out_style
 
     def model_cuda_init(self):
