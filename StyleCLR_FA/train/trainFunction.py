@@ -45,12 +45,11 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
 
         loss_s, JS_loss, loss_u, style_loss, content_loss = state_info.forward(inputs_x, targets_x, inputs_u)
 
-        total_loss = 0
+        total_loss = style_loss.item()
         if args.loss[0] is 1: total_loss += loss_s.item();
         if args.loss[1] is 1: total_loss += JS_loss.item();
         if args.loss[2] is 1: total_loss += loss_u.item();
-        if args.loss[3] is 1: total_loss += style_loss.item();
-        if args.loss[4] is 1: total_loss += content_loss.item();
+        if args.loss[3] is 1: total_loss += content_loss.item();
 
         total_loss.backward()
         state_info.optim_model.step()
