@@ -81,7 +81,7 @@ def test(args, state_info, Test_loader, epoch):
     for it, (x, y) in enumerate(Test_loader):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        y_style_ = y.view(-1,1).repeat(1,n).view(-1)
+        y_style_ = y.view(-1,1).repeat(1,args.n).view(-1)
         
         out, out_style = state_info.test(x)
 
