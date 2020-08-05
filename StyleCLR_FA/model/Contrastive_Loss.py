@@ -131,10 +131,7 @@ class Semi_Loss(nn.Module):
 
         p_u = F.softmax(logits_u, dim=-1)
         y_hat = p_u.mean(dim=1).unsqueeze(1).repeat(1,n,1) # size_u, 1, Cls
-        print(logits_u.size())
-        print(y_hat.size())
         JS_loss = F.kl_div(logits_u, y_hat, reduction="mean")
-        print(JS_loss.size())
 
         pseudo_u = F.softmax(logits_u / self.temperature, dim=-1).mean(dim=1)
         y_hat_ = pseudo_u.unsqueeze(1).repeat(1,n,1).view(-1, content.size(-1)) # size_u * n, Cls
