@@ -70,8 +70,9 @@ class ResNet(nn.Module):
         self.Style_Contrastive = Style_Contrastive()
         self.Semi_Loss = Semi_Loss(temperature=1.)
 
-    def forward(self, x, y, u_x):
-    
+    def forward(self, x, y, u_x, test=False):
+        if test:
+            return self.test_(x), self.test_style(x)
 
         x_ = torch.cat([x, u_x], dim=0)
         x_ = self.init(x_)
