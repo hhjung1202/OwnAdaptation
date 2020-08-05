@@ -95,7 +95,7 @@ class Style_Contrastive(nn.Module):
             style_loss = self.style_contrastive_ver1(content, style, style_label, b, n)
         elif L_type == "c2":
             style_loss = self.style_contrastive_ver2(content, style, style_label, b, n)
-        else:
+        elif L_type == "c3":
             style_loss = self.style_reconstruction(content, style, style_label)
 
         return style_loss
