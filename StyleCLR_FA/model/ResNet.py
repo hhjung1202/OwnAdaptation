@@ -147,7 +147,7 @@ class ResNet(nn.Module):
         x_ = self.flatten(self.avgpool(x_[:-b]))
         out = self.linear(x_)
 
-        return out[:-b]
+        return out
 
     def test_(self, x):
 
@@ -161,10 +161,10 @@ class ResNet(nn.Module):
             layer = getattr(self, name)
             x_ = layer(x_, style_label, b)
 
-        x_ = self.flatten(self.avgpool(x_))
+        x_ = self.flatten(self.avgpool(x_[:-b]))
         out = self.linear(x_)
 
-        return out[:-b]
+        return out
 
 
 def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10, n=4, L_type='c1'):
