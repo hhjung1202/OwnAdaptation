@@ -52,8 +52,16 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         if args.loss[3] is 1: total_loss += style_loss;
         if args.loss[4] is 1: total_loss += content_loss;
 
-        print(total_loss)
-        total_loss.backward()
+        loss_s.backward(retain_graph=True)
+        print("1")
+        JS_loss.backward(retain_graph=True)
+        print("2")
+        loss_u.backward(retain_graph=True)
+        print("3")
+        style_loss.backward(retain_graph=True)
+        print("4")
+        content_loss.backward(retain_graph=True)
+        print("5")
         state_info.optim_model.step()
 
         _, pred = torch.max(out.softmax(dim=1), 1)
