@@ -57,9 +57,7 @@ class ResNet(nn.Module):
         self.flatten = Flatten()
 
         self.g_x = nn.Sequential(
-            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, bias=False),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, bias=False),
+            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0, bias=False),
         )
         self.f_x = nn.Sequential(
             nn.Linear(512, 512),
@@ -81,22 +79,24 @@ class ResNet(nn.Module):
         n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
         style_label = self.LongTensor(self.style_gen(b, n))
+        style_loss = None
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
             x_ = layer(x_, style_label, b)
 
-            # if i+1 is self.style_out: # 2, 4, 6, 8
-            #     style_loss = self.forward_style(x, style_label, b, n)
+            if i is 3: # 1 3 5 7
+                style_loss = self.forward_style(x_, style_label, b, n)
 
-        style_loss = self.forward_style(x_, style_label, b, n)
+        if style_loss is None:
+            style_loss = self.forward_style(x_, style_label, b, n)
         content_loss = self.forward_content(x_, b, n)
         loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
 
         return loss_s, JS_loss, loss_u, style_loss, content_loss
 
     def forward_style(self, x, style_label, b, n):
-        # x = self.g_x(x)
+        x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
         style_loss = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
