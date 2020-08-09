@@ -58,6 +58,8 @@ class ResNet(nn.Module):
 
         self.g_x = nn.Sequential(
             nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 64, kernel_size=1, stride=1, padding=0, bias=False),
         )
         self.f_x = nn.Sequential(
             nn.Linear(512, 512),

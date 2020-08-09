@@ -47,6 +47,7 @@ class Style_Contrastive(nn.Module):
         f_s = self.gram_matrix(style) # b, ch, ch
         adaptive_s = f_s[style_label] # b*n, ch, ch
         style_loss = self.MSELoss(f_c, adaptive_s)
+        print(style_loss)
         return style_loss
 
     def style_contrastive_ver1(self, content, style, style_label, b, n):
