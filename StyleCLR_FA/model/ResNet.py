@@ -75,9 +75,7 @@ class ResNet(nn.Module):
         self.flatten = Flatten()
 
         self.g_x = nn.Sequential(
-            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0, bias=False),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(64, 64, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, bias=False),
         )
         self.f_x = nn.Sequential(
             nn.Linear(512, 512),
@@ -116,7 +114,7 @@ class ResNet(nn.Module):
         return loss_s, JS_loss, loss_u, style_loss, content_loss
 
     def forward_style(self, x, style_label, b, n):
-        # x = self.g_x(x)
+        x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
         style_loss = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
