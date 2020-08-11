@@ -9,6 +9,24 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 
+class Decoder(nn.Module):
+    def __init__(self):
+        super(Decoder, self).__init__()
+
+        self.model = nn.Sequential(
+            nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1),
+            nn.Tanh()
+        )
+
+    def forward(self, x):
+        return self.model(x)
+
 class ResNet(nn.Module):
     def __init__(self, blocks, num_blocks, style_out, num_classes, n, L_type):
         super(ResNet, self).__init__()
@@ -98,7 +116,7 @@ class ResNet(nn.Module):
         return loss_s, JS_loss, loss_u, style_loss, content_loss
 
     def forward_style(self, x, style_label, b, n):
-        x = self.g_x(x)
+        # x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
         style_loss = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
