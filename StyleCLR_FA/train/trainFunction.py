@@ -55,11 +55,11 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         total_loss.backward()
         state_info.optim_model.step()
 
-        # if it % 10 == 0:
-        utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
-            , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
-        print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
-            , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
+        if it % 10 == 0:
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
+                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
+                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
 
     epoch_result = test(args, state_info, test_loader, epoch)
     return epoch_result
