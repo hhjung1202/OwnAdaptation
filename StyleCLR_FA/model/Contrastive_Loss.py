@@ -50,8 +50,8 @@ class Style_Contrastive(nn.Module):
         return style_loss * 1e+10
 
     def style_contrastive_ver1(self, content, style, style_label, b, n):
-        f_c = self.gram_matrix(content).view(b,n,-1)             # b, n, ch * ch
-        f_s = self.gram_matrix(style)[style_label].view(b,n,-1)  # b, n, ch * ch
+        f_c = F.normalize(self.gram_matrix(content), p=1, dim=-1).view(b,n,-1)             # b, n, ch * ch
+        f_s = F.normalize(self.gram_matrix(style), p=1, dim=-1)[style_label].view(b,n,-1)  # b, n, ch * ch
 
         f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
         f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
@@ -65,8 +65,8 @@ class Style_Contrastive(nn.Module):
         return style_loss
 
     def style_contrastive_ver2(self, content, style, style_label, b, n):
-        f_c = self.gram_matrix(content).view(b,n,-1)             # n, b, ch * ch
-        f_s = self.gram_matrix(style)[style_label].view(n,b,-1)  # n, b, ch * ch
+        f_c = F.normalize(self.gram_matrix(content), p=1, dim=-1).view(b,n,-1)             # b, n, ch * ch
+        f_s = F.normalize(self.gram_matrix(style), p=1, dim=-1)[style_label].view(b,n,-1)  # b, n, ch * ch
 
         f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
         f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
