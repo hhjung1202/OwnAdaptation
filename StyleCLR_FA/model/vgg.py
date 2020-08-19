@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from .Feature_Adaptive import *
 
 class Flatten(nn.Module):
     def forward(self, x):
