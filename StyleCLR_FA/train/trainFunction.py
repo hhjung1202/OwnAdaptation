@@ -42,24 +42,20 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
 
         inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
         state_info.optim_model.zero_grad()
-
-        loss_s, JS_loss, loss_u, style_loss, content_loss = state_info.forward(inputs_x, targets_x, inputs_u)
-
+        loss_a, loss_c, loss_s = state_info.forward(x)
         total_loss = 0
-        if args.loss[0] is 1: total_loss += loss_s;
-        if args.loss[1] is 1: total_loss += JS_loss;
-        if args.loss[2] is 1: total_loss += loss_u;
-        if args.loss[3] is 1: total_loss += style_loss;
-        if args.loss[4] is 1: total_loss += content_loss;
+        if args.loss[0] is 1: total_loss += loss_a;
+        if args.loss[1] is 1: total_loss += loss_c;
+        if args.loss[2] is 1: total_loss += loss_s;
 
         total_loss.backward()
         state_info.optim_model.step()
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
-                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_s.item()
-                , JS_loss.item(), loss_u.item(), style_loss.item(), content_loss.item()))
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_a.item()
+                , loss_c.item(), loss_s.item()))
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_a.item()
+                , loss_c.item(), loss_s.item()))
 
     epoch_result = test(args, state_info, test_loader, epoch)
     return epoch_result
@@ -80,17 +76,20 @@ def test(args, state_info, Test_loader, epoch):
     for it, (x, y) in enumerate(Test_loader):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        y_style_ = y.view(-1,1).repeat(1,args.n).view(-1)
+        # y_style_ = y.view(-1,1).repeat(1,args.n).view(-1)
         
-        out, out_style = state_info.test(x)
+        content, style, recon, adain = state_info.test(x)
 
-        _, pred = torch.max(out.softmax(dim=1), 1)
-        correct_Real += float(pred.eq(y.data).cpu().sum())
+        # _, pred = torch.max(out.softmax(dim=1), 1)
+        # correct_Real += float(pred.eq(y.data).cpu().sum())
 
-        _, pred = torch.max(out_style.softmax(dim=1), 1)
-        correct_Real2 += float(pred.eq(y_style_.data).cpu().sum()) // args.n
+        # _, pred = torch.max(out_style.softmax(dim=1), 1)
+        # correct_Real2 += float(pred.eq(y_style_.data).cpu().sum()) // args.n
 
-        testSize += float(x.size(0))
+        # testSize += float(x.size(0))
+        make_sample_image(content, style, recon, adain, epoch)
+
+        break
 
     utils.print_log('Type, Epoch, Batch, Percentage')
 
@@ -101,3 +100,31 @@ def test(args, state_info, Test_loader, epoch):
 
     return (100.*correct_Real / testSize, 100.*correct_Real2 / testSize)
 
+def make_sample_image(content, style, recon, adain, epoch):
+    """Saves a grid of generated digits ranging from 0 to n_classes"""
+    # Sample noise
+    img_path = utils.make_directory(os.path.join(utils.default_model_dir, 'images/'))
+    content, style, recon, adain = to_data(content), to_data(style), to_data(recon), to_data(adain),
+    merged = merge_images(content, style, recon, adain)
+    save_image(merged.data, os.path.join(img_path, '%d.png' % epoch), normalize=True)
+
+def merge_images(content, style, recon, adain, row=10):
+    _, _, h, w = content.shape
+    merged = np.zeros([3, row*h, row*w*4])
+    for idx, (c, s, r, a) in enumerate(zip(content, style, recon, adain)):
+        i = idx // row
+        j = idx % row
+        if i is row:
+            break
+        merged[:, i*h:(i+1)*h, (j*4)*h:(j*4+1)*h] = c
+        merged[:, i*h:(i+1)*h, (j*4+1)*h:(j*4+2)*h] = s
+        merged[:, i*h:(i+1)*h, (j*4+2)*h:(j*4+3)*h] = r
+        merged[:, i*h:(i+1)*h, (j*4+3)*h:(j*4+4)*h] = a
+
+    return torch.from_numpy(merged)
+
+def to_data(x):
+    """Converts variable to numpy."""
+    if torch.cuda.is_available():
+        x = x.cpu()
+    return x.data.numpy()

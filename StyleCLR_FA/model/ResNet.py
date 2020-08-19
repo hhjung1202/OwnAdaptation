@@ -8,25 +8,6 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
-
-class Decoder(nn.Module):
-    def __init__(self):
-        super(Decoder, self).__init__()
-
-        self.model = nn.Sequential(
-            nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(32, 3, kernel_size=3, stride=1, padding=1),
-            nn.Tanh()
-        )
-
-    def forward(self, x):
-        return self.model(x)
-
 class ResNet(nn.Module):
     def __init__(self, blocks, num_blocks, style_out, num_classes, n, L_type):
         super(ResNet, self).__init__()

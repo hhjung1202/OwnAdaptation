@@ -24,14 +24,23 @@ class model_optim_state_info(object):
             self.model = ResNet18(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
         elif args.model == "ResNet34":
             self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
+        elif args.model == "vgg":
+            enc = vgg.vgg
+            dec = vgg.decoder
+            self.model = vgg.Net(enc, dec)
 
-    def forward(self, x, y, u_x):
-        loss_s, JS_loss, loss_u, style_loss, content_loss = self.model(x, y, u_x)
-        return loss_s, JS_loss, loss_u, style_loss, content_loss
+
+    # def forward(self, x, y, u_x):
+    #     loss_s, JS_loss, loss_u, style_loss, content_loss = self.model(x, y, u_x)
+    #     return loss_s, JS_loss, loss_u, style_loss, content_loss
+
+    def forward(self, x):
+        loss_a, loss_c, loss_s = self.model(x)
+        return loss_a, loss_c, loss_s
 
     def test(self, x):
-        out, out_style = self.model(x, None, None, test=True)
-        return out, out_style
+        content, style, recon, adain = self.model(x, test=True)
+        return content, style, recon, adain
 
     def model_cuda_init(self):
         if torch.cuda.is_available():

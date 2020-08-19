@@ -54,7 +54,7 @@ criterion = torch.nn.CrossEntropyLoss()
 
 def loss_function(x_hat, x):
     BCE = criterion_BCE(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
-    return BCEpy
+    return BCE
 
 class Memory(object):
     def __init__(self, args):
