@@ -42,7 +42,7 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
 
         inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
         state_info.optim_model.zero_grad()
-        loss_a, loss_c, loss_s = state_info.forward(x)
+        loss_a, loss_c, loss_s = state_info.forward(inputs_x)
         total_loss = 0
         if args.loss[0] is 1: total_loss += loss_a;
         if args.loss[1] is 1: total_loss += loss_c;
