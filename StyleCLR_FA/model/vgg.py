@@ -122,10 +122,14 @@ class Net(nn.Module):
     def __init__(self, encoder, decoder):
         super(Net, self).__init__()
         enc_layers = list(encoder.children())
-        self.enc_1 = nn.Sequential(*enc_layers[:4])  # input -> relu1_1
-        self.enc_2 = nn.Sequential(*enc_layers[4:11])  # relu1_1 -> relu2_1
-        self.enc_3 = nn.Sequential(*enc_layers[11:18])  # relu2_1 -> relu3_1
-        self.enc_4 = nn.Sequential(*enc_layers[18:31])  # relu3_1 -> relu4_1
+        self.enc_1 = nn.Sequential(*enc_layers[:7])  # input -> relu1_1
+        self.enc_2 = nn.Sequential(*enc_layers[7:17])  # relu1_1 -> relu2_1
+        self.enc_3 = nn.Sequential(*enc_layers[17:27])  # relu2_1 -> relu3_1
+        self.enc_4 = nn.Sequential(*enc_layers[27:45])  # relu3_1 -> relu4_1
+        # self.enc_1 = nn.Sequential(*enc_layers[:4])  # input -> relu1_1
+        # self.enc_2 = nn.Sequential(*enc_layers[4:11])  # relu1_1 -> relu2_1
+        # self.enc_3 = nn.Sequential(*enc_layers[11:18])  # relu2_1 -> relu3_1
+        # self.enc_4 = nn.Sequential(*enc_layers[18:31])  # relu3_1 -> relu4_1
         self.decoder = decoder
         self.encoder = encoder
         self.mse_loss = nn.MSELoss()
