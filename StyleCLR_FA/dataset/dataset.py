@@ -28,15 +28,15 @@ def Semi_Cifar10_dataset(args):
     ])
     
 
-    base_dataset = datasets.CIFAR10(root, train=True, download=True, transform=transform_train)
+    base_dataset = datasets.CIFAR10(root, train=True, download=True)
     train_labeled_idxs, train_unlabeled_idxs = train_split(base_dataset.targets, int(args.n_labeled/10))
 
-    train_labeled_dataset = CIFAR10_labeled(root, train_labeled_idxs, train=True)
-    train_unlabeled_dataset = CIFAR10_unlabeled(root, train_unlabeled_idxs, train=True)
+    train_labeled_dataset = CIFAR10_labeled(root, None, train=True, transform=transform_train)
+    train_unlabeled_dataset = CIFAR10_unlabeled(root, train_unlabeled_idxs, train=True, transform=transform_train)
     test_dataset = CIFAR10_labeled(root, train=False, transform=transform_test, download=True)
 
     print ("#Labeled: {} #Unlabeled: {}".format(len(train_labeled_idxs), len(train_unlabeled_idxs)))
-    return base_dataset, train_unlabeled_dataset, test_dataset
+    return train_labeled_dataset, train_unlabeled_dataset, test_dataset
     
 
 def train_split(labels, n_labeled_per_class):
