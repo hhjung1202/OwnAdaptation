@@ -25,9 +25,9 @@ class model_optim_state_info(object):
         elif args.model == "ResNet34":
             self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
         elif args.model == "vgg":
-            enc = vgg.vgg
-            dec = vgg.decoder
-            self.model = vgg.Net(enc, dec)
+            enc = vgg
+            dec = decoder
+            self.model = Net(enc, dec)
 
 
     # def forward(self, x, y, u_x):
