@@ -42,8 +42,6 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         if inputs_x.size(0) is not inputs_u.size(0):
             continue
 
-        print(inputs_x[0])
-
         inputs_x, inputs_u, targets_x = to_var(inputs_x, FloatTensor), to_var(inputs_u, FloatTensor), to_var(targets_x, LongTensor)
         state_info.optim_model.zero_grad()
         loss_a, loss_c, loss_s = state_info.forward(inputs_x)
