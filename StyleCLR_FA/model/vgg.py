@@ -37,6 +37,7 @@ decoder = nn.Sequential(
     nn.ReLU(),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(64, 3, (3, 3)),
+    nn.Tanh(),
 )
 
 vgg = nn.Sequential(
@@ -148,7 +149,6 @@ class Net(nn.Module):
                self.mse_loss(input_std, target_std)
 
     def calc_reconstruction_loss(self, x_hat, x):
-        print(x_hat.size(), x.size())
         BCE = self.bce_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
         return BCE
 
