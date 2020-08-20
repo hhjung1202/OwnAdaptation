@@ -37,7 +37,7 @@ decoder = nn.Sequential(
     nn.ReLU(),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(64, 3, (3, 3)),
-    nn.Tanh(),
+    nn.Sigmoid(),
 )
 
 vgg = nn.Sequential(
