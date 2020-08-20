@@ -7,15 +7,6 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(x.size(0), -1)
 
-class Print(nn.Module):
-    def __init__(self, i):
-        super(Print, self).__init__()
-        self.i = i
-    def forward(self, x):
-        print(self.i, x.size())
-        return x
-
-
 decoder = nn.Sequential(
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(512, 256, (3, 3)),
@@ -50,48 +41,35 @@ decoder = nn.Sequential(
 
 vgg = nn.Sequential(
     nn.Conv2d(3, 3, (1, 1)),
-    Print(1),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(3, 64, (3, 3)),
-    Print(2),
     nn.ReLU(),  # relu1-1
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(64, 64, (3, 3)),
-    Print(3),
     nn.ReLU(),  # relu1-2
     nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
-    Print(4),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(64, 128, (3, 3)),
-    Print(5),
     nn.ReLU(),  # relu2-1
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(128, 128, (3, 3)),
-    Print(6),
     nn.ReLU(),  # relu2-2
     nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
-    Print(7),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(128, 256, (3, 3)),
-    Print(8),
     nn.ReLU(),  # relu3-1
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(256, 256, (3, 3)),
-    Print(9),
     nn.ReLU(),  # relu3-2
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(256, 256, (3, 3)),
-    Print(10),
     nn.ReLU(),  # relu3-3
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(256, 256, (3, 3)),
-    Print(11),
     nn.ReLU(),  # relu3-4
     nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
-    Print(12),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(256, 512, (3, 3)),
-    Print(13),
     nn.ReLU(),  # relu4-1, this is the last layer used
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(512, 512, (3, 3)),
@@ -122,14 +100,14 @@ class Net(nn.Module):
     def __init__(self, encoder, decoder):
         super(Net, self).__init__()
         enc_layers = list(encoder.children())
-        self.enc_1 = nn.Sequential(*enc_layers[:7])  # input -> relu1_1
-        self.enc_2 = nn.Sequential(*enc_layers[7:17])  # relu1_1 -> relu2_1
-        self.enc_3 = nn.Sequential(*enc_layers[17:27])  # relu2_1 -> relu3_1
-        self.enc_4 = nn.Sequential(*enc_layers[27:45])  # relu3_1 -> relu4_1
-        # self.enc_1 = nn.Sequential(*enc_layers[:4])  # input -> relu1_1
-        # self.enc_2 = nn.Sequential(*enc_layers[4:11])  # relu1_1 -> relu2_1
-        # self.enc_3 = nn.Sequential(*enc_layers[11:18])  # relu2_1 -> relu3_1
-        # self.enc_4 = nn.Sequential(*enc_layers[18:31])  # relu3_1 -> relu4_1
+        # self.enc_1 = nn.Sequential(*enc_layers[:7])  # input -> relu1_1
+        # self.enc_2 = nn.Sequential(*enc_layers[7:17])  # relu1_1 -> relu2_1
+        # self.enc_3 = nn.Sequential(*enc_layers[17:27])  # relu2_1 -> relu3_1
+        # self.enc_4 = nn.Sequential(*enc_layers[27:45])  # relu3_1 -> relu4_1
+        self.enc_1 = nn.Sequential(*enc_layers[:4])  # input -> relu1_1
+        self.enc_2 = nn.Sequential(*enc_layers[4:11])  # relu1_1 -> relu2_1
+        self.enc_3 = nn.Sequential(*enc_layers[11:18])  # relu2_1 -> relu3_1
+        self.enc_4 = nn.Sequential(*enc_layers[18:31])  # relu3_1 -> relu4_1
         self.decoder = decoder
         self.encoder = encoder
         self.mse_loss = nn.MSELoss()
@@ -170,6 +148,7 @@ class Net(nn.Module):
                self.mse_loss(input_std, target_std)
 
     def calc_reconstruction_loss(self, x_hat, x):
+        print(x_hat.size(), x.size())
         BCE = self.bce_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
         return BCE
 
