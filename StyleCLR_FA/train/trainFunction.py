@@ -3,6 +3,7 @@ from torch.autograd import Variable
 import utils
 import torch.nn.functional as F
 import numpy as np
+import os
 
 def to_var(x, dtype):
     return Variable(x.type(dtype))

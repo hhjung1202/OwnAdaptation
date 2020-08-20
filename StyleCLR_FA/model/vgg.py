@@ -149,7 +149,7 @@ class Net(nn.Module):
                self.mse_loss(input_std, target_std)
 
     def calc_reconstruction_loss(self, x_hat, x):
-        BCE = self.bce_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
+        BCE = self.mse_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
         return BCE
 
     def style_gen(self, batch_size):
