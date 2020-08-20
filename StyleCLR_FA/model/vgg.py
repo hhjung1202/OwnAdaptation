@@ -37,7 +37,7 @@ decoder = nn.Sequential(
     nn.ReLU(),
     nn.ReflectionPad2d((1, 1, 1, 1)),
     nn.Conv2d(64, 3, (3, 3)),
-    nn.Sigmoid(),
+    nn.Tanh(),
 )
 
 vgg = nn.Sequential(
@@ -145,9 +145,8 @@ class Net(nn.Module):
                self.mse_loss(input_std, target_std)
 
     def calc_reconstruction_loss(self, x_hat, x):
-        BCE = self.mse_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
-        print(x_hat[0], x[0])
-        return BCE
+        MSE = self.mse_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
+        return MSE
 
     def style_gen(self, batch_size):
         i = torch.randint(1, batch_size, (1,), device=self.device)[0]

@@ -17,12 +17,14 @@ def Semi_Cifar10_dataset(args):
         transforms.RandomCrop(32, padding=4),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
-        
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
     ])
     
 
