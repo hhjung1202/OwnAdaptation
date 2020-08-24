@@ -54,9 +54,9 @@ def train(args, state_info, labeled_trainloader, unlabeled_trainloader, test_loa
         state_info.optim_model.step()
 
         if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_a.item()
+            utils.print_log('Train, {}, {}, {:.6f}, {:.6f}, {:.15f}, {:.15f}'.format(epoch, it, total_loss.item(), loss_a.item()
                 , loss_c.item(), loss_s.item()))
-            print('Train, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}'.format(epoch, it, total_loss.item(), loss_a.item()
+            print('Train, {}, {}, {:.6f}, {:.6f}, {:.15f}, {:.15f}'.format(epoch, it, total_loss.item(), loss_a.item()
                 , loss_c.item(), loss_s.item()))
 
     epoch_result = test(args, state_info, test_loader, epoch)
@@ -88,7 +88,7 @@ def test(args, state_info, Test_loader, epoch):
         # _, pred = torch.max(out_style.softmax(dim=1), 1)
         # correct_Real2 += float(pred.eq(y_style_.data).cpu().sum()) // args.n
 
-        # testSize += float(x.size(0))
+        testSize += float(x.size(0))
         make_sample_image(content, style, recon, adain, epoch)
 
         break
