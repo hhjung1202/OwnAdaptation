@@ -107,16 +107,16 @@ class Net(nn.Module):
         self.enc_4 = nn.Sequential(*enc_layers[18:31])  # relu3_1 -> relu4_1
         self.decoder = decoder
         self.encoder = encoder
-        self.mse_loss = nn.MSELoss()
+        self.mse_loss = nn.MSELoss(reduction='sum')
         self.bce_loss = torch.nn.BCELoss(reduction='sum')
 
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
         # fix the encoder
-        for name in ['enc_1', 'enc_2', 'enc_3', 'enc_4']:
-            for param in getattr(self, name).parameters():
-                param.requires_grad = False
+        # for name in ['enc_1', 'enc_2', 'enc_3', 'enc_4']:
+        #     for param in getattr(self, name).parameters():
+        #         param.requires_grad = False
 
     def encode_with_intermediate(self, input):
         results = [input]
@@ -146,7 +146,7 @@ class Net(nn.Module):
 
     def calc_reconstruction_loss(self, x_hat, x):
         MSE = self.mse_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
-        return MSE
+        return MSE / x.size(0)
 
     def style_gen(self, batch_size):
         i = torch.randint(1, batch_size, (1,), device=self.device)[0]
