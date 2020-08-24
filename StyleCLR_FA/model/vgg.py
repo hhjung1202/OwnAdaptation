@@ -107,7 +107,7 @@ class Net(nn.Module):
         self.enc_4 = nn.Sequential(*enc_layers[18:31])  # relu3_1 -> relu4_1
         self.decoder = decoder
         self.encoder = encoder
-        self.mse_loss = nn.MSELoss(reduction='sum')
+        self.mse_loss = nn.MSELoss()
         self.bce_loss = torch.nn.BCELoss(reduction='sum')
 
 
@@ -146,7 +146,7 @@ class Net(nn.Module):
 
     def calc_reconstruction_loss(self, x_hat, x):
         MSE = self.mse_loss(x_hat.view(x_hat.size(0), -1), x.view(x.size(0), -1))
-        return MSE / x.size(0)
+        return MSE
 
     def style_gen(self, batch_size):
         i = torch.randint(1, batch_size, (1,), device=self.device)[0]
