@@ -67,14 +67,13 @@ class ResNet(nn.Module):
         self.Style_Contrastive = Style_Contrastive()
         self.Semi_Loss = Semi_Loss(temperature=1.)
 
-    def forward(self, x, y, u_x, test=False):
+    def forward(self, x_, test=False):
         if test:
             return self.test_(x), self.test_style(x)
 
-        x_ = torch.cat([x, u_x], dim=0)
         x_ = self.init(x_)
 
-        (b, c, w, h), size_s = x_.size(), x.size(0)
+        b, c, w, h = x_.size()
         n = self.n if b >= self.n else b-1
         x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
         style_label = self.LongTensor(self.style_gen(b, n))
@@ -90,9 +89,9 @@ class ResNet(nn.Module):
         if style_loss is None:
             style_loss = self.forward_style(x_, style_label, b, n)
         content_loss = self.forward_content(x_, b, n)
-        loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
+        # loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
 
-        return loss_s, JS_loss, loss_u, style_loss, content_loss
+        return style_loss, content_loss
 
     def forward_style(self, x, style_label, b, n):
         # x = self.g_x(x)

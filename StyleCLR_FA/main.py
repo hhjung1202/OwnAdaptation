@@ -4,8 +4,8 @@ import os
 import torch.backends.cudnn as cudnn
 import time
 import utils
-from dataset import *
 from train import *
+import dataset
 
 parser = argparse.ArgumentParser(description='PyTorch Noise Label Training')
 
@@ -27,12 +27,12 @@ parser.add_argument('--b1', type=float, default=0.5, help='adam: decay of first 
 parser.add_argument('--b2', type=float, default=0.999, help='adam: decay of first order momentum of gradient')
 parser.add_argument('--img-size', type=int, default=32, help='input image width, height size')
 parser.add_argument('--m', type=int, default=0, help='latent selection(0 to n)')
-parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 parser.add_argument('--case', default=0, type=int, metavar='N', help='case')
 parser.add_argument('--n-labeled', default=5000, type=int, metavar='N', help='semi labeled')
 parser.add_argument('--iteration', type=int, default=512, help='Iteration')
 parser.add_argument('--style', default=0, type=int, metavar='N', help='post style')
 parser.add_argument('-s', '--serial', nargs='+', type=int, help='Block component: 0, 1, 2, 3')
+parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 
 parser.add_argument('--n', type=int, default=4, help='Style count')
 parser.add_argument('--type', default='c1', type=str, help='c1 : softmin, c2 : 1-p, c3 : reconstruction')
@@ -53,9 +53,10 @@ else:
 def main():
     global args, best_prec_result
 
-    train_labeled_dataset, train_unlabeled_dataset, test_dataset = dataset_selector()
+    Train_loader, Test_loader, chIn, clsN = dataset_selector()
 
-    args.clsN = 10
+    args.chIn = chIn
+    args.clsN = clsN
     args.milestones = [80,120]
     
     state_info = utils.model_optim_state_info()
@@ -71,10 +72,10 @@ def main():
         print("NO GPU")
 
     state_info.optimizer_init(args)
-    train_MEM(args, state_info, train_labeled_dataset, train_unlabeled_dataset, test_dataset)
+    train_MEM(args, state_info, Train_loader, Test_loader)
 
 def dataset_selector():
-    return Semi_Cifar10_dataset(args)
+    return dataset.Cifar10_loader(args)
 
 if __name__=='__main__':
     main()

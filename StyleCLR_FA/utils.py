@@ -30,13 +30,13 @@ class model_optim_state_info(object):
             self.model = Net(enc, dec)
 
 
-    # def forward(self, x, y, u_x):
-    #     loss_s, JS_loss, loss_u, style_loss, content_loss = self.model(x, y, u_x)
-    #     return loss_s, JS_loss, loss_u, style_loss, content_loss
-
     def forward(self, x):
-        loss_a, loss_c, loss_s = self.model(x)
-        return loss_a, loss_c, loss_s
+        style_loss, content_loss = self.model(x)
+        return style_loss, content_loss
+
+    # def forward(self, x):
+    #     loss_a, loss_c, loss_s = self.model(x)
+    #     return loss_a, loss_c, loss_s
 
     def test(self, x):
         content, style, recon, adain = self.model(x, test=True)
