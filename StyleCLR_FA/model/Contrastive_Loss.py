@@ -56,12 +56,12 @@ class Style_Contrastive(nn.Module):
         f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
         f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
 
-        mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n)
+        mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n) * 1e-1
 
         label = self.LongTensor([_ for _ in range(n)]).repeat(b)
 
         # case 1
-        style_loss = self.softmin_ce(mse, label)
+        style_loss = self.softmin_ce(mse, label) 
         return style_loss
 
     def style_contrastive_ver2(self, content, style, style_label, b, n, weight=1e+10):
@@ -71,7 +71,7 @@ class Style_Contrastive(nn.Module):
         f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
         f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
 
-        mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n)
+        mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n) * 1e-1
         
         label = self.LongTensor([_ for _ in range(n)]).repeat(b)
 
@@ -81,24 +81,24 @@ class Style_Contrastive(nn.Module):
 
     def softmin_ce(self, input, target): # y * log(p), p = softmax(-out)
         likelihood = self.softmin(input)
-        print(self.softmin(input * 1e-5).var(dim=1).mean())
-        print(self.softmin(input * 1e-4).var(dim=1).mean())
-        print(self.softmin(input * 1e-3).var(dim=1).mean())
-        print(self.softmin(input * 1e-2).var(dim=1).mean())
-        print(self.softmin(input * 1e-1).var(dim=1).mean())
-        print(self.softmin(input).var(dim=1).mean())
+        # print(self.softmin(input * 1e-5).var(dim=1).mean())
+        # print(self.softmin(input * 1e-4).var(dim=1).mean())
+        # print(self.softmin(input * 1e-3).var(dim=1).mean())
+        # print(self.softmin(input * 1e-2).var(dim=1).mean())
+        # print(self.softmin(input * 1e-1).var(dim=1).mean())
+        # print(self.softmin(input).var(dim=1).mean())
         log_likelihood = likelihood.log()
         nll_loss = F.nll_loss(log_likelihood, target)
         return nll_loss
 
     def softmax_ce_rev(self, input, target): # y * log(1-p), p = softmax(out)
         likelihood = F.softmax(input, dim=-1)
-        print(F.softmax(input * 1e-5, dim=-1).var(dim=1).mean())
-        print(F.softmax(input * 1e-4, dim=-1).var(dim=1).mean())
-        print(F.softmax(input * 1e-3, dim=-1).var(dim=1).mean())
-        print(F.softmax(input * 1e-2, dim=-1).var(dim=1).mean())
-        print(F.softmax(input * 1e-1, dim=-1).var(dim=1).mean())
-        print(F.softmax(input, dim=-1).var(dim=1).mean())
+        # print(F.softmax(input * 1e-5, dim=-1).var(dim=1).mean())
+        # print(F.softmax(input * 1e-4, dim=-1).var(dim=1).mean())
+        # print(F.softmax(input * 1e-3, dim=-1).var(dim=1).mean())
+        # print(F.softmax(input * 1e-2, dim=-1).var(dim=1).mean())
+        # print(F.softmax(input * 1e-1, dim=-1).var(dim=1).mean())
+        # print(F.softmax(input, dim=-1).var(dim=1).mean())
         log_likelihood_reverse = torch.log(1 - likelihood)
         nll_loss = F.nll_loss(log_likelihood_reverse, target)
         return nll_loss
