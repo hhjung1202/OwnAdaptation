@@ -21,9 +21,6 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
     # train
     state_info.model.train()
 
-    labeled_train_iter = iter(labeled_trainloader)
-    unlabeled_train_iter = iter(unlabeled_trainloader)
-
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
     
     for it, (x, y, label) in enumerate(Train_loader):
