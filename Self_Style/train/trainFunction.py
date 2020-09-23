@@ -14,7 +14,7 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
     device = 'cuda' if cuda else 'cpu'
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
-    criterion = nn.CrossEntropyLoss().to(device)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
 
     train_Size = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
