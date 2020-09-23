@@ -13,7 +13,7 @@ parser.add_argument('--db', default='cifar10', type=str, help='dataset selection
 parser.add_argument('--noise-rate', default=0.5, type=float, help='Noise rate')
 parser.add_argument('--noise-type', default="sym", type=str, help='Noise type : sym, Asym')
 parser.add_argument('-seed', default=1234, type=int, help='random seed')
-parser.add_argument('--model', default='ResNet18', type=str, help='ResNet18, ResNet34')
+parser.add_argument('--model', default='ResNet18_rot', type=str, help='ResNet18, ResNet34')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
