@@ -4,6 +4,7 @@ import random
 from PIL import Image
 import numpy as np
 import torch.utils.data as data
+import scipy.ndimage
 
 def rotate(img, degree):
     ori = img.shape
@@ -11,6 +12,8 @@ def rotate(img, degree):
     return np.resize(rot_img, ori)
 
 def collate(batch):
+    K = 4
+    each_rotation_degree = 90
     rot_imgs = []
     rot_labels = []
     for x_aug, label in batch:

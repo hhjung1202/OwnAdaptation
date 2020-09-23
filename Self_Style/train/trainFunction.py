@@ -24,7 +24,7 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
     state_info.model.train()
 
     utils.print_log('Type, Epoch, Batch, loss')
-    
+    tot_loss = 0
     for it, (x, y) in enumerate(Train_loader):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
@@ -35,10 +35,9 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
 
         loss.backward()
         state_info.optim_model.step()
-
-        if it % 10 == 0:
-            utils.print_log('Train, {}, {}, {:.6f}'.format(epoch, it, loss.item()))
-            print('Train, {}, {}, {:.6f}'.format(epoch, it, loss.item()))
+        tot_loss += loss.item()
+    utils.print_log('Train, {}, {}, {:.6f}'.format(epoch, it, tot_loss))
+    print('Train, {}, {}, {:.6f}'.format(epoch, it, tot_loss))
 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
