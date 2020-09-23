@@ -1,0 +1,15 @@
+#!/bin/bash
+(python3.5 ../main.py --dir ./base/1 --loss 1 0 0 0 0 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 0 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir ./base/2 --loss 1 1 1 0 0 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 0 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir ./base/3 --loss 0 0 0 1 0 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 1 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir ./base/4 --loss 0 0 0 0 1 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 1 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir ./base/5 --loss 0 0 0 1 0 -s 1 1 1 1 0 0 0 0 --type c3 --gpu 2 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir ./sc1/1 --loss 1 0 0 1 0 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 2 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir ./sc1/2 --loss 1 1 1 1 0 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 3 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir ./sc1/3 --loss 1 0 0 1 1 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 3 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir ./sc1/4 --loss 1 1 1 1 1 -s 1 1 1 1 0 0 0 0 --type c1 --gpu 4 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir ./sc3/1 --loss 1 0 0 1 0 -s 1 1 1 1 0 0 0 0 --type c3 --gpu 4 1> /dev/null 2> /dev/null) &
+(python3.5 ../main.py --dir ./sc3/2 --loss 1 1 1 1 0 -s 1 1 1 1 0 0 0 0 --type c3 --gpu 5 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --dir ./sc3/3 --loss 1 0 0 1 1 -s 1 1 1 1 0 0 0 0 --type c3 --gpu 5 1> /dev/null 2> /dev/null) &
+python3.5 ../main.py --dir ./sc3/4 --loss 1 1 1 1 1 -s 1 1 1 1 0 0 0 0 --type c3 --gpu 6 1> /dev/null 2> /dev/null
+
