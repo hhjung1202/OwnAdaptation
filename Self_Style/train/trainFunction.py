@@ -58,7 +58,7 @@ def test(args, state_info, Test_loader, epoch):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         rot_cls, logits = state_info.forward(x)
 
-        _, pred = torch.max(out.softmax(dim=1), 1)
+        _, pred = torch.max(rot_cls.softmax(dim=1), 1)
         correct_Test += float(pred.eq(y.data).cpu().sum())
 
         testSize += float(x.size(0))
