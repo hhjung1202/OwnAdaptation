@@ -65,7 +65,6 @@ class ResNet(nn.Module):
         )
         self.Content_Contrastive = Content_Contrastive(temperature=1.)
         self.Style_Contrastive = Style_Contrastive()
-        self.Semi_Loss = Semi_Loss(temperature=1.)
 
     def forward(self, x):
         x = self.init(x)
