@@ -13,24 +13,24 @@ def to_var(x, dtype):
 
 def softmin_ce(input, target, weight=1e-1): # y * log(p), p = softmax(-out)
     likelihood = softmin(input * weight)
-    print(softmin(input * 1e-5).var(dim=1).mean())
-    print(softmin(input * 1e-4).var(dim=1).mean())
-    print(softmin(input * 1e-3).var(dim=1).mean())
-    print(softmin(input * 1e-2).var(dim=1).mean())
-    print(softmin(input * 1e-1).var(dim=1).mean())
-    print(softmin(input).var(dim=1).mean())
+    # print(softmin(input * 1e-5).var(dim=1).mean())
+    # print(softmin(input * 1e-4).var(dim=1).mean())
+    # print(softmin(input * 1e-3).var(dim=1).mean())
+    # print(softmin(input * 1e-2).var(dim=1).mean())
+    # print(softmin(input * 1e-1).var(dim=1).mean())
+    # print(softmin(input).var(dim=1).mean())
     log_likelihood = likelihood.log()
     nll_loss = F.nll_loss(log_likelihood, target)
     return nll_loss
 
 def softmax_ce_rev(input, target, weight=1e-1): # y * log(1-p), p = softmax(out)
     likelihood = F.softmax(input * weight, dim=-1)
-    print(F.softmax(input * 1e-5, dim=-1).var(dim=1).mean())
-    print(F.softmax(input * 1e-4, dim=-1).var(dim=1).mean())
-    print(F.softmax(input * 1e-3, dim=-1).var(dim=1).mean())
-    print(F.softmax(input * 1e-2, dim=-1).var(dim=1).mean())
-    print(F.softmax(input * 1e-1, dim=-1).var(dim=1).mean())
-    print(F.softmax(input, dim=-1).var(dim=1).mean())
+    # print(F.softmax(input * 1e-5, dim=-1).var(dim=1).mean())
+    # print(F.softmax(input * 1e-4, dim=-1).var(dim=1).mean())
+    # print(F.softmax(input * 1e-3, dim=-1).var(dim=1).mean())
+    # print(F.softmax(input * 1e-2, dim=-1).var(dim=1).mean())
+    # print(F.softmax(input * 1e-1, dim=-1).var(dim=1).mean())
+    # print(F.softmax(input, dim=-1).var(dim=1).mean())
     log_likelihood_reverse = torch.log(1 - likelihood)
     nll_loss = F.nll_loss(log_likelihood_reverse, target)
     return nll_loss
@@ -59,8 +59,8 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
         # style_loss = softmin_ce(st_mse, st_label, weight=1e-1)
         # style_loss = softmax_ce_rev(st_mse, st_label, weight=1e-1)
 
-        if args.loss[0] is 0: style_loss = softmin_ce(st_mse, st_label, weight=1e-1);
-        if args.loss[0] is 1: style_loss = softmax_ce_rev(st_mse, st_label, weight=1e-1);
+        if args.loss[0] is 0: style_loss = softmin_ce(st_mse, st_label, weight=args.weight[0]);
+        if args.loss[0] is 1: style_loss = softmax_ce_rev(st_mse, st_label, weight=args.weight[0]);
 
         style_loss.backward()
         state_info.optim_model.step()
