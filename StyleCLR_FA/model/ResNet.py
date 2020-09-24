@@ -56,7 +56,7 @@ class ResNet(nn.Module):
         self.flatten = Flatten()
 
         self.g_x = nn.Sequential(
-            nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(512, 512, kernel_size=1, stride=1, padding=0, bias=False),
         )
         self.f_x = nn.Sequential(
             nn.Linear(512, 512),
@@ -67,57 +67,46 @@ class ResNet(nn.Module):
         self.Style_Contrastive = Style_Contrastive()
         self.Semi_Loss = Semi_Loss(temperature=1.)
 
-    def forward(self, x_, test=False):
-        if test:
-            return self.test_(x), self.test_style(x)
-
-        x_ = self.init(x_)
-
-        b, c, w, h = x_.size()
+    def forward(self, x):
+        x = self.init(x)
+        b, c, w, h = x.size()
         n = self.n if b >= self.n else b-1
-        x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
+        x = torch.cat([x.repeat(1, n, 1, 1).view(b*n, c, w, h), x], 0) # AAA BBB CCC ABC
         style_label = self.LongTensor(self.style_gen(b, n))
-        style_loss = None
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
-            x_ = layer(x_, style_label, b)
+            x = layer(x, style_label, b)
 
-            if i is 3: # 1 3 5 7
-                style_loss = self.forward_style(x_, style_label, b, n)
+        st_mse, st_label = self.forward_style(x, style_label, b, n)
+        # content_loss = self.forward_content(x_, b, n)
+        x = self.flatten(self.avgpool(x))
+        logits = self.linear(x)
 
-        if style_loss is None:
-            style_loss = self.forward_style(x_, style_label, b, n)
-        content_loss = self.forward_content(x_, b, n)
-        # loss_s, JS_loss, loss_u = self.forward_classifier(x_, b, n, size_s, y)
-
-        return style_loss, content_loss
+        return logits, st_mse, st_label
 
     def forward_style(self, x, style_label, b, n):
-        # x = self.g_x(x)
+        x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
-        style_loss = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
+        st_mse, st_label = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
 
-        return style_loss
+        return st_mse, st_label
 
-    def forward_content(self, x, b, n):
-        x = self.flatten(self.avgpool(x))
-        x = self.f_x(x)
-        content = x[:-b]
-        style = x[-b:]
-        content_loss = self.Content_Contrastive(content, style, b, n)
+    # def forward_content(self, x, b, n):
+    #     x = self.flatten(self.avgpool(x))
+    #     x = self.f_x(x)
+    #     content = x[:-b]
+    #     style = x[-b:]
+    #     content_loss = self.Content_Contrastive(content, style, b, n)
 
-        return content_loss
+    #     return content_loss
 
-    def forward_classifier(self, x, b, n, size_s, y):
+    def forward_classifier(self, x):
         
         x = self.flatten(self.avgpool(x))
         logits = self.linear(x)
-        loss_s, JS_loss, loss_u = self.Semi_Loss(logits, b, n, size_s, y)
-
-        return loss_s, JS_loss, loss_u
-
+        return logits
 
     def style_gen(self, batch_size, n):
         i = torch.randint(1, batch_size, (1,))[0]
@@ -128,42 +117,6 @@ class ResNet(nn.Module):
                 style_label.append((perm[(i+m+k)%batch_size]))
 
         return style_label
-
-    def test_style(self, x):
-
-        x_ = self.init(x)
-
-        b, c, w, h = x_.size()
-        n = self.n if b >= self.n else b-1
-        x_ = torch.cat([x_.repeat(1, n, 1, 1).view(b*n, c, w, h), x_], 0) # AAA BBB CCC ABC
-        style_label = self.style_gen(b, n)
-
-        for i, name in enumerate(self._forward):
-            layer = getattr(self, name)
-            x_ = layer(x_, style_label, b)
-
-        x_ = self.flatten(self.avgpool(x_[:-b]))
-        out = self.linear(x_)
-
-        return out
-
-    def test_(self, x):
-
-        x_ = self.init(x)
-
-        b, c, w, h = x_.size()
-        x_ = torch.cat([x_, x_], 0) # AAA BBB CCC ABC
-        style_label = [i for i in range(b)]
-
-        for i, name in enumerate(self._forward):
-            layer = getattr(self, name)
-            x_ = layer(x_, style_label, b)
-
-        x_ = self.flatten(self.avgpool(x_[:-b]))
-        out = self.linear(x_)
-
-        return out
-
 
 def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10, n=4, L_type='c1'):
     blocks = []

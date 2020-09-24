@@ -75,7 +75,7 @@ def main():
     train_MEM(args, state_info, Train_loader, Test_loader)
 
 def dataset_selector():
-    return dataset.Cifar10_loader(args)
+    return dataset.cifar100_loader(args)
 
 if __name__=='__main__':
     main()

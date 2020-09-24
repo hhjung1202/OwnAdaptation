@@ -24,23 +24,10 @@ class model_optim_state_info(object):
             self.model = ResNet18(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
         elif args.model == "ResNet34":
             self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
-        elif args.model == "vgg":
-            enc = vgg
-            dec = decoder
-            self.model = Net(enc, dec)
-
 
     def forward(self, x):
-        style_loss, content_loss = self.model(x)
-        return style_loss, content_loss
-
-    # def forward(self, x):
-    #     loss_a, loss_c, loss_s = self.model(x)
-    #     return loss_a, loss_c, loss_s
-
-    def test(self, x):
-        content, style, recon, adain = self.model(x, test=True)
-        return content, style, recon, adain
+        logits, st_mse, st_label = self.model(x)
+        return logits, st_mse, st_label
 
     def model_cuda_init(self):
         if torch.cuda.is_available():
@@ -64,12 +51,13 @@ class model_optim_state_info(object):
             torch.nn.init.constant_(m.bias.data, 0.0)
 
     def optimizer_init(self, args):
-        self.optim_model = optim.Adam(self.model.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay) # lr, b1, b2, weight_decay
-        # self.optim_model = optim.SGD(self.model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+        # self.optim_model = optim.Adam(self.model.parameters(), lr=args.lr, betas=(args.b1, args.b2), weight_decay=args.weight_decay) # lr, b1, b2, weight_decay
+        self.optim_model = optim.SGD(self.model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
     def learning_scheduler_init(self, args, mode=None):
         # if mode == "NAE":
-        self.lr_model = optim.lr_scheduler.MultiStepLR(self.optim_model, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
+        self.lr_model = optim.lr_scheduler.CosineAnnealingLR(self.optim_model, T_max=args.epoch, eta_min=2e-6, last_epoch=-1)
+        # self.lr_model = optim.lr_scheduler.MultiStepLR(self.optim_model, args.milestones, gamma=args.gamma, last_epoch=args.last_epoch)
 
     def load_state_dict(self, checkpoint, mode=None):
         # if mode == "NAE":
