@@ -70,7 +70,7 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
         style_loss.backward()
         state_info.optim_model.step()
 
-        if it % 10 == 0 && args.type == "self":
+        if it % 10 == 0 and args.type == "self":
             utils.print_log('Train, {}, {}, {:.9f}'.format(epoch, it, style_loss.item()))
             print('Train, {}, {}, {:.9f}'.format(epoch, it, style_loss.item()))
 
