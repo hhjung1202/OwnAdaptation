@@ -22,6 +22,8 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
         print("loading {}/{}", utils.default_model_dir, "checkpoint_best.pth.tar")
         state_info.load_state_dict(checkpoint, mode)
         state_info.learning_scheduler_init(args, mode)
+        utils.default_model_dir = os.path.join(utils.default_model_dir, "cls")
+
 
     for epoch in range(0, args.epoch):
         epoch_result = train(args, state_info, Train_loader, Test_loader, epoch)
