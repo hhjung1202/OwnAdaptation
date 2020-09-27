@@ -24,7 +24,8 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
         state_info.learning_scheduler_init(args, mode)
 
     for epoch in range(0, args.epoch):
-
+        utils.save_state_checkpoint(state_info, best_prec_result, epoch, 'checkpoint_best.pth.tar', utils.default_model_dir)
+        
         epoch_result = train(args, state_info, Train_loader, Test_loader, epoch)
         
         if epoch_result > best_prec_result:
