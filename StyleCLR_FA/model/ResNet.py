@@ -74,7 +74,7 @@ class ResNet(nn.Module):
             # content_loss = self.forward_content(x_, b, n)
             x = self.flatten(self.avgpool(x))
             x = self.linear(x)
-            return x, _, _
+            return x, None, None
         x = self.init(x)
         b, c, w, h = x.size()
         n = self.n if b >= self.n else b-1
