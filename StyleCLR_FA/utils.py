@@ -94,7 +94,7 @@ def save_checkpoint(state, filename, model_dir):
     torch.save(state, model_filename)
     print("=> saving checkpoint '{}'".format(model_filename))
 
-def load_checkpoint(directory, is_last=True):
+def load_checkpoint(directory, is_last=False):
 
     if is_last:
         load_state_name = os.path.join(directory, 'latest.pth.tar')
