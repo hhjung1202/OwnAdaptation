@@ -12,6 +12,7 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
     mode = args.model
     utils.default_model_dir = os.path.join(args.dir, mode)
     
+    print(utils.default_model_dir)
     start_epoch = 0
     checkpoint = None
     checkpoint = utils.load_checkpoint(utils.default_model_dir)    
