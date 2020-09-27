@@ -35,7 +35,7 @@ parser.add_argument('-s', '--serial', nargs='+', type=int, help='Block component
 parser.add_argument('-w', '--weight', nargs='+', type=float, help='Weight Parameter 14')
 
 parser.add_argument('--n', type=int, default=4, help='Style count')
-parser.add_argument('--type', default='c1', type=str, help='c1 : softmin, c2 : 1-p, c3 : reconstruction')
+parser.add_argument('--type', default='self', type=str, help='self, cls')
 parser.add_argument('--loss', nargs='+', type=int, help='5 argumentation 0 or 1')
 
 

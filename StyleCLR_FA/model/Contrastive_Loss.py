@@ -65,7 +65,7 @@ class Style_Contrastive(nn.Module):
         # style_loss = self.softmax_ce_rev(mse, label)
         return mse, label
 
-    def forward(self, content, style, style_label, b, n, L_type="c1"):
+    def forward(self, content, style, style_label, b, n):
 
         mse, label = self.style_contrastive(content, style, style_label, b, n)
         return mse, label

@@ -62,19 +62,18 @@ def test(args, state_info, Test_loader, epoch):
 
         x, y, x_rot, y_rot = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(x_rot, FloatTensor), to_var(y_rot, LongTensor)
         rot_cls, logits = state_info.forward(x_rot)
-        
 
         if args.type == "self":
             rot_cls, logits = state_info.forward(x_rot)
             _, pred = torch.max(rot_cls.softmax(dim=1), 1)
             correct_Test += float(pred.eq(y_rot.data).cpu().sum())
+            testSize += float(x_rot.size(0))
 
         elif args.type == "cls":
             rot_cls, logits = state_info.forward(x)
             _, pred = torch.max(logits.softmax(dim=1), 1)
             correct_Test += float(pred.eq(y.data).cpu().sum())
-
-        testSize += float(x_rot.size(0))
+            testSize += float(x.size(0))
 
     utils.print_log('Type, Epoch, Batch, Percentage')
     utils.print_log('Test, {}, {}, {:.3f}'.format(epoch, it, 100.*correct_Test / testSize))

@@ -9,12 +9,11 @@ class Flatten(nn.Module):
         return x.view(x.size(0), -1)
 
 class ResNet(nn.Module):
-    def __init__(self, blocks, num_blocks, style_out, num_classes, n, L_type):
+    def __init__(self, blocks, num_blocks, style_out, num_classes, n):
         super(ResNet, self).__init__()
         self.in_planes = 64
         self.style_out = style_out
         self.n = n
-        self.L_type = L_type
         self.LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
 
         index = 0
@@ -88,7 +87,7 @@ class ResNet(nn.Module):
         x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
-        st_mse, st_label = self.Style_Contrastive(content, style, style_label, b, n, L_type=self.L_type)
+        st_mse, st_label = self.Style_Contrastive(content, style, style_label, b, n)
 
         return st_mse, st_label
 
@@ -117,7 +116,7 @@ class ResNet(nn.Module):
 
         return style_label
 
-def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10, n=4, L_type='c1'):
+def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_classes=10, n=4):
     blocks = []
     for i in range(8):
         if serial[i] is 0:
@@ -129,9 +128,9 @@ def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_cl
         elif serial[i] is 3:
             blocks.append(PostBlock)
 
-    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n, L_type=L_type)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n)
 
-def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[3,4,6,3], num_classes=10, n=4, L_type='c1'):
+def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[3,4,6,3], num_classes=10, n=4):
     blocks = []
     for i in range(8):
         if serial[i] is 0:
@@ -143,4 +142,4 @@ def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[
         elif serial[i] is 3:
             blocks.append(PostBlock)
 
-    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n, L_type=L_type)
+    return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n)

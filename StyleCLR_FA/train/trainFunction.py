@@ -37,17 +37,20 @@ def softmax_ce_rev(input, target, weight=1e-1): # y * log(1-p), p = softmax(out)
 
 def train(args, state_info, Train_loader, Test_loader, epoch):
     cuda = True if torch.cuda.is_available() else False
+    device = 'cuda' if cuda else 'cpu'
     FloatTensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
     LongTensor = torch.cuda.LongTensor if cuda else torch.LongTensor
 
     train_Size = torch.tensor(0, dtype=torch.float32)
     correct_Real = torch.tensor(0, dtype=torch.float32)
     correct_Real2 = torch.tensor(0, dtype=torch.float32)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
 
     # train
     state_info.model.train()
 
     utils.print_log('Type, Epoch, Batch, total, Noise_Cls, Pseudo_Cls, Reg_Noise, Reg_Pseudo, Model_Real%, Pseu_Real%')
+    tot_loss = 0
     
     for it, (x, y) in enumerate(Train_loader):
 
@@ -56,18 +59,24 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
 
         logits, st_mse, st_label = state_info.forward(x)
 
-        # style_loss = softmin_ce(st_mse, st_label, weight=1e-1)
-        # style_loss = softmax_ce_rev(st_mse, st_label, weight=1e-1)
-
-        if args.loss[0] is 0: style_loss = softmin_ce(st_mse, st_label, weight=args.weight[0]);
-        if args.loss[0] is 1: style_loss = softmax_ce_rev(st_mse, st_label, weight=args.weight[0]);
-
+        if args.type == "self":
+            if args.loss[0] is 0: style_loss = softmin_ce(st_mse, st_label, weight=args.weight[0]);
+            if args.loss[0] is 1: style_loss = softmax_ce_rev(st_mse, st_label, weight=args.weight[0]);
+        
+        elif args.type == "cls":
+            style_loss = criterion(logits, y)
+            tot_loss += style_loss
+            
         style_loss.backward()
         state_info.optim_model.step()
 
-        if it % 10 == 0:
+        if it % 10 == 0 && args.type == "self":
             utils.print_log('Train, {}, {}, {:.9f}'.format(epoch, it, style_loss.item()))
             print('Train, {}, {}, {:.9f}'.format(epoch, it, style_loss.item()))
+
+    if args.type == "cls":
+        utils.print_log('Train, {}, {}, {:.9f}'.format(epoch, it, tot_loss))
+        print('Train, {}, {}, {:.9f}'.format(epoch, it, tot_loss))
 
     epoch_result = test(args, state_info, Test_loader, epoch)
     return epoch_result
@@ -88,8 +97,12 @@ def test(args, state_info, Test_loader, epoch):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         logits, st_mse, st_label = state_info.forward(x)
 
-        _, pred = torch.min(st_mse, 1)
-        correct_Test += float(pred.eq(st_label.data).cpu().sum())
+        if args.type == "self":
+            _, pred = torch.min(st_mse, 1)
+            correct_Test += float(pred.eq(st_label.data).cpu().sum())
+        elif args.type == "cls":
+            _, pred = torch.max(logits, 1)
+            correct_Test += float(pred.eq(y.data).cpu().sum())
 
         testSize += float(x.size(0))
 
