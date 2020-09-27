@@ -11,6 +11,7 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     mode = args.model
     utils.default_model_dir = os.path.join(args.dir, mode)
+    print(utils.default_model_dir)
     
     start_epoch = 0
     checkpoint = None
