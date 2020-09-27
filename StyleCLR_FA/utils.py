@@ -21,9 +21,9 @@ class model_optim_state_info(object):
         
         self.init_lr = args.lr
         if args.model == "ResNet18":
-            self.model = ResNet18(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
+            self.model = ResNet18(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n)
         elif args.model == "ResNet34":
-            self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n, L_type=args.type)
+            self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n)
 
     def forward(self, x):
         logits, st_mse, st_label = self.model(x)
