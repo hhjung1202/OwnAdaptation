@@ -11,7 +11,6 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
     best_prec_result = torch.tensor(0, dtype=torch.float32)
     mode = args.model
     utils.default_model_dir = os.path.join(args.dir, mode)
-    print(utils.default_model_dir)
     
     start_epoch = 0
     checkpoint = None
@@ -20,16 +19,16 @@ def train_MEM(args, state_info, Train_loader, Test_loader): # all
         args.last_epoch = -1
         state_info.learning_scheduler_init(args, mode)
     else:
+        print("loading {}/{}", utils.default_model_dir, "checkpoint_best.pth.tar")
         state_info.load_state_dict(checkpoint, mode)
         state_info.learning_scheduler_init(args, mode)
 
     for epoch in range(0, args.epoch):
-        utils.save_state_checkpoint(state_info, best_prec_result, epoch, 'checkpoint_best.pth.tar', utils.default_model_dir)
-        
         epoch_result = train(args, state_info, Train_loader, Test_loader, epoch)
         
         if epoch_result > best_prec_result:
             best_prec_result = epoch_result
+
             utils.save_state_checkpoint(state_info, best_prec_result, epoch, 'checkpoint_best.pth.tar', utils.default_model_dir)
             print('save..')
 

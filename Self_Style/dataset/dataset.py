@@ -16,12 +16,16 @@ def collate(batch):
     each_rotation_degree = 90
     rot_imgs = []
     rot_labels = []
+    imgs = []
+    labels = []
     for x_aug, label in batch:
         for n in range(K):
             rot_imgs.append(torch.FloatTensor(rotate(x_aug.numpy(), n*each_rotation_degree).copy()))
             rot_labels.append(torch.tensor(n))
+        imgs.append(x_aug)
+        labels.append(torch.tensor(label))
 
-    return [torch.stack(rot_imgs), torch.stack(rot_labels)]
+    return [torch.stack(imgs), torch.stack(labels), torch.stack(rot_imgs), torch.stack(rot_labels)]
 
 def cifar100_loader(args):
     torch.manual_seed(args.seed)

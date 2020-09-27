@@ -97,7 +97,6 @@ def save_checkpoint(state, filename, model_dir):
     model_filename = os.path.join(model_dir, filename)
 
     if not os.path.exists(model_dir):
-        print(model_dir)
         os.makedirs(model_dir)
 
     torch.save(state, model_filename)

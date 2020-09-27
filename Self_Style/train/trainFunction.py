@@ -25,17 +25,22 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
 
     utils.print_log('Type, Epoch, Batch, loss')
     tot_loss = 0
-    for it, (x, y) in enumerate(Train_loader):
+    for it, (x, y, x_rot, y_rot) in enumerate(Train_loader):
 
-        x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
+        x, y, x_rot, y_rot = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(x_rot, FloatTensor), to_var(y_rot, LongTensor)
         state_info.optim_model.zero_grad()
 
-        rot_cls, logits = state_info.forward(x)
-        loss = criterion(rot_cls, y)
+        if args.type == "self":
+            rot_cls, logits = state_info.forward(x_rot)
+            loss = criterion(rot_cls, y_rot)
+        elif args.type == "cls":
+            rot_cls, logits = state_info.forward(x)
+            loss = criterion(logits, y)
 
         loss.backward()
         state_info.optim_model.step()
         tot_loss += loss.item()
+
     utils.print_log('Train, {}, {}, {:.6f}'.format(epoch, it, tot_loss))
     print('Train, {}, {}, {:.6f}'.format(epoch, it, tot_loss))
 
@@ -53,15 +58,23 @@ def test(args, state_info, Test_loader, epoch):
 
     # test
     state_info.model.eval()
-    for it, (x, y) in enumerate(Test_loader):
+    for it, (x, y, x_rot, y_rot) in enumerate(Test_loader):
 
-        x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        rot_cls, logits = state_info.forward(x)
+        x, y, x_rot, y_rot = to_var(x, FloatTensor), to_var(y, LongTensor), to_var(x_rot, FloatTensor), to_var(y_rot, LongTensor)
+        rot_cls, logits = state_info.forward(x_rot)
+        
 
-        _, pred = torch.max(rot_cls.softmax(dim=1), 1)
-        correct_Test += float(pred.eq(y.data).cpu().sum())
+        if args.type == "self":
+            rot_cls, logits = state_info.forward(x_rot)
+            _, pred = torch.max(rot_cls.softmax(dim=1), 1)
+            correct_Test += float(pred.eq(y_rot.data).cpu().sum())
 
-        testSize += float(x.size(0))
+        elif args.type == "cls":
+            rot_cls, logits = state_info.forward(x)
+            _, pred = torch.max(logits.softmax(dim=1), 1)
+            correct_Test += float(pred.eq(y.data).cpu().sum())
+
+        testSize += float(x_rot.size(0))
 
     utils.print_log('Type, Epoch, Batch, Percentage')
     utils.print_log('Test, {}, {}, {:.3f}'.format(epoch, it, 100.*correct_Test / testSize))
