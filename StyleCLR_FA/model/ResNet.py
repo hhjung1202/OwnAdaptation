@@ -65,7 +65,16 @@ class ResNet(nn.Module):
         self.Content_Contrastive = Content_Contrastive(temperature=1.)
         self.Style_Contrastive = Style_Contrastive()
 
-    def forward(self, x):
+    def forward(self, x, t="self"):
+        if t=="cls":
+            x = self.init(x)
+            for i, name in enumerate(self._forward):
+                layer = getattr(self, name)
+                x = layer(x, None, None)
+            # content_loss = self.forward_content(x_, b, n)
+            x = self.flatten(self.avgpool(x))
+            x = self.linear(x)
+            return x, _, _
         x = self.init(x)
         b, c, w, h = x.size()
         n = self.n if b >= self.n else b-1
@@ -127,6 +136,8 @@ def ResNet18(serial=[0,0,0,0,0,0,0,0], style_out=0, num_blocks=[2,2,2,2], num_cl
             blocks.append(PreBlock)
         elif serial[i] is 3:
             blocks.append(PostBlock)
+        elif serial[i] is 4:
+            blocks.append(InstanceBlock)
 
     return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n)
 
@@ -141,5 +152,7 @@ def ResNet34(serial=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], style_out=0, num_blocks=[
             blocks.append(PreBlock)
         elif serial[i] is 3:
             blocks.append(PostBlock)
+        elif serial[i] is 4:
+            blocks.append(InstanceBlock)
 
     return ResNet(blocks, num_blocks, style_out=style_out, num_classes=num_classes, n=n)

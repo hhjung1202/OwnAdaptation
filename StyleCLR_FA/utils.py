@@ -25,8 +25,8 @@ class model_optim_state_info(object):
         elif args.model == "ResNet34":
             self.model = ResNet34(serial=args.serial, style_out=args.style, num_classes=args.clsN, n=args.n)
 
-    def forward(self, x):
-        logits, st_mse, st_label = self.model(x)
+    def forward(self, x, t="self"):
+        logits, st_mse, st_label = self.model(x, t)
         return logits, st_mse, st_label
 
     def model_cuda_init(self):

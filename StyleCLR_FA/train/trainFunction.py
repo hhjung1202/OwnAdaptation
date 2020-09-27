@@ -57,7 +57,7 @@ def train(args, state_info, Train_loader, Test_loader, epoch):
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
         state_info.optim_model.zero_grad()
 
-        logits, st_mse, st_label = state_info.forward(x)
+        logits, st_mse, st_label = state_info.forward(x, args.type)
 
         if args.type == "self":
             if args.loss[0] is 0: style_loss = softmin_ce(st_mse, st_label, weight=args.weight[0]);
@@ -95,7 +95,7 @@ def test(args, state_info, Test_loader, epoch):
     for it, (x, y) in enumerate(Test_loader):
 
         x, y = to_var(x, FloatTensor), to_var(y, LongTensor)
-        logits, st_mse, st_label = state_info.forward(x)
+        logits, st_mse, st_label = state_info.forward(x, args.type)
 
         if args.type == "self":
             _, pred = torch.min(st_mse, 1)
