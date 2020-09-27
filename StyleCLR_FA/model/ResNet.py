@@ -78,8 +78,8 @@ class ResNet(nn.Module):
 
         st_mse, st_label = self.forward_style(x, style_label, b, n)
         # content_loss = self.forward_content(x_, b, n)
-        x = self.flatten(self.avgpool(x))
-        logits = self.linear(x)
+        logits = self.flatten(self.avgpool(x[-b:]))
+        logits = self.linear(logits)
 
         return logits, st_mse, st_label
 
