@@ -69,6 +69,48 @@ def cifar100_loader(args):
 
     return train_loader, test_loader, 3, 100
 
+def cifar10_loader(args):
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    print("cifar10 Data Loading ...")
+    root = '/home/hhjung/hhjung/cifar100/'
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        # transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    transform_test = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+                             std=(0.2471, 0.2436, 0.2616))
+    ])
+
+    train_dataset = datasets.CIFAR10(root='../hhjung/cifar10/',
+                                     train=True,
+                                     transform=transform_train,
+                                     download=True)
+
+    test_dataset = datasets.CIFAR10(root='../hhjung/cifar10/',
+                                    train=False,
+                                    transform=transform_test)
+
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+                                               batch_size=args.batch_size,
+                                               shuffle=True,
+                                               collate_fn=collate,
+                                               num_workers=args.workers)
+
+    test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
+                                              batch_size=args.batch_size,
+                                              shuffle=False,
+                                              collate_fn=collate,
+                                              num_workers=args.workers)
+
+    return train_loader, test_loader, 3, 100
+
 class cifar10(datasets.CIFAR10):
     def __init__(self, noise_type='sym', noise_rate=0.0, seed=1234, **kwargs):
         super(cifar10, self).__init__(**kwargs)
@@ -132,38 +174,38 @@ class cifar10(datasets.CIFAR10):
 
         return img, target, real_target
 
-def Cifar10_loader(args):
+# def Cifar10_loader(args):
     
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
+#     torch.manual_seed(args.seed)
+#     torch.cuda.manual_seed(args.seed)
     
-    print("Cifar10 Data Loading ...")
-    root = '/home/hhjung/hhjung/cifar10/'
+#     print("Cifar10 Data Loading ...")
+#     root = '/home/hhjung/hhjung/cifar10/'
     
-    transform_train = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
-                             std=(0.2471, 0.2436, 0.2616))
-    ])
+#     transform_train = transforms.Compose([
+#         transforms.RandomCrop(32, padding=4),
+#         transforms.RandomHorizontalFlip(),
+#         transforms.ToTensor(),
+#         transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+#                              std=(0.2471, 0.2436, 0.2616))
+#     ])
 
-    transform_test = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
-                             std=(0.2471, 0.2436, 0.2616))
-    ])
+#     transform_test = transforms.Compose([
+#         transforms.ToTensor(),
+#         transforms.Normalize(mean=(0.4914, 0.4824, 0.4467),
+#                              std=(0.2471, 0.2436, 0.2616))
+#     ])
     
-    # Baseline result
-    Train_dataset = cifar10(noise_type=args.noise_type, noise_rate=args.noise_rate, seed=args.seed
-                                    , root=root, train=True, transform=transform_train, download=True)
-    Test_dataset = datasets.CIFAR10(root=root, train=False, transform=transform_test, download=True)
+#     # Baseline result
+#     Train_dataset = cifar10(noise_type=args.noise_type, noise_rate=args.noise_rate, seed=args.seed
+#                                     , root=root, train=True, transform=transform_train, download=True)
+#     Test_dataset = datasets.CIFAR10(root=root, train=False, transform=transform_test, download=True)
 
-    Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
-    Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
+#     Train_loader = torch.utils.data.DataLoader(dataset=Train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers)
+#     Test_loader = torch.utils.data.DataLoader(dataset=Test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
 
-    return Train_loader, Test_loader, 3, 10
-    return Train_loader, Test_loader, 3, 10
+#     return Train_loader, Test_loader, 3, 10
+#     return Train_loader, Test_loader, 3, 10
 
 def Semi_Cifar10_dataset(args):
 

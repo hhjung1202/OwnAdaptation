@@ -1,1 +1,1 @@
-from .dataset import Semi_Cifar10_dataset, Cifar10_loader, cifar100_loader
+from .dataset import Semi_Cifar10_dataset, cifar100_loader, cifar10_loader
