@@ -1,3 +1,5 @@
 #!/bin/bash
-python3.5 ../main.py --type self --gpu 0 --model ResNet18_rot 1> /dev/null 2> /dev/null &&
-python3.5 ../main.py --type cls --gpu 0 --model ResNet34_rot 1> /dev/null 2> /dev/null
+(python3.5 ../main.py --type self --gpu 0 --model ResNet18_rot 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --type cls --gpu 0 --model ResNet18_rot 1> /dev/null 2> /dev/null) & 
+(python3.5 ../main.py --type self --gpu 1 --model ResNet34_rot 1> /dev/null 2> /dev/null &&
+python3.5 ../main.py --type cls --gpu 1 --model ResNet34_rot 1> /dev/null 2> /dev/null)
