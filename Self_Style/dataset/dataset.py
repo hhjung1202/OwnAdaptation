@@ -100,13 +100,13 @@ def cifar10_loader(args):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=args.batch_size,
                                                shuffle=True,
-                                               collate_fn=collate,
+                                               # collate_fn=collate,
                                                num_workers=args.workers)
 
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
                                               batch_size=args.batch_size,
                                               shuffle=False,
-                                              collate_fn=collate,
+                                              # collate_fn=collate,
                                               num_workers=args.workers)
 
     return train_loader, test_loader, 3, 100
