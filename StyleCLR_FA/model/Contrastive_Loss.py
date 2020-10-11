@@ -42,32 +42,15 @@ class Style_Contrastive(nn.Module):
         self.softmin = nn.Softmin(dim=-1)
         self.LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
 
-    def style_reconstruction(self, content, style, style_label):
-        f_c = self.gram_matrix(content) # b*n, ch, ch
-        f_s = self.gram_matrix(style) # b, ch, ch
-        adaptive_s = f_s[style_label] # b*n, ch, ch
-        style_loss = self.MSELoss(f_c, adaptive_s)
-        return style_loss * 1e+10
+    def style_contrastive(self, content, style, b, n):
+        f_c = F.normalize(self.gram_matrix(content), p=1, dim=-1).view(b,1,-1)             # b, n, ch * ch
+        f_s = F.normalize(self.gram_matrix(style), p=1, dim=-1).view(1,b,-1)  # b, n, ch * ch
 
-    def style_contrastive(self, content, style, style_label, b, n):
-        f_c = F.normalize(self.gram_matrix(content), p=1, dim=-1).view(b,n,-1)             # b, n, ch * ch
-        f_s = F.normalize(self.gram_matrix(style), p=1, dim=-1)[style_label].view(b,n,-1)  # b, n, ch * ch
+        mse = ((f_c - f_s)**2).sum(dim=2).view(b,b)
+        return mse
 
-        f_c = f_c.repeat(1, n, 1)                    # b, n*n, -1 AAA_ -> AAA_ AAA_ AAA_
-        f_s = f_s.repeat(1, 1, n).view(b, n*n, -1)   # b, n*n, -1 BCD -> BBB CCC DDD
-
-        mse = ((f_c - f_s)**2).sum(dim=2).view(b*n,n)
-        
-        label = self.LongTensor([_ for _ in range(n)]).repeat(b)
-        # case 1
-        # style_loss = self.softmin_ce(mse, label) 
-        # case 2
-        # style_loss = self.softmax_ce_rev(mse, label)
-        return mse, label
-
-    def forward(self, content, style, style_label, b, n):
-
-        mse, label = self.style_contrastive(content, style, style_label, b, n)
+    def forward(self, content, style, b, n):
+        mse, label = self.style_contrastive(content, style, b, n)
         return mse, label
     
     def gram_matrix(self, input):

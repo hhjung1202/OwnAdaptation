@@ -48,8 +48,6 @@ class Adain(nn.Module):
         normalized_feat = (content_feat - content_mean) / content_std
         adaptive_feat = normalized_feat * style_std + style_mean
 
-        del(style_mean, style_std, content_mean, content_std)
-
         return torch.cat([adaptive_feat, style], dim=0)
 
 

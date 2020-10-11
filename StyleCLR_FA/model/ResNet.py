@@ -75,30 +75,30 @@ class ResNet(nn.Module):
             x = self.flatten(self.avgpool(x))
             x = self.linear(x)
             return x, None, None
+
+        b = x.size(0)
+        style_label = self.LongTensor(torch.randperm(b))
         x = self.init(x)
-        b, c, w, h = x.size()
-        n = self.n if b >= self.n else b-1
-        x = torch.cat([x.repeat(1, n, 1, 1).view(b*n, c, w, h), x], 0) # AAA BBB CCC ABC
-        style_label = self.LongTensor(self.style_gen(b, n))
+        x = torch.cat([x, x], 0)
 
         for i, name in enumerate(self._forward):
             layer = getattr(self, name)
             x = layer(x, style_label, b)
 
-        st_mse, st_label = self.forward_style(x, style_label, b, n)
+        st_mse = self.forward_style(x, style_label, b)
         # content_loss = self.forward_content(x_, b, n)
         logits = self.flatten(self.avgpool(x[-b:]))
         logits = self.linear(logits)
 
-        return logits, st_mse, st_label
+        return logits, st_mse, style_label
 
-    def forward_style(self, x, style_label, b, n):
+    def forward_style(self, x, b):
         x = self.g_x(x)
         content = x[:-b]
         style = x[-b:]
-        st_mse, st_label = self.Style_Contrastive(content, style, style_label, b, n)
+        st_mse, st_label = self.Style_Contrastive(content, style, b)
 
-        return st_mse, st_label
+        return st_mse
 
     # def forward_content(self, x, b, n):
     #     x = self.flatten(self.avgpool(x))

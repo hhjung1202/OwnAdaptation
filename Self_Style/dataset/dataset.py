@@ -11,21 +11,132 @@ def rotate(img, degree):
     rot_img = scipy.ndimage.rotate(img, degree, axes=(-2, -1), mode='nearest',)
     return np.resize(rot_img, ori)
 
-# def collate(batch):
-#     K = 4
-#     each_rotation_degree = 90
-#     rot_imgs = []
-#     rot_labels = []
-#     imgs = []
-#     labels = []
-#     for x_aug, label in batch:
-#         for n in range(K):
-#             rot_imgs.append(torch.FloatTensor(rotate(x_aug.numpy(), n*each_rotation_degree).copy()))
-#             rot_labels.append(torch.tensor(n))
-#         imgs.append(x_aug)
-#         labels.append(torch.tensor(label))
+def collate(dataset):
+    K = 4
+    each_rotation_degree = 90
+    rot_imgs = []
+    rot_labels = []
+    imgs = []
+    labels = []
+    for x, label in dataset:
+        for n in range(K):
+            rot_imgs.append(rotate(x.numpy(), n*each_rotation_degree).copy())
+            rot_labels.append(n)
+        imgs.append(x_aug)
+        labels.append(torch.tensor(label))
 
-#     return [torch.stack(imgs), torch.stack(labels), torch.stack(rot_imgs), torch.stack(rot_labels)]
+    return [torch.stack(imgs), torch.stack(labels), torch.stack(rot_imgs), torch.stack(rot_labels)]
+
+
+class cifar10(datasets.CIFAR10):
+    def __init__(self, root, train=True, transform=None, download=False, noise_rate=0.1, sample=5000, seed=1234, Task='True'):
+        super(cifar10, self).__init__(root, train=train
+            , transform=transform, target_transform=None, download=download)
+
+        self.sample = sample
+        self.noise_rate = noise_rate
+        self.Task = Task
+
+        self.data_shuffle = list(zip(self.data, self.targets))
+
+        random.seed(seed)
+        random.shuffle(self.data_shuffle)
+
+        if self.train is True:
+
+            if self.Task == "True": # 5000 True Set
+                self.Set = self.data_shuffle[:self.sample]
+            elif self.Task == "Fake": # 5000 Random Labeled Set
+                self.Set = self.data_shuffle[self.sample:2*self.sample]
+            elif self.Task == "Noise": # 50000 N% Noise labeled Set [5000 True Set(Known), N% Noise labeled Set, Left True Set(Unknown)]
+                self.CleanSet = self.data_shuffle[:self.sample]
+                self.NoiseSet = self.data_shuffle[self.sample:]
+                random.shuffle(self.NoiseSet)
+                self.Set = self.CleanSet + self.NoiseSet
+            elif self.Task == "Noise_Test": # 45000 N% Noise labeled Set [N% Noise labeled Set]
+                self.NoiseSet = self.data_shuffle[self.sample:]
+                random.shuffle(self.NoiseSet)
+                self.Set = self.NoiseSet
+            elif self.Task == "Noise_Sample": # 45000 N% Noise labeled Set [N% Noise labeled Set]
+                self.Set = self.data_shuffle[:self.sample]
+            else: # All N% Noise labeled Set [without True Set, Only Noisy label]
+                self.Set = self.data_shuffle
+        else:
+            self.Set = self.data_shuffle
+
+    def __getitem__(self, index):
+
+        if self.train is True:
+            if self.Task == "True": # 5000 True Set
+                img, real_target = self.Set[index]
+                target = real_target
+
+            elif self.Task == "Fake": # 5000 Random Labeled Set
+                img, real_target = self.Set[index]
+                target = torch.randint_like(real_target, low=0, high=10)
+
+            elif self.Task == "Noise": # 50000 N% Noise labeled Set [5000 True Set(Known), N% Noise labeled Set, Left True Set(Unknown)]
+                img, real_target = self.Set[index]
+                noise_sample = int(self.noise_rate * len(self.data_shuffle))
+                if self.sample <= index and index < self.sample + noise_sample:
+                    target = self.Intended_Random_Noise_Label(real_target)
+                else:
+                    target = real_target
+
+            elif self.Task == "Noise_Test": # 45000 N% Noise labeled Set [N% Noise labeled Set]
+                img, real_target = self.Set[index]
+                noise_sample = int(0.5 * len(self.Set))
+                if index < noise_sample:
+                    target = self.Intended_Random_Noise_Label(real_target)
+                else:
+                    target = real_target
+
+            elif self.Task == "Noise_Sample": # 5000 N% Noise labeled Set [N% Noise labeled Set]
+                img, real_target = self.Set[index]
+                noise_sample = int(self.noise_rate * len(self.Set))
+                if index < noise_sample:
+                    target = self.Intended_Random_Noise_Label(real_target)
+                else:
+                    target = real_target
+
+            else: # All Data
+                img, real_target = self.Set[index]
+                noise_sample = self.noise_rate * len(self.data_shuffle)
+                if index < noise_sample:
+                    target = self.Intended_Random_Noise_Label(real_target)
+                else:
+                    target = real_target
+        else:
+            img, real_target = self.Set[index]
+            target = real_target
+            
+        target = int(target)
+        real_target = int(real_target)
+
+        # doing this so that it is consistent with all other datasets
+        # to return a PIL Image
+        img = Image.fromarray(img.numpy(), mode='L')
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target, real_target
+
+    def Intended_Random_Noise_Label(self, label):
+        item = torch.randint(0,9, size=label.size(), dtype=label.dtype)
+        if item >= label:
+            return item + 1
+        else:
+            return item
+
+    def __len__(self):
+        """Return the number of images."""
+        return len(self.Set)
+
+
 
 def cifar100_loader(args):
     torch.manual_seed(args.seed)
