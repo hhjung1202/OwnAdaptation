@@ -11,21 +11,21 @@ def rotate(img, degree):
     rot_img = scipy.ndimage.rotate(img, degree, axes=(-2, -1), mode='nearest',)
     return np.resize(rot_img, ori)
 
-def collate(batch):
-    K = 4
-    each_rotation_degree = 90
-    rot_imgs = []
-    rot_labels = []
-    imgs = []
-    labels = []
-    for x_aug, label in batch:
-        for n in range(K):
-            rot_imgs.append(torch.FloatTensor(rotate(x_aug.numpy(), n*each_rotation_degree).copy()))
-            rot_labels.append(torch.tensor(n))
-        imgs.append(x_aug)
-        labels.append(torch.tensor(label))
+# def collate(batch):
+#     K = 4
+#     each_rotation_degree = 90
+#     rot_imgs = []
+#     rot_labels = []
+#     imgs = []
+#     labels = []
+#     for x_aug, label in batch:
+#         for n in range(K):
+#             rot_imgs.append(torch.FloatTensor(rotate(x_aug.numpy(), n*each_rotation_degree).copy()))
+#             rot_labels.append(torch.tensor(n))
+#         imgs.append(x_aug)
+#         labels.append(torch.tensor(label))
 
-    return [torch.stack(imgs), torch.stack(labels), torch.stack(rot_imgs), torch.stack(rot_labels)]
+#     return [torch.stack(imgs), torch.stack(labels), torch.stack(rot_imgs), torch.stack(rot_labels)]
 
 def cifar100_loader(args):
     torch.manual_seed(args.seed)
@@ -58,13 +58,13 @@ def cifar100_loader(args):
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=args.batch_size,
                                                shuffle=True,
-                                               collate_fn=collate,
+                                               # collate_fn=collate,
                                                num_workers=args.workers)
 
     test_loader = torch.utils.data.DataLoader(dataset=test_dataset,
                                               batch_size=args.batch_size,
                                               shuffle=False,
-                                              collate_fn=collate,
+                                              # collate_fn=collate,
                                               num_workers=args.workers)
 
     return train_loader, test_loader, 3, 100
