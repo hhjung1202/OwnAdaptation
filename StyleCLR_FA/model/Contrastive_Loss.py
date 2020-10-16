@@ -50,8 +50,8 @@ class Style_Contrastive(nn.Module):
         return mse
 
     def forward(self, content, style, b, n):
-        mse, label = self.style_contrastive(content, style, b, n)
-        return mse, label
+        mse = self.style_contrastive(content, style, b, n)
+        return mse
     
     def gram_matrix(self, input):
         a, b, c, d = input.size()
