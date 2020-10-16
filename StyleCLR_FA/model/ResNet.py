@@ -23,7 +23,6 @@ class ResNet(nn.Module):
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
         )
-
         self._forward = []
 
         setattr(self, 'layer1_0', blocks[index](64, 64, 1)); index+=1
