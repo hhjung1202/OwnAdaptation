@@ -84,7 +84,7 @@ class ResNet(nn.Module):
             layer = getattr(self, name)
             x = layer(x, style_label, b)
 
-        st_mse = self.forward_style(x, style_label, b)
+        st_mse = self.forward_style(x, b)
         # content_loss = self.forward_content(x_, b, n)
         logits = self.flatten(self.avgpool(x[-b:]))
         logits = self.linear(logits)
