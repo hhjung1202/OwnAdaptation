@@ -15,6 +15,7 @@ class ResNet(nn.Module):
         self.style_out = style_out
         self.n = n
         self.LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
+        print (self.LongTensor)
 
         index = 0
 
