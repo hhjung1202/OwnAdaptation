@@ -76,8 +76,7 @@ class ResNet(nn.Module):
             return x, None, None
 
         b = x.size(0)
-        print (self.LongTensor)
-        style_label = self.LongTensor(torch.randperm(b))
+        style_label = self.LongTensor(torch.randperm(b).cuda())
         x = self.init(x)
         x = torch.cat([x, x], 0)
 
