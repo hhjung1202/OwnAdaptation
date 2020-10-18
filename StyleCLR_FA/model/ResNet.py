@@ -63,6 +63,7 @@ class ResNet(nn.Module):
         )
         self.Content_Contrastive = Content_Contrastive(temperature=1.)
         self.Style_Contrastive = Style_Contrastive()
+        self.adain = Adain()
 
     def forward(self, x, t="self"):
         if t=="cls":
@@ -84,6 +85,7 @@ class ResNet(nn.Module):
             layer = getattr(self, name)
             x = layer(x, style_label, b)
 
+        x = self.adain(x, style_label, b)
         st_mse = self.forward_style(x, b)
         # content_loss = self.forward_content(x_, b, n)
         logits = self.flatten(self.avgpool(x[-b:]))
