@@ -17,6 +17,7 @@ def is_leaf(model):
     return get_num_gen(model.children()) == 0
 
 def init_learning(state_info):
+    print(state_info.model)
     for child in state_info.model.module.children():
         if hasattr(child, 'phase'):
             turn_off_learning(child)
