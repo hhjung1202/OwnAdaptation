@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
-import numbers
 
 class Content_Contrastive(nn.Module):
 
