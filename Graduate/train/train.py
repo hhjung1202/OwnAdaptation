@@ -45,9 +45,6 @@ def train_Epoch(args, state_info, Train_loader, Test_loader): # all
             print('learning Base')
 
         state_info.lr_model.step()
-        for param_group in state_info.optim_model.param_groups:
-            print(param_group['lr'])
-            break;
         utils.print_log('')
 
     now = time.gmtime(time.time() - start_time)
