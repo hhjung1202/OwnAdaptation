@@ -82,9 +82,9 @@ class model_optim_state_info(object):
         if torch.cuda.is_available():
             self.model = nn.DataParallel(self.model).cuda()
 
-    def forward(self, x, t="self"):
-        logits, st_mse, st_label = self.model(x, t)
-        return logits, st_mse, st_label
+    def forward(self, x):
+        output = self.model(x)
+        return output
 
     def weight_init(self):
         self.model.apply(self.weights_init_normal)
