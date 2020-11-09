@@ -51,7 +51,7 @@ else:
 def main():
     global args, best_prec_result
 
-    Train_loader, Test_loader, chIn, clsN = dataset_selector()
+    Train_loader, Test_loader, chIn, clsN = dataset_selector(args.db)
 
     args.chIn = chIn
     args.clsN = clsN
