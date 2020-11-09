@@ -59,7 +59,7 @@ def main():
     
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
-    utils.init_learning(state_info.model)
+    utils.init_learning(state_info.model.module)
 
     if cuda:
         print("USE", torch.cuda.device_count(), "GPUs!")
