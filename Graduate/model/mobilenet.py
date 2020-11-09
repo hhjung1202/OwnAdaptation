@@ -89,7 +89,7 @@ class InvertedResidual(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         if self.use_res_connect:
             if self.use_gate:
-                return self.gate(x, self.conv(x))
+                return self.gate(x, self.conv(x)) * 2
             else:
                 return x + self.conv(x)
         else:
