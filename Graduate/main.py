@@ -17,7 +17,7 @@ parser.add_argument('--model', default='MobileNetV2', type=str, help='ResNet18, 
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 parser.add_argument('--dir', default='./', type=str, help='default save directory')
 parser.add_argument('--gpu', default='0', type=str, help='Multi GPU ids to use.')
-parser.add_argument('--epoch', default=2, type=int, metavar='N', help='number of total epoch to run')
+parser.add_argument('--epoch', default=300, type=int, metavar='N', help='number of total epoch to run')
 parser.add_argument('-b', '--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--gamma', default=0.1, type=float, help='learning gamma')
@@ -55,7 +55,7 @@ def main():
 
     args.chIn = chIn
     args.clsN = clsN
-    args.milestones = [80,120]
+    args.milestones = [1,225]
     
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
