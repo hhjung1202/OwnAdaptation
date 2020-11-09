@@ -3,6 +3,9 @@ try:
 except ImportError:
     from torch.utils.model_zoo import load_url as load_state_dict_from_url
 
+import torch
+import torch.nn as nn
+
 class _Gate(nn.Sequential):
     phase = True
     def __init__(self, channels, reduction, num_route):
