@@ -12,9 +12,9 @@ class _Gate(nn.Sequential):
         super(_Gate, self).__init__()
         self.num_route = num_route
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc1 = nn.Linear(2 * channels, reduction, bias=False)
+        self.fc1 = nn.Linear(2 * channels, reduction)
         self.relu = nn.ReLU(inplace=True)    
-        self.fc2 = nn.Linear(reduction, num_route, bias=False)
+        self.fc2 = nn.Linear(reduction, num_route)
         self.fc2.weight.data.fill_(0.)
         self.sigmoid = nn.Sigmoid()
 
