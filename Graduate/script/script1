@@ -1,4 +1,0 @@
-python3 ../main.py --dir ./mobileNet_1x2 --gate True --iter 1 --gpu 0 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir ./mobileNet_3x2 --gate True --iter 3 --gpu 1 1> /dev/null 2> /dev/null &
-python3 ../main.py --dir ./mobileNet_5x2 --gate True --iter 5 --gpu 4 1> /dev/null 2> /dev/null 
-

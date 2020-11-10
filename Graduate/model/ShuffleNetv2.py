@@ -49,16 +49,12 @@ class BasicBlock(nn.Module):
         x1, x2 = self.split(x)
         out = F.relu(self.bn1(self.conv1(x2)))
         out = self.bn2(self.conv2(out))
-        preact = self.bn3(self.conv3(out))
-        out = F.relu(preact)
+        out = self.bn3(self.conv3(out))
+        out = F.relu(out)
         # out = F.relu(self.bn3(self.conv3(out)))
-        preact = torch.cat([x1, preact], 1)
         out = torch.cat([x1, out], 1)
         out = self.shuffle(out)
-        if self.is_last:
-            return out, preact
-        else:
-            return out
+        return out
 
 
 class DownBlock(nn.Module):
