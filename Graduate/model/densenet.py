@@ -51,35 +51,46 @@ class _Basic(nn.Sequential):
         
         return x + [out]
 
+class _DevideFeature(nn.Module):
+    def __init__(self, num_input_features, growth_rate):
+        super(_DevideFeature, self).__init__()
+        self.num_input_features = num_input_features
+        self.growth_rate = growth_rate
+
+    def forward(self, x):
+        count = (x.size(1) - self.num_input_features) // self.growth_rate
+        split = [self.num_input_features] + [self.growth_rate] * count
+        return x.split(split, dim=1)
+
 class _DenseLayer(nn.Module):
     def __init__(self, num_input_features, growth_rate, num_layers):
         super(_DenseLayer, self).__init__()
         self.norm = []
         self.layer = []
-        self.gate = [nn.Sequential(),]
+        self.gate = []
         self.num_layers = num_layers
-        for i in range(num_layers):
-            j = i//2 + 1
-            self.norm.append(nn.BatchNorm2d(num_input_features + growth_rate * i))
+        self.init_block = _Basic(num_input_features, growth_rate)
+        for i in range(1, num_layers):
+            j = (i-1)//2 + 1
             self.layer.append(_Basic(num_input_features + growth_rate * j, growth_rate))
-            if i != num_layers-1:
-                self.gate.append(_Gate_selection())
+            self.norm.append(nn.BatchNorm2d(num_input_features + growth_rate * (i+1)))
+            self.gate.append(_Gate_selection(num_input_features, growth_rate, i, reduction=4))
         self.relu = nn.ReLU(inplace=True)
 
+        self._devide = _DevideFeature(num_input_features, growth_rate)
+
     def forward(self, x):
-        x = [x]
-        for i in range(self.num_layers):
-            out = self.norm[i](torch.cat(x, 1))
-            out = self.gate[i](out)
-            out = self.layer[i](out)
+        out = self.init_block(x)
+        x = [x] + [out]
         out = torch.cat(x,1)
-        out = self.norm1(out)
-        out = self.relu(out)
-        out = self.conv1(out)
+        for i in range(self.num_layers-1):
+            out = self.layer[i](out)
+            x = [x] + [out]
+            t = self.norm[i](torch.cat(x,1))
+            t = self._devide(t)
+            out = self.gate[i](x, t)
         
         return x + [out]
-
-
 
 class _Transition(nn.Sequential):
     def __init__(self, num_input_features):

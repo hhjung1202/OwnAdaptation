@@ -41,24 +41,25 @@ class Flatten(nn.Module):
 
 class _Gate_selection(nn.Sequential):
     phase = 2
-    def __init__(self, channels, reduction, count):
+    def __init__(self, num_input_features, growth_rate, count, reduction=4):
         super(_Gate_selection, self).__init__()
 
         # self.growth_rate = growth_rate
         # self.init = num_init_features
         self.count = count
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        channels = num_init_features + growth_rate * count
         self.fc1 = nn.Linear(channels, channels//reduction, bias=False)
         self.relu = nn.ReLU(inplace=True)
         self.fc2 = nn.Linear(channels//reduction, self.count, bias=False)
-        self.fc2.weight.data.fill_(0.)
+        # self.fc2.weight.data.fill_(0.)
         self.sigmoid = nn.Sigmoid()
         self.p = None
         self.flat = Flatten()
 
-    def forward(self, x):
+    def forward(self, x, t):
 
-        out = torch.cat(x,1)
+        out = torch.cat(t,1)
         out = self.avg_pool(out)
         out = self.flat(out)
         out = self.relu(self.fc1(out))
@@ -66,14 +67,17 @@ class _Gate_selection(nn.Sequential):
         
 
         _, indices = out.sort()
-        indices[:,:self.num_route//2] # batch, r/2
+        select_indices = indices[:,:(self.count-1) // 2 + 1] # batch, indices
 
-        self.p = list(torch.split(out, 1, dim=1)) # array of [batch, 1, 1, 1]
-        p_sum = sum(self.p) # [batch, 1, 1, 1]
+        batch x[select_indices][0] cat
 
-        for i in range(self.count):
-            self.p[i] = self.p[i] / p_sum * self.count / 2 # normalize
-            x[i] = x[i] * self.p[i]
+        arr = []
+        for i, k in enumerate(select_indices):
+            arr.append([])
+            for j in k:
+                arr[i].append(x[j][i])
+            arr[i] = torch.cat(arr[i], 1)
+
 
         return torch.cat(x,1)
 
