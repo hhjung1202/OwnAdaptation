@@ -70,10 +70,6 @@ class _Bottleneck(nn.Sequential):
         if isinstance(x, Tensor):
             x = [x]
         out = torch.cat(x,1)
-
-        print(self.norm1)
-        print(out.device)
-        print(self.norm1.weight.device)
         out = self.norm1(out)
         out = self.relu(out)
         out = self.conv1(out)
@@ -103,44 +99,27 @@ class _Basic(nn.Sequential):
         
         return out
 
-class _DevideFeature(nn.Module):
-    def __init__(self, num_input_features, growth_rate):
-        super(_DevideFeature, self).__init__()
-        self.num_input_features = num_input_features
-        self.growth_rate = growth_rate
-
-    def forward(self, x):
-        count = (x.size(1) - self.num_input_features) // self.growth_rate
-        split = [self.num_input_features] + [self.growth_rate] * count
-        return x.split(split, dim=1)
-
 class _DenseLayer(nn.Module):
     def __init__(self, num_input_features, growth_rate, num_layers, Block):
         super(_DenseLayer, self).__init__()
-        self.norm = []
-        self.layer = []
-        self.gate = []
         self.num_layers = num_layers
         self.init_block = Block(num_input_features, growth_rate)
         for i in range(1, num_layers):
             j = (i-1)//2 + 1
-            self.layer.append(Block(num_input_features + growth_rate * j, growth_rate))
-            self.norm.append(nn.BatchNorm2d(num_input_features + growth_rate * (i+1)))
-            self.gate.append(_Gate_selection(num_input_features, growth_rate, i+1, reduction=4))
-        self.relu = nn.ReLU(inplace=True)
-
-        self._devide = _DevideFeature(num_input_features, growth_rate)
+            setattr(self, 'layer{}'.format(i), Block(num_input_features + growth_rate * j, growth_rate))
+            setattr(self, 'norm{}'.format(i), nn.BatchNorm2d(num_input_features + growth_rate * (i+1)))
+            setattr(self, 'gate{}'.format(i), _Gate_selection(num_input_features, growth_rate, i+1, reduction=4))
 
     def forward(self, x):
         out = self.init_block(x)
         x = [x] + [out]
         out = torch.cat(x,1)
-        for i in range(self.num_layers-1):
-            out = self.layer[i](out)
+        for i in range(1, self.num_layers):
+            out = getattr(self, 'layer{}'.format(i))(out)
             x += [out]
             x_cat = torch.cat(x,1)
-            t = self.norm[i](x_cat)
-            out = self.gate[i](x_cat, t)
+            x_norm = getattr(self, 'norm{}'.format(i))(x_cat)
+            out = getattr(self, 'gate{}'.format(i))(x_cat, x_norm)
         return out
 
 class _Transition(nn.Sequential):
