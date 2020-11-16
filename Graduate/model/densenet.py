@@ -71,6 +71,9 @@ class _Bottleneck(nn.Sequential):
             x = [x]
         out = torch.cat(x,1)
 
+        print(self.norm)
+        print(out.device)
+        print(self.norm.weight)
         out = self.norm1(out)
         out = self.relu(out)
         out = self.conv1(out)
@@ -132,11 +135,8 @@ class _DenseLayer(nn.Module):
         out = self.init_block(x)
         x = [x] + [out]
         out = torch.cat(x,1)
-        print(out.device)
         for i in range(self.num_layers-1):
-            print(out.device)
             out = self.layer[i](out)
-            print(out.device)
             x += [out]
             x_cat = torch.cat(x,1)
             t = self.norm[i](x_cat)
