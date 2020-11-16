@@ -51,6 +51,7 @@ class _Gate_selection(nn.Sequential):
             sliced_x += [x[i,select].unsqueeze(0)]
 
         sliced_x = torch.cat(sliced_x, 0)
+        print(sliced_x.device)
         return sliced_x
 
 
