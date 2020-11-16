@@ -73,7 +73,7 @@ class _Bottleneck(nn.Sequential):
 
         print(self.norm1)
         print(out.device)
-        print(self.norm1.weight)
+        print(self.norm1.weight.device)
         out = self.norm1(out)
         out = self.relu(out)
         out = self.conv1(out)
