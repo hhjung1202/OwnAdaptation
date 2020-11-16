@@ -51,7 +51,6 @@ class _Gate_selection(nn.Sequential):
             sliced_x += [x[i,select].unsqueeze(0)]
 
         sliced_x = torch.cat(sliced_x, 0)
-        print(sliced_x.device)
         return sliced_x
 
 
@@ -133,8 +132,11 @@ class _DenseLayer(nn.Module):
         out = self.init_block(x)
         x = [x] + [out]
         out = torch.cat(x,1)
+        print(out.device)
         for i in range(self.num_layers-1):
+            print(out.device)
             out = self.layer[i](out)
+            print(out.device)
             x += [out]
             x_cat = torch.cat(x,1)
             t = self.norm[i](x_cat)
