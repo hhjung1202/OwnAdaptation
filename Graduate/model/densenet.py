@@ -71,9 +71,9 @@ class _Bottleneck(nn.Sequential):
             x = [x]
         out = torch.cat(x,1)
 
-        print(self.norm)
+        print(self.norm1)
         print(out.device)
-        print(self.norm.weight)
+        print(self.norm1.weight)
         out = self.norm1(out)
         out = self.relu(out)
         out = self.conv1(out)
