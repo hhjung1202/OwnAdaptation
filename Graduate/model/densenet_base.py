@@ -77,7 +77,7 @@ class DenseNet_Base(nn.Module):
 
     def __init__(self, growth_rate=12,
                  num_init_features=24, num_classes=10, is_bottleneck=True, layer=22):
-        super(DenseNet, self).__init__()
+        super(DenseNet_Base, self).__init__()
 
         if layer is 28:
             block_config=[4,4,4]
