@@ -3,6 +3,55 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 from torch import Tensor
+import itertools
+
+
+class Flatten(nn.Module):
+    def forward(self, x):
+        return x.view(x.size(0), -1)
+
+class _Gate_selection(nn.Sequential):
+    phase = 2
+    def __init__(self, num_input_features, growth_rate, count, reduction=4):
+        super(_Gate_selection, self).__init__()
+
+        # self.growth_rate = growth_rate
+        # self.init = num_init_features
+        self.actual = (count-1) // 2 + 1
+        self.arr = [[i for i in range(num_input_features)]]
+        s = num_input_features
+        for j in range(count):
+            self.arr += [[i for i in range(s, s + growth_rate)]]
+            s+=growth_rate
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        channels = num_input_features + growth_rate * count
+        self.fc1 = nn.Linear(channels, channels//reduction, bias=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.fc2 = nn.Linear(channels//reduction, count, bias=False)
+        # self.fc2.weight.data.fill_(0.)
+        self.sigmoid = nn.Sigmoid()
+        self.flat = Flatten()
+        # self.split = [self.num_input_features] + [self.growth_rate] * self.actual
+
+
+    def forward(self, x, x_norm):
+
+        out = self.avg_pool(x_norm) # batch, channel 합친거, w, h
+        out = self.flat(out)
+        out = self.relu(self.fc1(out))
+        out = self.sigmoid(self.fc2(out))
+        
+        _, sort = out.sort()
+        indices = sort[:,:self.actual] # batch, sort
+        sliced_x = []
+        for i in range(out.size(0)):
+            select = [self.arr[0]]
+            select += [self.arr[j+1] for j in indices[i]]
+            select = list(itertools.chain.from_iterable(select))
+            sliced_x += [x[i,select].unsqueeze(0)]
+
+        sliced_x = torch.cat(sliced_x, 0)
+        return sliced_x
 
 
 class _Bottleneck(nn.Sequential):
@@ -30,7 +79,7 @@ class _Bottleneck(nn.Sequential):
         out = self.relu(out)
         out = self.conv2(out)
 
-        return x + [out]
+        return out
 
 class _Basic(nn.Sequential):
     def __init__(self, num_input_features, growth_rate):
@@ -49,7 +98,7 @@ class _Basic(nn.Sequential):
         out = self.relu(out)
         out = self.conv1(out)
         
-        return x + [out]
+        return out
 
 class _DevideFeature(nn.Module):
     def __init__(self, num_input_features, growth_rate):
@@ -63,18 +112,18 @@ class _DevideFeature(nn.Module):
         return x.split(split, dim=1)
 
 class _DenseLayer(nn.Module):
-    def __init__(self, num_input_features, growth_rate, num_layers):
+    def __init__(self, num_input_features, growth_rate, num_layers, Block):
         super(_DenseLayer, self).__init__()
         self.norm = []
         self.layer = []
         self.gate = []
         self.num_layers = num_layers
-        self.init_block = _Basic(num_input_features, growth_rate)
+        self.init_block = Block(num_input_features, growth_rate)
         for i in range(1, num_layers):
             j = (i-1)//2 + 1
-            self.layer.append(_Basic(num_input_features + growth_rate * j, growth_rate))
+            self.layer.append(Block(num_input_features + growth_rate * j, growth_rate))
             self.norm.append(nn.BatchNorm2d(num_input_features + growth_rate * (i+1)))
-            self.gate.append(_Gate_selection(num_input_features, growth_rate, i, reduction=4))
+            self.gate.append(_Gate_selection(num_input_features, growth_rate, i+1, reduction=4))
         self.relu = nn.ReLU(inplace=True)
 
         self._devide = _DevideFeature(num_input_features, growth_rate)
@@ -82,20 +131,27 @@ class _DenseLayer(nn.Module):
     def forward(self, x):
         out = self.init_block(x)
         x = [x] + [out]
+        self.print_f("init", x)
         out = torch.cat(x,1)
         for i in range(self.num_layers-1):
             out = self.layer[i](out)
-            x = [x] + [out]
-            t = self.norm[i](torch.cat(x,1))
-            t = self._devide(t)
-            out = self.gate[i](x, t)
-        
-        return x + [out]
+            x += [out]
+            self.print_f("layer", x)
+            x_cat = torch.cat(x,1)
+            t = self.norm[i](x_cat)
+            out = self.gate[i](x_cat, t)
+            print("gate", out.size())        
+        return x
+
+    def print_f(self, strs, s):
+        for i in s:
+            print(strs, i.size())
 
 class _Transition(nn.Sequential):
     def __init__(self, num_input_features):
         super(_Transition, self).__init__()
         self.norm = nn.BatchNorm2d(num_input_features)
+
         self.relu = nn.ReLU(inplace=True)
         self.conv = nn.Conv2d(num_input_features, num_input_features // 2,
                         kernel_size=1, stride=1, bias=False)
@@ -103,6 +159,8 @@ class _Transition(nn.Sequential):
         
     def forward(self, x):
         out = torch.cat(x,1)
+        print(self.norm)
+        print(out.size(1))
         out = self.norm(out)
         out = self.relu(out)
         out = self.conv(out)
@@ -115,40 +173,26 @@ class DenseNet(nn.Module):
                  num_init_features=24, num_classes=10, is_bottleneck=True, layer=22):
         super(DenseNet, self).__init__()
 
-        if layer is 22:
-            block_config=[3,3,3]
-        elif layer is 28:
+        if layer is 28:
             block_config=[4,4,4]
-        elif layer is 34:
-            block_config=[5,5,5]
         elif layer is 40:
             block_config=[6,6,6]
 
-        if is_bottleneck is not True:
+        if is_bottleneck:
+            Block = _Bottleneck
+        else:
+            Block = _Basic
             block_config = [2*x for x in block_config]
 
         self.features = nn.Sequential()
         self.features.add_module('conv0', nn.Conv2d(3, num_init_features, kernel_size=3, stride=1, padding=1, bias=False))
         num_features = num_init_features
-
+        
         for i in range(len(block_config)):
-            
-            layers = nn.Sequential()
-
-            for j in range(block_config[i]):
-
-                if is_bottleneck is True:
-                    layer = _Bottleneck(num_features + j * growth_rate, growth_rate, count=j+1)
-                    layers.add_module('layer%d_%d' % (i + 1, j + 1), layer)
-                else:
-                    layer = _Basic(num_features + j * growth_rate, growth_rate, count=j+1)
-                    layers.add_module('layer%d_%d' % (i + 1, j + 1), layer)
-
-            self.features.add_module('layer%d' % (i + 1), layers)
+            self.features.add_module('layer%d' % (i + 1), _DenseLayer(num_features, growth_rate, block_config[i], Block))
             num_features = num_features + block_config[i] * growth_rate
-
             if i != len(block_config) - 1:
-                self.features.add_module('transition%d' % (i + 1), _Transition(num_features, count=block_config[i]+1))
+                self.features.add_module('transition%d' % (i + 1), _Transition(num_features))
                 num_features = num_features // 2
 
         # Final batch norm
@@ -178,3 +222,10 @@ class DenseNet(nn.Module):
         out = out.view(out.size(0), -1)
         out = self.fc(out)
         return out
+
+
+if __name__=='__main__':
+    x = torch.randn(4,3,32,32)
+    model = DenseNet(growth_rate=12, num_init_features=24, num_classes=10, is_bottleneck=True, layer=40)
+    y = model(x)
+    print(y.size())
