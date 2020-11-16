@@ -131,21 +131,14 @@ class _DenseLayer(nn.Module):
     def forward(self, x):
         out = self.init_block(x)
         x = [x] + [out]
-        self.print_f("init", x)
         out = torch.cat(x,1)
         for i in range(self.num_layers-1):
             out = self.layer[i](out)
             x += [out]
-            self.print_f("layer", x)
             x_cat = torch.cat(x,1)
             t = self.norm[i](x_cat)
             out = self.gate[i](x_cat, t)
-            print("gate", out.size())        
-        return x
-
-    def print_f(self, strs, s):
-        for i in s:
-            print(strs, i.size())
+        return out
 
 class _Transition(nn.Sequential):
     def __init__(self, num_input_features):
@@ -158,10 +151,8 @@ class _Transition(nn.Sequential):
         self.pool = nn.AvgPool2d(kernel_size=2, stride=2)
         
     def forward(self, x):
-        out = torch.cat(x,1)
-        print(self.norm)
-        print(out.size(1))
-        out = self.norm(out)
+        # out = torch.cat(x,1)
+        out = self.norm(x)
         out = self.relu(out)
         out = self.conv(out)
         out = self.pool(out)
@@ -170,7 +161,7 @@ class _Transition(nn.Sequential):
 class DenseNet(nn.Module):
 
     def __init__(self, growth_rate=12,
-                 num_init_features=24, num_classes=10, is_bottleneck=True, layer=22):
+                 num_init_features=24, num_classes=10, is_bottleneck=True, layer=28):
         super(DenseNet, self).__init__()
 
         if layer is 28:
@@ -190,7 +181,7 @@ class DenseNet(nn.Module):
         
         for i in range(len(block_config)):
             self.features.add_module('layer%d' % (i + 1), _DenseLayer(num_features, growth_rate, block_config[i], Block))
-            num_features = num_features + block_config[i] * growth_rate
+            num_features = num_features + block_config[i] * growth_rate // 2
             if i != len(block_config) - 1:
                 self.features.add_module('transition%d' % (i + 1), _Transition(num_features))
                 num_features = num_features // 2
@@ -215,7 +206,7 @@ class DenseNet(nn.Module):
 
     def forward(self, x):
         out = self.features(x)
-        out = torch.cat(out,1)
+        # out = torch.cat(out,1)
         out = self.norm(out)
         out = self.relu(out)
         out = self.pool(out)

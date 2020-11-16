@@ -26,6 +26,10 @@ parser.add_argument('--img-size', type=int, default=32, help='input image width,
 parser.add_argument('--gate', default='True', type=str, help='True, False')
 parser.add_argument('--iter', default=1, type=int, help='iter per epoch')
 
+# For DenseNet
+parser.add_argument('--growth', default=12, type=int, help='iter per epoch')
+parser.add_argument('--init', default=24, type=int, help='iter per epoch')
+parser.add_argument('--layer', default=28, type=int, help='iter per epoch')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()

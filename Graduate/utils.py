@@ -78,6 +78,10 @@ class model_optim_state_info(object):
         self.init_lr = args.lr
         if args.model == "MobileNetV2":
             self.model = MobileNetV2(use_gate=args.use_gate, num_classes=args.clsN)
+        elif args.model == "DenseNet":
+            self.model = DenseNet(growth_rate=args.growth, num_init_features=args.init, num_classes=args.clsN, is_bottleneck=True, layer=args.layer)
+        elif args.model == "DenseNet_Base":
+            self.model = DenseNet_Base(growth_rate=args.growth, num_init_features=args.init, num_classes=args.clsN, is_bottleneck=True, layer=args.layer)
 
         if torch.cuda.is_available():
             self.model = nn.DataParallel(self.model).cuda()
