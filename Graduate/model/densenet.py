@@ -25,9 +25,9 @@ class _Gate_selection(nn.Sequential):
             s+=growth_rate
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         channels = num_input_features + growth_rate * count
-        self.fc1 = nn.Linear(channels, channels//reduction, bias=False)
+        self.fc1 = nn.Linear(channels, channels//reduction)
         self.relu = nn.ReLU(inplace=True)
-        self.fc2 = nn.Linear(channels//reduction, count, bias=False)
+        self.fc2 = nn.Linear(channels//reduction, count)
         # self.fc2.weight.data.fill_(0.)
         self.sigmoid = nn.Sigmoid()
         self.flat = Flatten()
