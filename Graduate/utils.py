@@ -85,6 +85,7 @@ class model_optim_state_info(object):
 
         if torch.cuda.is_available():
             self.model = nn.DataParallel(self.model).cuda()
+            print(self.model)
 
     def forward(self, x):
         output = self.model(x)
