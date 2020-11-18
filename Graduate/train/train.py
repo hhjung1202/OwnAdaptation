@@ -31,7 +31,7 @@ def train_Epoch(args, state_info, Train_loader, Test_loader): # all
             utils.save_state_checkpoint(state_info, best_prec_result, epoch, 'checkpoint_best.pth.tar', utils.default_model_dir)
             print('save..')
 
-        if args.use_gate and epoch % args.iter == args.iter-1:
+        if args.use_switch and epoch % args.iter == args.iter-1:
             utils.switching_learning(state_info.model.module)
             print('learning Gate')
             epoch_result = train(args, state_info, Train_loader, Test_loader, epoch)

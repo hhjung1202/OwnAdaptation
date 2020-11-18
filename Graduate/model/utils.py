@@ -73,6 +73,7 @@ class _Gate_selection(nn.Sequential):
         
         _, sort = out.sort()
         indices = sort[:,:self.actual] # batch, sort # shuffle
+        indices = indices[:, torch.randperm(indices.size(1))]
 
         select = self.init.repeat(b,1)
         select = torch.cat([select, self.arr[indices].view(b,-1)], 1)
@@ -83,9 +84,7 @@ class _Gate_selection(nn.Sequential):
         return x
 
 if __name__=='__main__':
-    x = torch.randn(3,26,2,2)
-    model = _Gate_selection(num_input_features=10, growth_rate=4, count=4, reduction=4)
+    x = torch.randn(3,34,2,2)
+    model = _Gate_selection(num_input_features=10, growth_rate=4, count=6, reduction=4)
     y = model(x, x)
     print(y.size())
-    print(x)
-    print(y)

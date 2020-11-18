@@ -25,11 +25,13 @@ parser.add_argument('--img-size', type=int, default=32, help='input image width,
 
 parser.add_argument('--gate', default='True', type=str, help='True, False')
 parser.add_argument('--iter', default=1, type=int, help='iter per epoch')
+parser.add_argument('--switch', default='True', type=str, help='True, False')
 
 # For DenseNet
 parser.add_argument('--growth', default=12, type=int, help='iter per epoch')
 parser.add_argument('--init', default=24, type=int, help='iter per epoch')
 parser.add_argument('--layer', default=28, type=int, help='iter per epoch')
+parser.add_argument('--milestones', nargs='+', type=int, help='milestones')
 
 best_prec_result = torch.tensor(0, dtype=torch.float32)
 args = parser.parse_args()
@@ -42,6 +44,13 @@ if args.gate == "True":
 else:
     args.use_gate = False
 
+if args.switch == "True":
+    args.use_switch = True
+else:
+    args.use_switch = False
+
+args.epoch = args.milestones[-1]
+
 def main():
     global args, best_prec_result
 
@@ -49,11 +58,12 @@ def main():
 
     args.chIn = chIn
     args.clsN = clsN
-    args.milestones = [150,225]
+    # args.milestones = [150,225]
     
     state_info = utils.model_optim_state_info()
     state_info.model_init(args)
-    utils.init_learning(state_info.model.module)
+    if args.use_switch:
+        utils.init_learning(state_info.model.module)
 
     if cuda:
         print("USE", torch.cuda.device_count(), "GPUs!")

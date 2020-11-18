@@ -43,6 +43,7 @@ class _Gate_selection(nn.Sequential):
         
         _, sort = out.sort()
         indices = sort[:,:self.actual] # batch, sort # shuffle
+        indices = indices[:, torch.randperm(indices.size(1))]
 
         select = self.init.repeat(b,1)
         select = torch.cat([select, self.arr[indices].view(b,-1)], 1)
