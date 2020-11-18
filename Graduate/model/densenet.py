@@ -15,44 +15,41 @@ class _Gate_selection(nn.Sequential):
     def __init__(self, num_input_features, growth_rate, count, reduction=4):
         super(_Gate_selection, self).__init__()
 
-        # self.growth_rate = growth_rate
-        # self.init = num_init_features
-        self.actual = (count-1) // 2 + 1
-        self.arr = [[i for i in range(num_input_features)]]
+        self.actual = (count+1) // 2
+        LongTensor = torch.cuda.LongTensor if torch.cuda.is_available() else torch.LongTensor
+        
+        self.init = LongTensor([i for i in range(num_input_features)]).view(1, -1)
         s = num_input_features
+        arr = []
         for j in range(count):
-            self.arr += [[i for i in range(s, s + growth_rate)]]
+            arr += [[i for i in range(s, s + growth_rate)]]
             s+=growth_rate
+        self.arr = LongTensor(arr)
+
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         channels = num_input_features + growth_rate * count
         self.fc1 = nn.Linear(channels, channels//reduction)
         self.relu = nn.ReLU(inplace=True)
         self.fc2 = nn.Linear(channels//reduction, count)
-        # self.fc2.weight.data.fill_(0.)
         self.sigmoid = nn.Sigmoid()
         self.flat = Flatten()
-        # self.split = [self.num_input_features] + [self.growth_rate] * self.actual
-
 
     def forward(self, x, x_norm):
-
+        b, _, w, h = x_norm.size()
         out = self.avg_pool(x_norm) # batch, channel 합친거, w, h
         out = self.flat(out)
         out = self.relu(self.fc1(out))
         out = self.sigmoid(self.fc2(out))
         
         _, sort = out.sort()
-        indices = sort[:,:self.actual] # batch, sort
-        sliced_x = []
-        for i in range(out.size(0)):
-            select = [self.arr[0]]
-            select += [self.arr[j+1] for j in indices[i]]
-            select = list(itertools.chain.from_iterable(select))
-            sliced_x += [x[i,select].unsqueeze(0)]
+        indices = sort[:,:self.actual] # batch, sort # shuffle
 
-        sliced_x = torch.cat(sliced_x, 0)
-        return sliced_x
+        select = self.init.repeat(b,1)
+        select = torch.cat([select, self.arr[indices].view(b,-1)], 1)
+        select = select.view(select.size(0), -1, 1, 1).repeat(1,1,w,h)
 
+        x = x.gather(1, select)
+        return x
 
 class _Bottleneck(nn.Sequential):
     def __init__(self, num_input_features, growth_rate, count=1):
