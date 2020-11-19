@@ -170,10 +170,10 @@ class DenseNet(nn.Module):
                 num_features = num_features // 2
 
         # Final batch norm
-        self.norm = nn.BatchNorm2d(num_features)
+        self.norm = nn.BatchNorm2d(tr_features)
         self.relu = nn.ReLU(inplace=True)
         self.pool = nn.AvgPool2d(kernel_size=8, stride=1)
-        self.fc = nn.Linear(num_features, num_classes)
+        self.fc = nn.Linear(tr_features, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
