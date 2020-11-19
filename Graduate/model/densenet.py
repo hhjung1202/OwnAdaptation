@@ -121,7 +121,7 @@ class _DenseLayer(nn.Module):
         return x_cat
 
 class _Transition(nn.Sequential):
-    def __init__(self, tr_features, num_input_features):
+    def __init__(self, num_input_features, tr_features):
         super(_Transition, self).__init__()
         self.norm = nn.BatchNorm2d(tr_features)
 
