@@ -121,12 +121,12 @@ class _DenseLayer(nn.Module):
         return x_cat
 
 class _Transition(nn.Sequential):
-    def __init__(self, num_input_features):
+    def __init__(self, tr_features, num_input_features):
         super(_Transition, self).__init__()
-        self.norm = nn.BatchNorm2d(num_input_features)
+        self.norm = nn.BatchNorm2d(tr_features)
 
         self.relu = nn.ReLU(inplace=True)
-        self.conv = nn.Conv2d(num_input_features, num_input_features // 2,
+        self.conv = nn.Conv2d(tr_features, num_input_features // 2,
                         kernel_size=1, stride=1, bias=False)
         self.pool = nn.AvgPool2d(kernel_size=2, stride=2)
         
@@ -161,11 +161,11 @@ class DenseNet(nn.Module):
         
         for i in range(len(block_config)):
             self.features.add_module('layer%d' % (i + 1), _DenseLayer(num_features, growth_rate, block_config[i], Block))
-            num_features = num_features + block_config[i] * growth_rate
-            out_features = (num_features + block_config[i] * growth_rate // 2) // 2
+            num_features = num_features + block_config[i] * growth_rate // 2
+            tr_features = num_features + block_config[i] * growth_rate
             if i != len(block_config) - 1:
-                self.features.add_module('transition%d' % (i + 1), _Transition(num_features, out_features))
-                num_features = out_features
+                self.features.add_module('transition%d' % (i + 1), _Transition(num_features, tr_features))
+                num_features = num_features // 2
 
         # Final batch norm
         self.norm = nn.BatchNorm2d(num_features)
