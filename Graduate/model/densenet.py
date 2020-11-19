@@ -132,8 +132,6 @@ class _Transition(nn.Sequential):
         
     def forward(self, x):
         # out = torch.cat(x,1)
-        print(x.size())
-        print(self.norm)
         out = self.norm(x)
         out = self.relu(out)
         out = self.conv(out)
