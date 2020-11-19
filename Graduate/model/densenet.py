@@ -118,7 +118,7 @@ class _DenseLayer(nn.Module):
             x_cat = torch.cat(x,1)
             x_norm = getattr(self, 'norm{}'.format(i))(x_cat)
             out = getattr(self, 'gate{}'.format(i))(x_cat, x_norm)
-        return out
+        return x_cat
 
 class _Transition(nn.Sequential):
     def __init__(self, num_input_features):
@@ -161,10 +161,11 @@ class DenseNet(nn.Module):
         
         for i in range(len(block_config)):
             self.features.add_module('layer%d' % (i + 1), _DenseLayer(num_features, growth_rate, block_config[i], Block))
-            num_features = num_features + block_config[i] * growth_rate // 2
+            num_features = num_features + block_config[i] * growth_rate
+            out_features = (num_features + block_config[i] * growth_rate // 2) // 2
             if i != len(block_config) - 1:
-                self.features.add_module('transition%d' % (i + 1), _Transition(num_features))
-                num_features = num_features // 2
+                self.features.add_module('transition%d' % (i + 1), _Transition(num_features, out_features))
+                num_features = out_features
 
         # Final batch norm
         self.norm = nn.BatchNorm2d(num_features)
