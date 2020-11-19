@@ -83,6 +83,10 @@ class DenseNet_Base(nn.Module):
             block_config=[4,4,4]
         elif layer is 40:
             block_config=[6,6,6]
+        elif layer is 52:
+            block_config=[8,8,8]
+        elif layer is 64:
+            block_config=[10,10,10]
 
         if is_bottleneck is not True:
             block_config = [2*x for x in block_config]
