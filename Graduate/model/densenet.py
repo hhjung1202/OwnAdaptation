@@ -132,8 +132,6 @@ class _Transition(nn.Sequential):
         
     def forward(self, x):
         # out = torch.cat(x,1)
-        print(x.size())
-        print(self.norm)
         out = self.norm(x)
         out = self.relu(out)
         out = self.conv(out)
@@ -163,8 +161,8 @@ class DenseNet(nn.Module):
         
         for i in range(len(block_config)):
             self.features.add_module('layer%d' % (i + 1), _DenseLayer(num_features, growth_rate, block_config[i], Block))
-            num_features = num_features + block_config[i] * growth_rate // 2
             tr_features = num_features + block_config[i] * growth_rate
+            num_features = num_features + block_config[i] * growth_rate // 2
             if i != len(block_config) - 1:
                 self.features.add_module('transition%d' % (i + 1), _Transition(num_features, tr_features))
                 num_features = num_features // 2
