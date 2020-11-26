@@ -15,6 +15,7 @@ class ChannelSELayer(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, input_tensor):
+        input_tensor = torch.cat(input_tensor,1)
         batch_size, num_channels, H, W = input_tensor.size()
         squeeze_tensor = input_tensor.view(batch_size, num_channels, -1).mean(dim=2)
 
