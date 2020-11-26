@@ -91,7 +91,6 @@ class _Transition(nn.Sequential):
         self.se = ChannelSELayer(num_input_features // 2)
         
     def forward(self, x):
-        out = torch.cat(x,1)
         out = self.norm(out)
         out = self.relu(out)
         out = self.conv(out)
