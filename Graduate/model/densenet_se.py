@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
+from torch import Tensor
 
 class ChannelSELayer(nn.Module):
 
@@ -14,8 +15,11 @@ class ChannelSELayer(nn.Module):
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, input_tensor):
-        input_tensor = torch.cat(input_tensor,1)
+    def forward(self, x):
+        if isinstance(x, Tensor):
+            input_tensor = x
+        else:
+            input_tensor = torch.cat(x,1)
         batch_size, num_channels, H, W = input_tensor.size()
         squeeze_tensor = input_tensor.view(batch_size, num_channels, -1).mean(dim=2)
 
@@ -91,7 +95,11 @@ class _Transition(nn.Sequential):
         self.se = ChannelSELayer(num_input_features // 2)
         
     def forward(self, x):
-        out = self.norm(x)
+        if isinstance(x, Tensor):
+            out = x
+        else:
+            out = torch.cat(x,1)
+        out = self.norm(out)
         out = self.relu(out)
         out = self.conv(out)
         out = self.pool(out)
