@@ -170,7 +170,6 @@ class DenseNet_SE(nn.Module):
 
     def forward(self, x):
         out = self.features(x)
-        out = torch.cat(out,1)
         out = self.norm(out)
         out = self.relu(out)
         out = self.pool(out)
