@@ -91,7 +91,7 @@ class _Transition(nn.Sequential):
         self.se = ChannelSELayer(num_input_features // 2)
         
     def forward(self, x):
-        out = self.norm(out)
+        out = self.norm(x)
         out = self.relu(out)
         out = self.conv(out)
         out = self.pool(out)
